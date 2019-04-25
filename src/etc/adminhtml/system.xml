@@ -1,0 +1,69 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="ms_catalog_indexer" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>MS Catalog Indexer</label>
+            <tab>service</tab>
+            <resource>Global4net_MsCatalogMagento2::config_ms_catalog_indexer</resource>
+            <group id="general_settings" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Settings</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="logging" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Logging Enabled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Logs will be saved in var/log/ms_catalog_indexer.log.</comment>
+                </field>
+                <field id="log_format" translate="label comment" type="select" sortOrder="30" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                    <label>Log file format</label>
+                    <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\LogFormat</source_model>
+                    <comment>Choose log file format - text or json.</comment>
+                </field>
+            </group>
+            <group id="engine_settings" translate="label" type="text" sortOrder="200" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Engine Settings</label>
+                <field id="engine" translate="label comment" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Engine</label>
+                    <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\Engine</source_model>
+                    <comment>Choose engine that will be used.</comment>
+                </field>
+                <field id="host" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Host</label>
+                    <comment>Example: 127.0.0.1</comment>
+                </field>
+                <field id="port" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Port</label>
+                    <comment>Example: 8081</comment>
+                </field>
+                <field id="path" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Path</label>
+                    <comment>Example: /solr/</comment>
+                </field>
+                <field id="core" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Core</label>
+                    <comment>Example: core0</comment>
+                </field>
+            </group>
+            <group id="indexer_settings" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Indexer Settings</label>
+                <field id="pagesize" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Pagesize</label>
+                    <comment>The number of objects processed at once.</comment>
+                </field>
+                <field id="delete_before_reindex" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Delete index before reindexing.</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Delete all records before running reindex.</comment>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>
