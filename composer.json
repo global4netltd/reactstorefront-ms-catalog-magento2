@@ -2,21 +2,17 @@
   "name": "g4n-react/ms-catalog-magento2",
   "description": "Puller and pusher for Magento 2",
   "type": "magento2-module",
-  "version": "1.0.1",
-  "license": [
-    "OSL-3.0",
-    "AFL-3.0"
-  ],
+  "version": "0.1.0",
+  "license": ["MIT"],
   "keywords": ["Magento"],
   "authors": [
     {
-      "name": "G4N React Crew",
+      "name": "G4N React Storefront",
       "email": "biuro@global4net.com"
     }
   ],
   "require": {
-    "magento/magento-composer-installer": "*",
-    "phpunit/phpunit": "~6.5.0"
+    "magento/magento-composer-installer": "*"
   },
   "autoload": {
     "files": [
