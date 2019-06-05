@@ -4,32 +4,32 @@ namespace G4NReact\MsCatalogMagento2\Console\Command;
 
 use Exception;
 use G4NReact\MsCatalogIndexer\Indexer;
-use G4NReact\MsCatalogMagento2\Model\Puller\CategoryPuller;
+use G4NReact\MsCatalogMagento2\Model\Puller\CmsPuller;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
 /**
- * Class ReindexCategory
+ * Class ReindexCMS
  * @package G4NReact\MsCatalogMagento2\Console\Command
  */
-class ReindexCategory extends Command
+class ReindexCMS extends Command
 {
     /**
-     * @var CategoryPuller
+     * @var CmsPuller
      */
-    protected $categoryPuller;
+    protected $cmsPuller;
 
     /**
-     * ReindexCategory constructor.
-     * @param CategoryPuller $categoryPuller
-     * @param null $name
+     * ReindexCMS constructor.
+     * @param CmsPuller $cmsPuller
+     * @param string|null $name
      */
     public function __construct(
-        CategoryPuller $categoryPuller,
-        $name = null
+        CmsPuller $cmsPuller,
+        ?string $name = null
     ) {
-        $this->categoryPuller = $categoryPuller;
+        $this->cmsPuller = $cmsPuller;
         parent::__construct($name);
     }
 
@@ -38,8 +38,8 @@ class ReindexCategory extends Command
      */
     protected function configure()
     {
-        $this->setName('g4nreact:reindex:category')
-            ->setDescription('Reindexes categories');
+        $this->setName('g4nreact:reindex:cms')
+            ->setDescription('Reindexes CMS');
     }
 
     /**
@@ -50,7 +50,7 @@ class ReindexCategory extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
-            $puller = $this->categoryPuller;
+            $puller = $this->cmsPuller;
             $config = $puller->getConfiguration();
 
             $indexer = new Indexer($puller, $config);

@@ -2,10 +2,12 @@
 
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
+use Exception;
+use G4NReact\MsCatalogIndexer\Indexer;
+use G4NReact\MsCatalogMagento2\Model\Puller\ProductPuller;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use G4NReact\MsCatalogIndexer\Indexer;
 
 /**
  * Class ReindexProduct
@@ -14,24 +16,26 @@ use G4NReact\MsCatalogIndexer\Indexer;
 class ReindexProduct extends Command
 {
     /**
-     * @var \G4NReact\MsCatalogMagento2\Model\Puller\ProductPuller
+     * @var ProductPuller
      */
     protected $productPuller;
 
     /**
      * ReindexProduct constructor.
-     * @param \G4NReact\MsCatalogMagento2\Model\Puller\ProductPuller $productPuller
+     * @param ProductPuller $productPuller
      * @param null $name
      */
     public function __construct(
-        \G4NReact\MsCatalogMagento2\Model\Puller\ProductPuller $productPuller,
+        ProductPuller $productPuller,
         $name = null
-    )
-    {
+    ) {
         $this->productPuller = $productPuller;
         parent::__construct($name);
     }
 
+    /**
+     * Configure command metadata.
+     */
     protected function configure()
     {
         $this->setName('g4nreact:reindex:product')
@@ -50,14 +54,11 @@ class ReindexProduct extends Command
             $config = $puller->getConfiguration();
 
             $indexer = new Indexer($puller, $config);
-
             $indexer->reindex();
 
-            return true;
-        } catch (\Exception $exception) {
+            echo "Successfully reindex data" . PHP_EOL;
+        } catch (Exception $exception) {
             echo "Caught exception: " . $exception->getMessage();
-            
-            return false;
         }
     }
 }
