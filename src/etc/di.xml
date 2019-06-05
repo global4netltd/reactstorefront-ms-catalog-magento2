@@ -4,6 +4,8 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="g4nreact_test" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\TestCommand</item>
+                <item name="g4nreact_reindex_product" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexProduct</item>
+                <item name="g4nreact_reindex_category" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexCategory</item>
             </argument>
         </arguments>
     </type>
