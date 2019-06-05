@@ -102,7 +102,7 @@ class CmsPuller extends AbstractPuller
 
         $document = new Document();
 
-        $document->setUniqueId($page->getId() . '_' . 'cms' . '_' . $page->getStoreId());
+        $document->setUniqueId($page->getId() . '_' . 'cms' . '_' . $page->getStoreId()[0]);
         $document->setObjectId($page->getId());
         $document->setObjectType('cms'); // @ToDo: move it to const
 
