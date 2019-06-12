@@ -43,9 +43,9 @@
                     <label>Port</label>
                     <comment>Example: 8081</comment>
                 </field>
-                <field id="path" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Path</label>
-                    <comment>Example: /solr/</comment>
+                <field id="collection" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Collection</label>
+                    <comment>Example: collection1</comment>
                 </field>
                 <field id="core" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Core</label>
