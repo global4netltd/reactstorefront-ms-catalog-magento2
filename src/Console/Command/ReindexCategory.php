@@ -39,7 +39,7 @@ class ReindexCategory extends Command
     protected function configure()
     {
         $this->setName('g4nreact:reindex:category')
-            ->setDescription('Reindexes categories');
+            ->setDescription('Pull categories from Magento 2 database and push it to database search engine');
     }
 
     /**

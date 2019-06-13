@@ -39,7 +39,7 @@ class ReindexProduct extends Command
     protected function configure()
     {
         $this->setName('g4nreact:reindex:product')
-            ->setDescription('Reindexes products');
+            ->setDescription('Pull products from Magento 2 database and push it to database search engine');
     }
 
     /**

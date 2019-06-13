@@ -39,7 +39,7 @@ class ReindexCMS extends Command
     protected function configure()
     {
         $this->setName('g4nreact:reindex:cms')
-            ->setDescription('Reindexes CMS');
+            ->setDescription('Pull CMS from Magento 2 database and push it to database search engine');
     }
 
     /**
