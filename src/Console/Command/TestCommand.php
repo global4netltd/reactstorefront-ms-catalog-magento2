@@ -59,14 +59,16 @@ class TestCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /**  $host = '10.20.0.1';
-        $port = 6648;
+
+        $host = '10.0.0.21';
+        $port = 9090;
         $path = '/solr/';
+        $collection = '';
         $core = 'qa';
 
 
 
-        $config = new Config(Config::ENGINE_SOLR, $host, $port, $path, $core, 10, false);
+        $config = new Config(Config::ENGINE_SOLR, $host, $port, $path, $collection, $core, 10, false);
         $config->setEngine($config::ENGINE_SOLR);
 
         $puller = new Puller($config);
@@ -130,7 +132,7 @@ class TestCommand extends Command
         $indexer->reindex();
 
         // indexer tworzy pusher na podstawie konfiguracji (solr) przekazując mu konfigurację w konstruktorze i foreach Documents odpala query?
-
+1
         // $output->writeln("Found: " . $response->getNumFound());
     }
 }

@@ -43,9 +43,9 @@
                     <label>Port</label>
                     <comment>Example: 8081</comment>
                 </field>
-                <field id="path" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Path</label>
-                    <comment>Example: /solr/</comment>
+                <field id="collection" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Collection</label>
+                    <comment>Example: collection1</comment>
                 </field>
                 <field id="core" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Core</label>
@@ -54,11 +54,15 @@
             </group>
             <group id="indexer_settings" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Indexer Settings</label>
-                <field id="pagesize" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Pagesize</label>
+                <field id="solr_puller_pagesize" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Solr Puller Pagesize</label>
                     <comment>The number of objects processed at once.</comment>
                 </field>
-                <field id="delete_before_reindex" translate="label comment" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="solr_pusher_pagesize" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Solr Pusher Pageisze</label>
+                    <comment>The number of objects processed at once.</comment>
+                </field>
+                <field id="delete_before_reindex" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Delete index before reindexing.</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Delete all records before running reindex.</comment>
