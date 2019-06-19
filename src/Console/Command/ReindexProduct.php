@@ -28,8 +28,7 @@ class ReindexProduct extends AbstractReindex
     public function __construct(
         ProductPuller $productPuller,
         $name = null
-    )
-    {
+    ) {
         $this->productPuller = $productPuller;
         parent::__construct($name);
     }

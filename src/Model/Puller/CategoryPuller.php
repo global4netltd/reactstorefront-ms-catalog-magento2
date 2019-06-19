@@ -2,9 +2,15 @@
 
 namespace G4NReact\MsCatalogMagento2\Model\Puller;
 
-use G4NReact\MsCatalogIndexer\Config;
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
+use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
+use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
+use Magento\Eav\Model\ResourceModel\Config as EavConfig;
+use Magento\Eav\Model\ResourceModel\Entity\Attribute;
+use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Exception\LocalizedException;
 
 /**
  * Class CategoryPuller
@@ -13,68 +19,69 @@ use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 class CategoryPuller extends AbstractPuller
 {
     /**
-     * @var \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory
+     * @var CategoryCollectionFactory
      */
     protected $categoryCollectionFactory;
 
     /**
-     * @var \Magento\Eav\Model\ResourceModel\Entity\Attribute
+     * @var Attribute
      */
     protected $eavAttribute;
 
     /**
-     * @var \Magento\Eav\Model\ResourceModel\Config
+     * @var EavConfig
      */
     protected $eavConfig;
 
     /**
-     * @var \Magento\Framework\App\ResourceConnection
+     * @var ResourceConnection
      */
     protected $resource;
 
     /**
-     * ProductPuller constructor
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param \Magento\Eav\Model\Config $eavConfig
-     * @param \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * CategoryPuller constructor
+     *
+     * @param CategoryCollectionFactory $categoryCollectionFactory
+     * @param EavConfig $eavConfig
+     * @param Attribute $eavAttribute
+     * @param MsCatalogHelper $msCatalogHelper
+     * @param ResourceConnection $resource
      */
     public function __construct(
-        \Magento\Catalog\Model\ResourceModel\Category\CollectionFactory $categoryCollectionFactory,
-        \Magento\Eav\Model\Config $eavConfig,
-        \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig,
-        \Magento\Framework\App\ResourceConnection $resource
+        CategoryCollectionFactory $categoryCollectionFactory,
+        EavConfig $eavConfig,
+        Attribute $eavAttribute,
+        MsCatalogHelper $msCatalogHelper,
+        ResourceConnection $resource
     ) {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->resource = $resource;
 
-        parent::__construct($scopeConfig);
+        parent::__construct($msCatalogHelper);
     }
 
     /**
-     * @return \Magento\Catalog\Model\ResourceModel\Product\Collection
+     * @return CategoryCollection
      */
-    public function getCollection()
+    public function getCollection(): CategoryCollection
     {
-        $collection = $this->categoryCollectionFactory->create();
+        $categoryCollection = $this->categoryCollectionFactory->create();
 
         if ($this->ids !== null) {
-            $collection->addAttributeToFilter('entity_id', array('in' => $this->ids));
+            $categoryCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
         }
 
-        $collection->addAttributeToSelect('*')
+        $categoryCollection->addAttributeToSelect('*')
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
-        return $collection;
+        return $categoryCollection;
     }
 
     /**
-     * @return Document|mixed
-     * @throws \Magento\Framework\Exception\LocalizedException
+     * @return Document
      */
     public function current(): Document
     {

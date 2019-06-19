@@ -2,9 +2,13 @@
 
 namespace G4NReact\MsCatalogMagento2\Model\Puller;
 
-use G4NReact\MsCatalogIndexer\Config;
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
+use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use Magento\Cms\Model\ResourceModel\Page\Collection as CmsPageCollection;
+use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionFactory;
+use Magento\Eav\Model\ResourceModel\Config as EavConfig;
+use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 
 /**
  * Class CmsPuller
@@ -12,6 +16,9 @@ use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
  */
 class CmsPuller extends AbstractPuller
 {
+    /**
+     * @var array
+     */
     public static $fieldTypeMap = [
         'page_id' => 'int',
         'title' => 'string',
@@ -29,52 +36,53 @@ class CmsPuller extends AbstractPuller
     ];
 
     /**
-     * @var \Magento\Cms\Model\ResourceModel\Page\CollectionFactory
+     * @var CmsPageCollectionFactory
      */
-    protected $pageCollectionFactory;
+    protected $cmsPageCollectionFactory;
 
     /**
-     * @var \Magento\Eav\Model\ResourceModel\Entity\Attribute
+     * @var Attribute
      */
     protected $eavAttribute;
 
     /**
-     * @var \Magento\Eav\Model\ResourceModel\Config
+     * @var EavConfig
      */
     protected $eavConfig;
 
     /**
      * CmsPuller constructor
-     * @param \Magento\Cms\Model\ResourceModel\Page\CollectionFactory $pageCollectionFactory
-     * @param \Magento\Eav\Model\Config $eavConfig
-     * @param \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     *
+     * @param CmsPageCollectionFactory $cmsPageCollectionFactory
+     * @param EavConfig $eavConfig
+     * @param Attribute $eavAttribute
+     * @param MsCatalogHelper $msCatalogHelper
      */
     public function __construct(
-        \Magento\Cms\Model\ResourceModel\Page\CollectionFactory $pageCollectionFactory,
-        \Magento\Eav\Model\Config $eavConfig,
-        \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute,
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+        CmsPageCollectionFactory $cmsPageCollectionFactory,
+        EavConfig $eavConfig,
+        Attribute $eavAttribute,
+        MsCatalogHelper $msCatalogHelper
     ) {
-        $this->pageCollectionFactory = $pageCollectionFactory;
+        $this->cmsPageCollectionFactory = $cmsPageCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
 
-        parent::__construct($scopeConfig);
+        parent::__construct($msCatalogHelper);
     }
 
     /**
-     * @return \Magento\Cms\Model\ResourceModel\Page\Collection|void
+     * @return CmsPageCollection
      */
-    public function getCollection()
+    public function getCollection(): CmsPageCollection
     {
-        $collection = $this->pageCollectionFactory->create();
+        $cmsPageCollection = $this->cmsPageCollectionFactory->create();
 
         if ($this->ids !== null) {
-            $collection->addAttributeToFilter('entity_id', array('in' => $this->ids));
+            $cmsPageCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
         }
 
-        $collection
+        $cmsPageCollection
             ->addFieldToSelect('page_id')
             ->addFieldToSelect('title')
             ->addFieldToSelect('page_layout')
@@ -90,7 +98,7 @@ class CmsPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
-        return $collection;
+        return $cmsPageCollection;
     }
 
     /**

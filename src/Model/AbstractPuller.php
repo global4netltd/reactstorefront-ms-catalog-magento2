@@ -2,48 +2,74 @@
 
 namespace G4NReact\MsCatalogMagento2\Model;
 
-use G4NReact\MsCatalogIndexer\Config;
 use G4NReact\MsCatalog\Document;
+use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use Iterator;
 
 /**
  * Class AbstractPuller
  * @package G4NReact\MsCatalogMagento2\Model
  */
-abstract class AbstractPuller implements \Iterator
+abstract class AbstractPuller implements Iterator, PullerInterface
 {
+    /**
+     * @var int
+     */
     const PAGE_SIZE_DEFAULT = 10;
 
+    /**
+     * @var int
+     */
     public $totalSize = 1000;
+
+    /**
+     * @var int
+     */
     public $curPage;
+
+    /**
+     * @var int
+     */
     public $pageSize = 10;
 
+    /**
+     * @var int
+     */
     public $position = 0;
+
+    /**
+     * @var int
+     */
     public $totalPosition = 0;
 
+    /**
+     * @var array
+     */
     public $pageArray;
+
+    /**
+     * @var array
+     */
     public $ids;
 
     /**
-     * @var \Magento\Framework\App\Config\ScopeConfigInterface
+     * @var MsCatalogHelper
      */
-    protected $scopeConfig;
+    protected $msCatalogHelper;
 
     /**
      * Puller constructor
-     * @param \Magento\Catalog\Model\ResourceModel\Product\CollectionFactory $productCollectionFactory
-     * @param \Magento\Eav\Model\Config $eavConfig
-     * @param \Magento\Eav\Model\ResourceModel\Entity\Attribute $eavAttribute
-     * @param \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+     * @param MsCatalogHelper $msCatalogHelper
      */
     public function __construct(
-        \Magento\Framework\App\Config\ScopeConfigInterface $scopeConfig
+        MsCatalogHelper $msCatalogHelper
     ) {
-        $this->scopeConfig = $scopeConfig;
+        $this->msCatalogHelper = $msCatalogHelper;
         $this->position = 0;
         $this->totalSize = $this->getCollection()->getSize();
         $this->curPage = 0;
 
-        $this->pageSize = $this->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize') ?: self::PAGE_SIZE_DEFAULT;
+        $this->pageSize = $msCatalogHelper->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize') ?: self::PAGE_SIZE_DEFAULT;
     }
 
     /**
@@ -56,9 +82,9 @@ abstract class AbstractPuller implements \Iterator
 
     /**
      * @param int $pageSize
-     * @return Puller
+     * @return PullerInterface
      */
-    public function setPageSize(int $pageSize): Puller
+    public function setPageSize(int $pageSize): PullerInterface
     {
         $this->pageSize = $pageSize;
 
@@ -70,18 +96,18 @@ abstract class AbstractPuller implements \Iterator
     }
 
     /**
-     * @return mixed
+     * @return array
      */
-    public function getIds()
+    public function getIds(): array
     {
         return $this->ids;
     }
 
     /**
-     * @param mixed $ids
-     * @return Puller
+     * @param array $ids
+     * @return PullerInterface
      */
-    public function setIds($ids)
+    public function setIds(array $ids): PullerInterface
     {
         $this->ids = $ids;
 
@@ -148,34 +174,5 @@ abstract class AbstractPuller implements \Iterator
         }
 
         return isset($this->pageArray[$this->position]);
-    }
-
-    /**
-     * @return Config
-     */
-    public function getConfiguration(): Config
-    {
-        $engine = (int)$this->getConfigByPath('ms_catalog_indexer/engine_settings/engine');
-        $host = (string)$this->getConfigByPath('ms_catalog_indexer/engine_settings/host');
-        $port = (int)$this->getConfigByPath('ms_catalog_indexer/engine_settings/port');
-        $path = (string)$this->getConfigByPath('ms_catalog_indexer/engine_settings/path');
-        $core = (string)$this->getConfigByPath('ms_catalog_indexer/engine_settings/core');
-
-        $pageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize');
-        $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/delete_before_reindex');
-
-        return new Config($engine, $host, $port, $path, $core, $pageSize, $deleteIndexBeforeReindex);
-    }
-
-    /**
-     * @param string $configPath
-     * @return mixed
-     */
-    public function getConfigByPath($configPath)
-    {
-        return $this->scopeConfig->getValue(
-            $configPath,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
-        );
     }
 }

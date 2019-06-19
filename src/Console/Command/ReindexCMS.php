@@ -26,9 +26,8 @@ class ReindexCMS extends AbstractReindex
      */
     public function __construct(
         CmsPuller $cmsPuller,
-        $name = null
-    )
-    {
+        ?string $name = null
+    ) {
         $this->cmsPuller = $cmsPuller;
         parent::__construct($name);
     }

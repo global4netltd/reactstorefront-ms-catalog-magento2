@@ -29,8 +29,7 @@ class ReindexCategory extends AbstractReindex
     public function __construct(
         CategoryPuller $categoryPuller,
         $name = null
-    )
-    {
+    ) {
         $this->categoryPuller = $categoryPuller;
         parent::__construct($name);
     }
