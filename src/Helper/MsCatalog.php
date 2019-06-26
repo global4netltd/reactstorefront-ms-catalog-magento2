@@ -2,8 +2,14 @@
 
 namespace G4NReact\MsCatalogMagento2\Helper;
 
-use G4NReact\MsCatalogIndexer\Config;
+use G4NReact\MsCatalog\Helper;
+use G4NReact\MsCatalog\Config;
 use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class MsCatalog
@@ -12,32 +18,129 @@ use Magento\Framework\App\Helper\AbstractHelper;
 class MsCatalog extends AbstractHelper
 {
     /**
-     * @return Config
+     * @var string Base engine options path in configuration
      */
-    public function getConfiguration(): Config
+    const BASE_ENGINE_CONFIG_PATH = 'ms_catalog_indexer/engine_settings/';
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * MsCatalog constructor
+     *
+     * @param StoreManagerInterface $storeManager
+     * @param Context $context
+     */
+    public function __construct(
+        StoreManagerInterface $storeManager,
+        Context $context
+    ) {
+        $this->storeManager = $storeManager;
+        parent::__construct($context);
+    }
+
+    /**
+     * @return StoreInterface[]
+     */
+    public function getAllStores()
+    {
+        return $this->storeManager->getStores();
+    }
+
+    /**
+     * @return StoreInterface
+     * @throws NoSuchEntityException
+     */
+    public function getStore(): StoreInterface
+    {
+        return $this->storeManager->getStore();
+    }
+
+    /**
+     * @return array
+     * @throws NoSuchEntityException
+     */
+    public function getSearchEngineConfiguration(): array
     {
         $engine = (int)$this->getConfigByPath('ms_catalog_indexer/engine_settings/engine');
-        $host = (string)$this->getConfigByPath('ms_catalog_indexer/engine_settings/host');
-        $port = (int)$this->getConfigByPath('ms_catalog_indexer/engine_settings/port');
-        $path = '/';
-        $collection = (string)$this->getConfigByPath('ms_catalog_indexer/engine_settings/collection') ?: '';
-        $core = (string)$this->getConfigByPath('ms_catalog_indexer/engine_settings/core');
 
-        $pageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize');
-        $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/delete_before_reindex');
+        $pullerPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/puller_pagesize');
+        $pusherPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_pagesize');
+        $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_delete_index');
 
-        return new Config($engine, $host, $port, $path, $collection, $core, $pageSize, $deleteIndexBeforeReindex);
+        $engineConnectionParams = [];
+        if (!isset(Helper::$engines[$engine])) {
+            // log error, throw exception etc.
+            return [];
+        }
+
+        $searchEngineParams = Helper::$engines[$engine];
+        $engineCode = Helper::$engines[$engine]['code'];
+        foreach (Helper::$engines[$engine]['connection'] as $connectionParamName) {
+            $engineConnectionParams[$connectionParamName] = $this->getConfigByPath(
+                self::BASE_ENGINE_CONFIG_PATH . $engineCode . '_' . $connectionParamName
+            );
+        }
+        $searchEngineParams['connection'] = $engineConnectionParams;
+        $searchEngineParams['puller_page_size'] = $pullerPageSize;
+        $searchEngineParams['pusher_page_size'] = $pusherPageSize;
+        $searchEngineParams['pusher_delete_index'] = $deleteIndexBeforeReindex;
+
+        return $searchEngineParams;
+    }
+
+    /**
+     * @return array
+     * @throws NoSuchEntityException
+     */
+    public function getEcommerceEngineConfiguration(): array
+    {
+        $pullerPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/puller_pagesize');
+        $pusherPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_pagesize');
+        $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_delete_index');
+
+        $ecommerceEngineConfiguration = [
+            'namespace' => 'MsCatalogMagento2\Model',
+            'puller_page_size' => $pullerPageSize,
+            'pusher_page_size' => $pusherPageSize,
+            'pusher_delete_index' => $deleteIndexBeforeReindex,
+        ];
+
+        return $ecommerceEngineConfiguration;
+    }
+
+    /**
+     * @param array $pullerParams
+     * @param array $pusherParams
+     * @return Config|null
+     */
+    public function getConfiguration($pullerParams, $pusherParams): ?Config
+    {
+        return new Config($pullerParams, $pusherParams);
+    }
+
+    /**
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    public function isIndexerEnabled(): bool
+    {
+        return $this->getConfigByPath('ms_catalog_indexer/general_settings/enabled') ? true : false;
     }
 
     /**
      * @param string $configPath
      * @return mixed
+     * @throws NoSuchEntityException
      */
     public function getConfigByPath($configPath)
     {
         return $this->scopeConfig->getValue(
             $configPath,
-            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ScopeInterface::SCOPE_STORE,
+            $this->getStore()->getId()
         );
     }
 }

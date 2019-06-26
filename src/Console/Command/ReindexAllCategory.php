@@ -6,12 +6,13 @@ use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
 use G4NReact\MsCatalogMagento2\Model\Puller\CategoryPuller;
 use Magento\Framework\App\State as AppState;
 use Magento\Store\Model\App\Emulation;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
  * Class ReindexCategory
  * @package G4NReact\MsCatalogMagento2\Console\Command
  */
-class ReindexCategory extends AbstractReindex
+class ReindexAllCategory extends AbstractReindex
 {
     /**
      * @var CategoryPuller
@@ -43,7 +44,7 @@ class ReindexCategory extends AbstractReindex
      */
     public function getCommandName(): string
     {
-        return 'g4nreact:reindex:category';
+        return 'g4nreact:reindexall:category';
     }
 
     /**
@@ -51,7 +52,30 @@ class ReindexCategory extends AbstractReindex
      */
     public function getCommandDescription(): string
     {
-        return 'Reindexes categories';
+        return 'Reindexes all categories';
+    }
+
+    /**
+     * @return array
+     */
+    public function getInputOptions(): array
+    {
+        return [
+            new InputOption(
+                self::INPUT_OPTION_IDS,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                self::REQUIRED_OPTION_INFO,
+                []
+            ),
+            new InputOption(
+                self::INPUT_OPTION_ALL,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                self::REQUIRED_OPTION_INFO,
+                true
+            ),
+        ];
     }
 
     /**

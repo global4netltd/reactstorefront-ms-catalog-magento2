@@ -3,6 +3,7 @@
 namespace G4NReact\MsCatalogMagento2\Model;
 
 use G4NReact\MsCatalog\Document;
+use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
 use Iterator;
 
