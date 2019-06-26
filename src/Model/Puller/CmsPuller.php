@@ -5,10 +5,12 @@ namespace G4NReact\MsCatalogMagento2\Model\Puller;
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use Iterator;
 use Magento\Cms\Model\ResourceModel\Page\Collection as CmsPageCollection;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionFactory;
-use Magento\Eav\Model\ResourceModel\Config as EavConfig;
+use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class CmsPuller
@@ -73,6 +75,7 @@ class CmsPuller extends AbstractPuller
 
     /**
      * @return CmsPageCollection
+     * @throws NoSuchEntityException
      */
     public function getCollection(): CmsPageCollection
     {
@@ -82,6 +85,7 @@ class CmsPuller extends AbstractPuller
             $cmsPageCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
         }
 
+        /** @var CmsPageCollection $cmsPageCollection */
         $cmsPageCollection
             ->addFieldToSelect('page_id')
             ->addFieldToSelect('title')
@@ -95,6 +99,7 @@ class CmsPuller extends AbstractPuller
             ->addFieldToSelect('update_time')
             ->addFieldToSelect('is_active')
             ->addFieldToSelect('sort_order')
+            ->addStoreFilter($this->msCatalogHelper->getStore()->getId())
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
@@ -103,14 +108,16 @@ class CmsPuller extends AbstractPuller
 
     /**
      * @return Document
+     * @throws NoSuchEntityException
      */
     public function current(): Document
     {
         $page = $this->pageArray[$this->position];
+        $storeId = $this->msCatalogHelper->getStore()->getId();
 
         $document = new Document();
 
-        $document->setUniqueId($page->getId() . '_' . 'cms' . '_' . $page->getStoreId());
+        $document->setUniqueId($page->getId() . '_' . 'cms' . '_' . $storeId);
         $document->setObjectId($page->getId());
         $document->setObjectType('cms'); // @ToDo: move it to const
 
@@ -124,5 +131,13 @@ class CmsPuller extends AbstractPuller
         }
 
         return $document;
+    }
+
+    /**
+     * @return Iterator
+     */
+    public function pull(): Iterator
+    {
+        // TODO: Implement pull() method.
     }
 }

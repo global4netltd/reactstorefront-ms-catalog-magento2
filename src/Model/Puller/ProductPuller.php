@@ -4,9 +4,10 @@ namespace G4NReact\MsCatalogMagento2\Model\Puller;
 
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
+use Iterator;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
-use Magento\Eav\Model\ResourceModel\Config as EavConfig;
+use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
 
@@ -94,5 +95,13 @@ class ProductPuller extends AbstractPuller
         }
 
         return $document;
+    }
+
+    /**
+     * @return Iterator
+     */
+    public function pull(): Iterator
+    {
+        // TODO: Implement pull() method.
     }
 }

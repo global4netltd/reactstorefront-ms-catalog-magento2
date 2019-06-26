@@ -35,34 +35,66 @@
                     <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\Engine</source_model>
                     <comment>Choose engine that will be used.</comment>
                 </field>
-                <field id="host" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="solr_host" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Host</label>
                     <comment>Example: 127.0.0.1</comment>
+                    <depends>
+                        <field id="engine">1</field>
+                    </depends>
                 </field>
-                <field id="port" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="elasticsearch_host" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Host</label>
+                    <comment>Example: 127.0.0.1</comment>
+                    <depends>
+                        <field id="engine">2</field>
+                    </depends>
+                </field>
+                <field id="solr_port" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Port</label>
                     <comment>Example: 8081</comment>
+                    <depends>
+                        <field id="engine">1</field>
+                    </depends>
                 </field>
-                <field id="collection" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="elasticsearch_port" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Port</label>
+                    <comment>Example: 8081</comment>
+                    <depends>
+                        <field id="engine">2</field>
+                    </depends>
+                </field>
+                <field id="solr_collection" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Collection</label>
-                    <comment>Example: collection1</comment>
+                    <comment><![CDATA[
+                        Example: collection1 <br /><br />
+                        Enter the collection name only if you use Solr Cloud. Do not enter the core name then.
+                    ]]></comment>
+                    <depends>
+                        <field id="engine">1</field>
+                    </depends>
                 </field>
-                <field id="core" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="solr_core" translate="label comment" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Core</label>
-                    <comment>Example: core0</comment>
+                    <comment><![CDATA[
+                        Example: core0 <br /><br />
+                        Enter the core name only if you don't use Solr Cloud. Do not enter the collection name then.
+                    ]]></comment>
+                    <depends>
+                        <field id="engine">1</field>
+                    </depends>
                 </field>
             </group>
             <group id="indexer_settings" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Indexer Settings</label>
-                <field id="solr_puller_pagesize" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Solr Puller Pagesize</label>
+                <field id="puller_pagesize" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Puller Pagesize</label>
                     <comment>The number of objects processed at once.</comment>
                 </field>
-                <field id="solr_pusher_pagesize" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Solr Pusher Pageisze</label>
+                <field id="pusher_pagesize" translate="label comment" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Pusher Pageisze</label>
                     <comment>The number of objects processed at once.</comment>
                 </field>
-                <field id="delete_before_reindex" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="pusher_delete_index" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Delete index before reindexing.</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Delete all records before running reindex.</comment>

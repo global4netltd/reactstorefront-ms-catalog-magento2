@@ -3,38 +3,38 @@
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
-use G4NReact\MsCatalogMagento2\Model\Puller\CategoryPuller;
+use G4NReact\MsCatalogMagento2\Model\Puller\CmsPuller;
 use Magento\Framework\App\State as AppState;
 use Magento\Store\Model\App\Emulation;
 
 /**
- * Class ReindexCategory
+ * Class ReindexCms
  * @package G4NReact\MsCatalogMagento2\Console\Command
  */
-class ReindexCategory extends AbstractReindex
+class ReindexCms extends AbstractReindex
 {
     /**
-     * @var CategoryPuller
+     * @var CmsPuller
      */
-    protected $categoryPuller;
+    protected $cmsPuller;
 
     /**
-     * ReindexCategory constructor
+     * ReindexCms constructor
      *
-     * @param CategoryPuller $categoryPuller
+     * @param CmsPuller $cmsPuller
      * @param MsCatalogHelper $msCatalogHelper
      * @param Emulation $emulation
      * @param AppState $appState
      * @param string|null $name
      */
     public function __construct(
-        CategoryPuller $categoryPuller,
+        CmsPuller $cmsPuller,
         MsCatalogHelper $msCatalogHelper,
         Emulation $emulation,
         AppState $appState,
         ?string $name = null
     ) {
-        $this->categoryPuller = $categoryPuller;
+        $this->cmsPuller = $cmsPuller;
         parent::__construct($msCatalogHelper, $emulation, $appState, $name);
     }
 
@@ -43,7 +43,7 @@ class ReindexCategory extends AbstractReindex
      */
     public function getCommandName(): string
     {
-        return 'g4nreact:reindex:category';
+        return 'g4nreact:reindex:cms';
     }
 
     /**
@@ -51,14 +51,14 @@ class ReindexCategory extends AbstractReindex
      */
     public function getCommandDescription(): string
     {
-        return 'Reindexes categories';
+        return 'Reindexes CMS';
     }
 
     /**
-     * @return CategoryPuller
+     * @return CmsPuller
      */
-    public function getPuller(): CategoryPuller
+    public function getPuller()
     {
-        return $this->categoryPuller;
+        return $this->cmsPuller;
     }
 }
