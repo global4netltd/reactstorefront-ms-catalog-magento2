@@ -90,7 +90,8 @@ class ProductPuller extends AbstractPuller
                 $field,
                 $product->getData($field),
                 $attribute->getBackendType(),
-                $attribute->getIsFilterable() ? true : false
+                $attribute->getIsFilterable() ? true : false,
+                in_array($attribute->getFrontendInput(), MsCatalogHelper::$multiValuedAttributeFrontendInput)
             );
         }
 
