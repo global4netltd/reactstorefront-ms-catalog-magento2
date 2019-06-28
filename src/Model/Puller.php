@@ -2,14 +2,16 @@
 
 namespace G4NReact\MsCatalogMagento2\Model;
 
-use Iterator;
+use G4NReact\MsCatalog\QueryInterface;
+use G4NReact\MsCatalog\ResponseInterface;
 
 class Puller extends AbstractPuller
 {
     /**
-     * @return Iterator
+     * @param QueryInterface|null $query
+     * @return ResponseInterface
      */
-    public function pull(): Iterator
+    public function pull(QueryInterface $query = null): ResponseInterface
     {
         // TODO: Implement pull() method.
     }

@@ -3,9 +3,10 @@
 namespace G4NReact\MsCatalogMagento2\Model\Puller;
 
 use G4NReact\MsCatalog\Document;
+use G4NReact\MsCatalog\QueryInterface;
+use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
-use Iterator;
 use Magento\Cms\Model\ResourceModel\Page\Collection as CmsPageCollection;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
@@ -135,9 +136,10 @@ class CmsPuller extends AbstractPuller
     }
 
     /**
-     * @return Iterator
+     * @param QueryInterface|null $query
+     * @return ResponseInterface
      */
-    public function pull(): Iterator
+    public function pull(QueryInterface $query = null): ResponseInterface
     {
         // TODO: Implement pull() method.
     }

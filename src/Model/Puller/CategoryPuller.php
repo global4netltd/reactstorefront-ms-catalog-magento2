@@ -3,12 +3,13 @@
 namespace G4NReact\MsCatalogMagento2\Model\Puller;
 
 use G4NReact\MsCatalog\Document;
+use G4NReact\MsCatalog\QueryInterface;
+use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
-use Iterator;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
-use \Magento\Eav\Model\Config as EavConfig;
+use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
@@ -83,6 +84,7 @@ class CategoryPuller extends AbstractPuller
 
     /**
      * @return Document
+     * @throws LocalizedException
      */
     public function current(): Document
     {
@@ -148,9 +150,10 @@ class CategoryPuller extends AbstractPuller
     }
 
     /**
-     * @return Iterator
+     * @param QueryInterface|null $query
+     * @return ResponseInterface
      */
-    public function pull(): Iterator
+    public function pull(QueryInterface $query = null): ResponseInterface
     {
         // TODO: Implement pull() method.
     }
