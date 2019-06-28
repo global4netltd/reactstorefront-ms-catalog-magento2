@@ -116,7 +116,8 @@ class CategoryPuller extends AbstractPuller
                 $field,
                 $category->getData($field),
                 $attribute->getBackendType(),
-                $attribute->getIsFilterable() ? true : false
+                $attribute->getIsFilterable() ? true : false,
+                in_array($attribute->getFrontendInput(), MsCatalogHelper::$multiValuedAttributeFrontendInput)
             );
         }
 

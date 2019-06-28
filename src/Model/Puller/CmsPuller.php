@@ -126,7 +126,8 @@ class CmsPuller extends AbstractPuller
                 $field,
                 $page->getData($field),
                 self::$fieldTypeMap[$field] ?? 'string',
-                false
+                false,
+                is_array($value)
             );
         }
 

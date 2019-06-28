@@ -23,6 +23,14 @@ class MsCatalog extends AbstractHelper
     const BASE_ENGINE_CONFIG_PATH = 'ms_catalog_indexer/engine_settings/';
 
     /**
+     * @var array
+     */
+    public static $multiValuedAttributeFrontendInput = [
+        'select',
+        'multiselect',
+    ];
+
+    /**
      * @var StoreManagerInterface
      */
     protected $storeManager;
