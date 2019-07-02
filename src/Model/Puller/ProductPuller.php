@@ -6,10 +6,13 @@ use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
+use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
+use Magento\Framework\Data\Collection as DataCollection;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
 use Magento\Framework\Exception\LocalizedException;
 
@@ -35,31 +38,41 @@ class ProductPuller extends AbstractPuller
     protected $eavConfig;
 
     /**
+     * @var JsonSerializer
+     */
+    protected $jsonSerializer;
+
+    /**
      * ProductPuller constructor
      *
      * @param ProductCollectionFactory $productCollectionFactory
      * @param EavConfig $eavConfig
      * @param Attribute $eavAttribute
+     * @param JsonSerializer $jsonSerializer
      * @param MsCatalogHelper $msCatalogHelper
      */
     public function __construct(
         ProductCollectionFactory $productCollectionFactory,
         EavConfig $eavConfig,
         Attribute $eavAttribute,
+        JsonSerializer $jsonSerializer,
         MsCatalogHelper $msCatalogHelper
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
+        $this->jsonSerializer = $jsonSerializer;
 
         parent::__construct($msCatalogHelper);
     }
 
     /**
      * @return ProductCollection
+     * @throws LocalizedException
      */
     public function getCollection(): ProductCollection
     {
+        /** @var ProductCollection $productCollection */
         $productCollection = $this->productCollectionFactory->create();
 
         if ($this->ids !== null) {
@@ -67,6 +80,7 @@ class ProductPuller extends AbstractPuller
         }
 
         $productCollection->addAttributeToSelect('*')
+            ->addMediaGalleryData()
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
@@ -79,6 +93,7 @@ class ProductPuller extends AbstractPuller
      */
     public function current(): Document
     {
+        /** @var Product $product */
         $product = $this->pageArray[$this->position];
 
         $document = new Document();
@@ -98,7 +113,31 @@ class ProductPuller extends AbstractPuller
             );
         }
 
+        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
+        $document->setField(
+            'media_gallery',
+            $mediaGalleryJson,
+            'string',
+            false,
+            false
+        );
+
         return $document;
+    }
+
+    /**
+     * @param DataCollection $mediaGalleryImages
+     * @return bool|false|string
+     */
+    protected function getMediaGalleryJson(DataCollection $mediaGalleryImages)
+    {
+        $gallery = [];
+
+        foreach ($mediaGalleryImages as $image) {
+            $gallery[] = ['full' => $image->getUrl()];
+        }
+
+        return $this->jsonSerializer->serialize($gallery);
     }
 
     /**
