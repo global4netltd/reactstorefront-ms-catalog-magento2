@@ -126,7 +126,10 @@ class MsCatalog extends AbstractHelper
      */
     public function getConfiguration($pullerParams, $pusherParams): ?Config
     {
-        return new Config($pullerParams, $pusherParams);
+        $configParams[Config::PULLER_PARAM] = $pullerParams;
+        $configParams[Config::PUSHER_PARAM] = $pusherParams;
+
+        return new Config($configParams);
     }
 
     /**
