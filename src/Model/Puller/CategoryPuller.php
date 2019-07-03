@@ -111,6 +111,15 @@ class CategoryPuller extends AbstractPuller
             'string',
             false
         );
+        
+        if(!$document->getData('store_id')){
+            $document->setField(
+                'store_id',
+                $category->getStoreId(),
+                '',
+                true
+            );
+        }
 
         foreach ($category->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_category', $field);
