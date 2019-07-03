@@ -74,8 +74,7 @@ class CategoryPuller extends AbstractPuller
     public function getCollection(): CategoryCollection
     {
         $categoryCollection = $this->categoryCollectionFactory->create();
-
-        var_dump('test_11');
+        
         $this->eventManager->dispatch(
             'before_ms_catalog_magento_category_puller_collection',
             ['category_collection' => $categoryCollection]
