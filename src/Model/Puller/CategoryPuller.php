@@ -12,6 +12,7 @@ use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollectio
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Event\Manager;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
@@ -54,12 +55,15 @@ class CategoryPuller extends AbstractPuller
         EavConfig $eavConfig,
         Attribute $eavAttribute,
         MsCatalogHelper $msCatalogHelper,
-        ResourceConnection $resource
-    ) {
+        ResourceConnection $resource,
+        Manager $eventManager
+    )
+    {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->resource = $resource;
+        $this->eventManager = $eventManager;
 
         parent::__construct($msCatalogHelper);
     }
@@ -70,6 +74,11 @@ class CategoryPuller extends AbstractPuller
     public function getCollection(): CategoryCollection
     {
         $categoryCollection = $this->categoryCollectionFactory->create();
+        
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_category_puller_collection',
+            ['category_collection' => $categoryCollection]
+        );
 
         if ($this->ids !== null) {
             $categoryCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
@@ -79,6 +88,11 @@ class CategoryPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_category_puller_collection',
+            ['category_collection' => $categoryCollection]
+        );
+        
         return $categoryCollection;
     }
 
@@ -92,10 +106,15 @@ class CategoryPuller extends AbstractPuller
 
         $document = new Document();
 
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_category_document',
+            ['document' => $document]
+        );
+        
         $document->setUniqueId($category->getId() . '_' . 'category' . '_' . $category->getStoreId());
         $document->setObjectId($category->getId());
         $document->setObjectType('category'); // @ToDo: move it to const
-
+        
         $filterableAttributesCodes = $this->getFilterableAttributesCodes($category->getId());
         $filterableAttributesCodesList = '';
         $glue = '';
@@ -111,8 +130,8 @@ class CategoryPuller extends AbstractPuller
             'string',
             false
         );
-        
-        if(!$document->getData('store_id')){
+
+        if (!$document->getData('store_id')) {
             $document->setField(
                 'store_id',
                 $category->getStoreId(),
@@ -132,11 +151,17 @@ class CategoryPuller extends AbstractPuller
             );
         }
 
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_category_document',
+            ['document' => $document]
+        );
+        
         return $document;
     }
 
     /**
      * @param int $categoryId
+     *
      * @return array
      */
     public function getFilterableAttributesCodes($categoryId)
@@ -160,6 +185,7 @@ class CategoryPuller extends AbstractPuller
 
     /**
      * @param QueryInterface|null $query
+     *
      * @return ResponseInterface
      */
     public function pull(QueryInterface $query = null): ResponseInterface

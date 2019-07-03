@@ -57,10 +57,17 @@ abstract class AbstractPuller implements Iterator, PullerInterface
      * @var MsCatalogHelper
      */
     protected $msCatalogHelper;
+    /**
+     * @var \Magento\Framework\Event\Manager
+     */
+    protected $eventManager;
 
     /**
-     * Puller constructor
-     * @param MsCatalogHelper $msCatalogHelper
+     * AbstractPuller constructor.
+     *
+     * @param \G4NReact\MsCatalogMagento2\Helper\MsCatalog $msCatalogHelper
+     *
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function __construct(
         MsCatalogHelper $msCatalogHelper

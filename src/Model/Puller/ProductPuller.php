@@ -12,6 +12,7 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductColl
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Data\Collection as DataCollection;
+use Magento\Framework\Event\Manager;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
 use Magento\Framework\Exception\LocalizedException;
@@ -56,13 +57,15 @@ class ProductPuller extends AbstractPuller
         EavConfig $eavConfig,
         Attribute $eavAttribute,
         JsonSerializer $jsonSerializer,
-        MsCatalogHelper $msCatalogHelper
-    ) {
+        MsCatalogHelper $msCatalogHelper,
+        Manager $eventManager
+    )
+    {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->jsonSerializer = $jsonSerializer;
-
+        $this->eventManager = $eventManager;
         parent::__construct($msCatalogHelper);
     }
 
@@ -74,6 +77,10 @@ class ProductPuller extends AbstractPuller
     {
         /** @var ProductCollection $productCollection */
         $productCollection = $this->productCollectionFactory->create();
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_product_puller_collection',
+            ['product_collection' => $productCollection]
+        );
 
         if ($this->ids !== null) {
             $productCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
@@ -83,6 +90,11 @@ class ProductPuller extends AbstractPuller
             ->addMediaGalleryData()
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
+
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_product_puller_collection',
+            ['product_collection' => $productCollection]
+        );
 
         return $productCollection;
     }
@@ -97,6 +109,11 @@ class ProductPuller extends AbstractPuller
         $product = $this->pageArray[$this->position];
 
         $document = new Document();
+
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_product_document',
+            ['document' => $document]
+        );
 
         $document->setUniqueId($product->getId() . '_' . 'product' . '_' . $product->getStoreId());
         $document->setObjectId($product->getId());
@@ -122,11 +139,17 @@ class ProductPuller extends AbstractPuller
             false
         );
 
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_product_document',
+            ['document' => $document]
+        );
+
         return $document;
     }
 
     /**
      * @param DataCollection $mediaGalleryImages
+     *
      * @return bool|false|string
      */
     protected function getMediaGalleryJson(DataCollection $mediaGalleryImages)
@@ -142,6 +165,7 @@ class ProductPuller extends AbstractPuller
 
     /**
      * @param QueryInterface|null $query
+     *
      * @return ResponseInterface
      */
     public function pull(QueryInterface $query = null): ResponseInterface

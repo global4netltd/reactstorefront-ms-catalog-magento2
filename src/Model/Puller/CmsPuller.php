@@ -12,6 +12,7 @@ use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionF
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Event\Manager;
 
 /**
  * Class CmsPuller
@@ -65,11 +66,13 @@ class CmsPuller extends AbstractPuller
         CmsPageCollectionFactory $cmsPageCollectionFactory,
         EavConfig $eavConfig,
         Attribute $eavAttribute,
-        MsCatalogHelper $msCatalogHelper
+        MsCatalogHelper $msCatalogHelper,
+        Manager $eventManager
     ) {
         $this->cmsPageCollectionFactory = $cmsPageCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
+        $this->eventManager = $eventManager;
 
         parent::__construct($msCatalogHelper);
     }
@@ -82,6 +85,11 @@ class CmsPuller extends AbstractPuller
     {
         $cmsPageCollection = $this->cmsPageCollectionFactory->create();
 
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_cms_puller_collection',
+            ['cms_page_collection' => $cmsPageCollection]
+        );
+        
         if ($this->ids !== null) {
             $cmsPageCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
         }
@@ -104,6 +112,11 @@ class CmsPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_cms_puller_collection',
+            ['cms_page_collection' => $cmsPageCollection]
+        );
+        
         return $cmsPageCollection;
     }
 
@@ -117,6 +130,11 @@ class CmsPuller extends AbstractPuller
         $storeId = $this->msCatalogHelper->getStore()->getId();
 
         $document = new Document();
+
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_cms_document',
+            ['document' => $document]
+        );
 
         $document->setUniqueId($page->getId() . '_' . 'cms' . '_' . $storeId);
         $document->setObjectId($page->getId());
@@ -132,6 +150,11 @@ class CmsPuller extends AbstractPuller
             );
         }
 
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_cms_document',
+            ['document' => $document]
+        );
+        
         return $document;
     }
 
