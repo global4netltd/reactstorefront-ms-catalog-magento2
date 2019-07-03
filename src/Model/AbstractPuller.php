@@ -6,6 +6,7 @@ use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
 use Iterator;
+use Magento\Framework\Event\Manager;
 
 /**
  * Class AbstractPuller
@@ -57,13 +58,22 @@ abstract class AbstractPuller implements Iterator, PullerInterface
      * @var MsCatalogHelper
      */
     protected $msCatalogHelper;
+    /**
+     * @var \Magento\Framework\Event\Manager
+     */
+    protected $eventManager;
 
     /**
-     * Puller constructor
-     * @param MsCatalogHelper $msCatalogHelper
+     * AbstractPuller constructor.
+     *
+     * @param \G4NReact\MsCatalogMagento2\Helper\MsCatalog $msCatalogHelper
+     * @param \Magento\Framework\Event\Manager $eventManager
+     *
+     * @throws \Magento\Framework\Exception\NoSuchEntityException
      */
     public function __construct(
-        MsCatalogHelper $msCatalogHelper
+        MsCatalogHelper $msCatalogHelper,
+        Manager $eventManager
     ) {
         $this->msCatalogHelper = $msCatalogHelper;
         $this->position = 0;
@@ -71,6 +81,7 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         $this->curPage = 0;
 
         $this->pageSize = $msCatalogHelper->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize') ?: self::PAGE_SIZE_DEFAULT;
+        $this->eventManager = $eventManager;
     }
 
     /**

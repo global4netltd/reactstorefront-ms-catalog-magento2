@@ -55,7 +55,8 @@ class CategoryPuller extends AbstractPuller
         Attribute $eavAttribute,
         MsCatalogHelper $msCatalogHelper,
         ResourceConnection $resource
-    ) {
+    )
+    {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -71,6 +72,11 @@ class CategoryPuller extends AbstractPuller
     {
         $categoryCollection = $this->categoryCollectionFactory->create();
 
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_category_puller_collection',
+            ['category_collection' => $categoryCollection]
+        );
+
         if ($this->ids !== null) {
             $categoryCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
         }
@@ -79,6 +85,11 @@ class CategoryPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_category_puller_collection',
+            ['category_collection' => $categoryCollection]
+        );
+        
         return $categoryCollection;
     }
 
@@ -92,10 +103,15 @@ class CategoryPuller extends AbstractPuller
 
         $document = new Document();
 
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_category_document',
+            ['document' => $document]
+        );
+        
         $document->setUniqueId($category->getId() . '_' . 'category' . '_' . $category->getStoreId());
         $document->setObjectId($category->getId());
         $document->setObjectType('category'); // @ToDo: move it to const
-
+        
         $filterableAttributesCodes = $this->getFilterableAttributesCodes($category->getId());
         $filterableAttributesCodesList = '';
         $glue = '';
@@ -111,8 +127,8 @@ class CategoryPuller extends AbstractPuller
             'string',
             false
         );
-        
-        if(!$document->getData('store_id')){
+
+        if (!$document->getData('store_id')) {
             $document->setField(
                 'store_id',
                 $category->getStoreId(),
@@ -132,11 +148,17 @@ class CategoryPuller extends AbstractPuller
             );
         }
 
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_category_document',
+            ['document' => $document]
+        );
+        
         return $document;
     }
 
     /**
      * @param int $categoryId
+     *
      * @return array
      */
     public function getFilterableAttributesCodes($categoryId)
@@ -160,6 +182,7 @@ class CategoryPuller extends AbstractPuller
 
     /**
      * @param QueryInterface|null $query
+     *
      * @return ResponseInterface
      */
     public function pull(QueryInterface $query = null): ResponseInterface

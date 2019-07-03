@@ -57,7 +57,8 @@ class ProductPuller extends AbstractPuller
         Attribute $eavAttribute,
         JsonSerializer $jsonSerializer,
         MsCatalogHelper $msCatalogHelper
-    ) {
+    )
+    {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -75,6 +76,11 @@ class ProductPuller extends AbstractPuller
         /** @var ProductCollection $productCollection */
         $productCollection = $this->productCollectionFactory->create();
 
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_product_puller_collection',
+            ['product_collection' => $productCollection]
+        );
+
         if ($this->ids !== null) {
             $productCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
         }
@@ -83,6 +89,11 @@ class ProductPuller extends AbstractPuller
             ->addMediaGalleryData()
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
+
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_product_puller_collection',
+            ['product_collection' => $productCollection]
+        );
 
         return $productCollection;
     }
@@ -97,6 +108,11 @@ class ProductPuller extends AbstractPuller
         $product = $this->pageArray[$this->position];
 
         $document = new Document();
+
+        $this->eventManager->dispatch(
+            'before_ms_catalog_magento_product_document',
+            ['document' => $document]
+        );
 
         $document->setUniqueId($product->getId() . '_' . 'product' . '_' . $product->getStoreId());
         $document->setObjectId($product->getId());
@@ -122,11 +138,17 @@ class ProductPuller extends AbstractPuller
             false
         );
 
+        $this->eventManager->dispatch(
+            'after_ms_catalog_magento_product_document',
+            ['document' => $document]
+        );
+
         return $document;
     }
 
     /**
      * @param DataCollection $mediaGalleryImages
+     *
      * @return bool|false|string
      */
     protected function getMediaGalleryJson(DataCollection $mediaGalleryImages)
@@ -142,6 +164,7 @@ class ProductPuller extends AbstractPuller
 
     /**
      * @param QueryInterface|null $query
+     *
      * @return ResponseInterface
      */
     public function pull(QueryInterface $query = null): ResponseInterface
