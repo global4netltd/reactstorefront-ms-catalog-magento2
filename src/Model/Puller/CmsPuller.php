@@ -12,6 +12,7 @@ use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionF
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Event\Manager;
 
 /**
  * Class CmsPuller
@@ -65,11 +66,13 @@ class CmsPuller extends AbstractPuller
         CmsPageCollectionFactory $cmsPageCollectionFactory,
         EavConfig $eavConfig,
         Attribute $eavAttribute,
-        MsCatalogHelper $msCatalogHelper
+        MsCatalogHelper $msCatalogHelper,
+        Manager $eventManager
     ) {
         $this->cmsPageCollectionFactory = $cmsPageCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
+        $this->eventManager = $eventManager;
 
         parent::__construct($msCatalogHelper);
     }

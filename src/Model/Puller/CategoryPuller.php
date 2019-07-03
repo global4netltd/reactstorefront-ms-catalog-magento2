@@ -12,6 +12,7 @@ use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollectio
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Event\Manager;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
@@ -54,13 +55,15 @@ class CategoryPuller extends AbstractPuller
         EavConfig $eavConfig,
         Attribute $eavAttribute,
         MsCatalogHelper $msCatalogHelper,
-        ResourceConnection $resource
+        ResourceConnection $resource,
+        Manager $eventManager
     )
     {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->resource = $resource;
+        $this->eventManager = $eventManager;
 
         parent::__construct($msCatalogHelper);
     }
@@ -72,6 +75,7 @@ class CategoryPuller extends AbstractPuller
     {
         $categoryCollection = $this->categoryCollectionFactory->create();
 
+        var_dump('test_11');
         $this->eventManager->dispatch(
             'before_ms_catalog_magento_category_puller_collection',
             ['category_collection' => $categoryCollection]
