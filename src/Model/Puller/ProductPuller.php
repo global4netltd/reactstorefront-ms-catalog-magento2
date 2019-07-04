@@ -91,8 +91,8 @@ class ProductPuller extends AbstractPuller
 
         $productCollection->addAttributeToSelect('*')
             ->setPageSize($this->pageSize)
-            ->setCurPage($this->curPage)
-            ->addMediaGalleryData();
+            ->setCurPage($this->curPage);
+//            ->addMediaGalleryData();
 
         return $productCollection;
     }
@@ -135,13 +135,21 @@ class ProductPuller extends AbstractPuller
             );
         }
 
-        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
+//        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
+//        $document->setField(
+//            'media_gallery',
+//            $mediaGalleryJson,
+//            'string',
+//            false,
+//            false
+//        );
+
         $document->setField(
-            'media_gallery',
-            $mediaGalleryJson,
-            'string',
-            false,
-            false
+            'category_ids',
+            $product->getCategoryIds(),
+            'int',
+            true,
+            true
         );
 
         return $document;
