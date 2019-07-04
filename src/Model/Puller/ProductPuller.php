@@ -6,6 +6,7 @@ use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
+use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
@@ -22,6 +23,8 @@ use Magento\Framework\Exception\LocalizedException;
  */
 class ProductPuller extends AbstractPuller
 {
+    /** @var string product */
+    const PRODUCT = 'product';
     /**
      * @var ProductCollectionFactory
      */
@@ -41,6 +44,10 @@ class ProductPuller extends AbstractPuller
      * @var JsonSerializer
      */
     protected $jsonSerializer;
+    /**
+     * @var SearchTerms
+     */
+    protected $searchTerms;
 
     /**
      * ProductPuller constructor
@@ -56,12 +63,15 @@ class ProductPuller extends AbstractPuller
         EavConfig $eavConfig,
         Attribute $eavAttribute,
         JsonSerializer $jsonSerializer,
-        MsCatalogHelper $msCatalogHelper
-    ) {
+        MsCatalogHelper $msCatalogHelper,
+        SearchTerms $searchTerms
+    )
+    {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->jsonSerializer = $jsonSerializer;
+        $this->searchTerms = $searchTerms;
 
         parent::__construct($msCatalogHelper);
     }
@@ -95,15 +105,27 @@ class ProductPuller extends AbstractPuller
     {
         /** @var Product $product */
         $product = $this->pageArray[$this->position];
-
         $document = new Document();
 
-        $document->setUniqueId($product->getId() . '_' . 'product' . '_' . $product->getStoreId());
+        $document->setUniqueId($product->getId() . '_' . self::PRODUCT . '_' . $product->getStoreId());
         $document->setObjectId($product->getId());
-        $document->setObjectType('product'); // @ToDo: move it to const
+        $document->setObjectType(self::PRODUCT);
 
         foreach ($product->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
+            if ($searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode())) {
+                if ($document->getField($searchTermField)) {
+                    $document->setField($searchTermField, $document->getField($searchTermField) . ' ' . $product->getData($attribute->getAttributeCode()));
+                } else {
+                    $document->setField(
+                        $searchTermField,
+                        $product->getData($attribute->getAttributeCode()),
+                        'string',
+                        true,
+                        true
+                    );
+                }
+            }
             $document->setField(
                 $field,
                 $product->getData($field),
@@ -127,6 +149,7 @@ class ProductPuller extends AbstractPuller
 
     /**
      * @param DataCollection $mediaGalleryImages
+     *
      * @return bool|false|string
      */
     protected function getMediaGalleryJson(DataCollection $mediaGalleryImages)
@@ -142,6 +165,7 @@ class ProductPuller extends AbstractPuller
 
     /**
      * @param QueryInterface|null $query
+     *
      * @return ResponseInterface
      */
     public function pull(QueryInterface $query = null): ResponseInterface
@@ -149,3 +173,4 @@ class ProductPuller extends AbstractPuller
         // TODO: Implement pull() method.
     }
 }
+
