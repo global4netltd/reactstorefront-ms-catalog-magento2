@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
     <event name="product_attribute_form_build_front_tab">
-        <observer name="product_position_category" instance="G4NReact\MsCatalogMagento2\Model\Observer\Edit\Tab\Front\ProductAttributeFormFront" />
+        <observer name="react_store_front_attributes" instance="G4NReact\MsCatalogMagento2\Model\Observer\Edit\Tab\Front\ProductAttributeFormFront" />
     </event>
 </config>
