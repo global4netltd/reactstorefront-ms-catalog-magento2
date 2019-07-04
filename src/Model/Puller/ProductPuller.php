@@ -80,9 +80,9 @@ class ProductPuller extends AbstractPuller
         }
 
         $productCollection->addAttributeToSelect('*')
-            ->addMediaGalleryData()
             ->setPageSize($this->pageSize)
-            ->setCurPage($this->curPage);
+            ->setCurPage($this->curPage)
+            ->addMediaGalleryData();
 
         return $productCollection;
     }
