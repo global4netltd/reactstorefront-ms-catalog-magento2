@@ -18,6 +18,7 @@ class ProductAttributeFormFront implements ObserverInterface
      * @var \Magento\Config\Model\Config\Source\Yesno
      */
     protected $configSourceYesNo;
+    
     /**
      * @var \G4NReact\MsCatalogMagento2\Model\Config\Source\AttributeWeight
      */
@@ -39,11 +40,10 @@ class ProductAttributeFormFront implements ObserverInterface
     }
 
     /**
-     * @param \Magento\Framework\Event\Observer $observer
+     * @param Observer $observer
      */
     public function execute(Observer $observer)
     {
-        /** @var \Magento\Framework\Data\Form\AbstractForm $form */
         $form = $observer->getForm();
 
         $fieldset = $form->getElement('front_fieldset');

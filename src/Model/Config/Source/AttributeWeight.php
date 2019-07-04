@@ -10,6 +10,7 @@ use \Magento\Framework\Data\OptionSourceInterface;
  */
 class AttributeWeight implements OptionSourceInterface
 {
+    /** @var string label not include */
     const VALUE_NOT_INCLUDE = 'Not Include';
     /**
      * @var array
