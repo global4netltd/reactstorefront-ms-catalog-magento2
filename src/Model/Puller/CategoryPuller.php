@@ -5,6 +5,7 @@ namespace G4NReact\MsCatalogMagento2\Model\Puller;
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
+use G4NReact\MsCatalogMagento2\Helper\AttributeHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
@@ -40,6 +41,8 @@ class CategoryPuller extends AbstractPuller
      */
     protected $resource;
 
+    protected $attributeHelper;
+
     /**
      * CategoryPuller constructor
      *
@@ -54,12 +57,15 @@ class CategoryPuller extends AbstractPuller
         EavConfig $eavConfig,
         Attribute $eavAttribute,
         MsCatalogHelper $msCatalogHelper,
-        ResourceConnection $resource
-    ) {
+        ResourceConnection $resource,
+        AttributeHelper $attributeHelper
+    )
+    {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->resource = $resource;
+        $this->attributeHelper = $attributeHelper;
 
         parent::__construct($msCatalogHelper);
     }
@@ -111,12 +117,12 @@ class CategoryPuller extends AbstractPuller
             'string',
             false
         );
-        
-        if(!$document->getData('store_id')){
+
+        if (!$document->getData('store_id')) {
             $document->setField(
                 'store_id',
                 $category->getStoreId(),
-                '',
+                'int',
                 true
             );
         }
@@ -126,17 +132,22 @@ class CategoryPuller extends AbstractPuller
             $document->setField(
                 $field,
                 $category->getData($field),
-                $attribute->getBackendType(),
+                $this->attributeHelper->getAttributeBackendType($attribute),
                 $attribute->getIsFilterable() ? true : false,
                 in_array($attribute->getFrontendInput(), MsCatalogHelper::$multiValuedAttributeFrontendInput)
             );
         }
 
+        if ($urlPath = $document->getFieldValue('url_path')) {
+            $this->attributeHelper->addUrlField($document, $urlPath);
+            $document->setFieldValue('url_path', $this->attributeHelper->prepareCategoryUrlPath($urlPath));
+        }
         return $document;
     }
 
     /**
      * @param int $categoryId
+     *
      * @return array
      */
     public function getFilterableAttributesCodes($categoryId)
@@ -160,6 +171,7 @@ class CategoryPuller extends AbstractPuller
 
     /**
      * @param QueryInterface|null $query
+     *
      * @return ResponseInterface
      */
     public function pull(QueryInterface $query = null): ResponseInterface
