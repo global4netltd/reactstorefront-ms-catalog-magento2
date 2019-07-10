@@ -88,13 +88,15 @@ abstract class AbstractReindex extends Command implements ReindexInterface
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         try {
+            $start = microtime(true);
             foreach ($this->msCatalogHelper->getAllStores() as $store) {
                 $this->appState->emulateAreaCode('adminhtml', function() use ($input, $output, $store) {
                     $this->reindex($input, $output, $store);
                 });
             }
+            $output->writeln((round(microtime(true) - $start, 4)) . 's');
         } catch (Exception $exception) {
-            echo "Caught exception: " . $exception->getMessage() . PHP_EOL;
+            $output->writeln("Caught exception: " . $exception->getMessage());
         }
     }
 

@@ -2,8 +2,9 @@
 
 namespace G4NReact\MsCatalogMagento2\Helper;
 
-use G4NReact\MsCatalog\Helper;
 use G4NReact\MsCatalog\Config;
+use G4NReact\MsCatalog\Helper;
+use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -28,6 +29,32 @@ class MsCatalog extends AbstractHelper
     public static $multiValuedAttributeFrontendInput = [
         'select',
         'multiselect',
+    ];
+
+    /**
+     * @var array
+     */
+    public static $mapFrontendInputToFieldType = [
+        'boolean'     => 'boolean',
+        'date'        => 'datetime',
+        'gallery'     => 'string',
+        'hidden'      => 'string',
+        'image'       => 'string',
+        'media_image' => 'string',
+        'multiline'   => 'string',
+        'multiselect' => 'int',
+        'price'       => 'float',
+        'select'      => 'int',
+        'text'        => 'text',
+        'textarea'    => 'string',
+        'weight'      => 'float',
+    ];
+
+    /**
+     * @var array
+     */
+    public static $mapAttributeCodeToFieldType = [
+        'store_id' => 'int'
     ];
 
     /**
@@ -126,7 +153,10 @@ class MsCatalog extends AbstractHelper
      */
     public function getConfiguration($pullerParams, $pusherParams): ?Config
     {
-        return new Config($pullerParams, $pusherParams);
+        $configParams[Config::PULLER_PARAM] = $pullerParams;
+        $configParams[Config::PUSHER_PARAM] = $pusherParams;
+
+        return new Config($configParams);
     }
 
     /**
@@ -150,5 +180,28 @@ class MsCatalog extends AbstractHelper
             ScopeInterface::SCOPE_STORE,
             $this->getStore()->getId()
         );
+    }
+
+    /**
+     * @param AbstractAttribute $attribute
+     * @return string
+     */
+    public function getAttributeFieldType(AbstractAttribute $attribute)
+    {
+        $attributeType = $attribute->getBackendType();
+
+        if (!$attributeType || $attributeType === 'static') {
+            $attributeType = self::$mapAttributeCodeToFieldType[$attribute->getAttributeCode()] ?? 'static';
+
+            if ($attributeType === 'static' && $attribute->getFlatColumns()) {
+                $attributeType = $flatColumns[$attribute->getAttributeCode()]['type'] ?? 'static';
+            }
+
+            if ($attributeType === 'static' && $attribute->getFrontendInput()) {
+                $attributeType = self::$mapFrontendInputToFieldType[$attribute->getFrontendInput()] ?? 'static';
+            }
+        }
+
+        return $attributeType;
     }
 }

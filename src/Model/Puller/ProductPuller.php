@@ -90,9 +90,10 @@ class ProductPuller extends AbstractPuller
         }
 
         $productCollection->addAttributeToSelect('*')
+            ->addStoreFilter()
             ->setPageSize($this->pageSize)
-            ->setCurPage($this->curPage);
-//            ->addMediaGalleryData();
+            ->setCurPage($this->curPage)
+            ->addMediaGalleryData();
 
         return $productCollection;
     }
@@ -113,6 +114,7 @@ class ProductPuller extends AbstractPuller
 
         foreach ($product->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
+
             if ($searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode())) {
                 if ($document->getField($searchTermField)) {
                     $document->setField($searchTermField, $document->getField($searchTermField) . ' ' . $product->getData($attribute->getAttributeCode()));
@@ -126,23 +128,24 @@ class ProductPuller extends AbstractPuller
                     );
                 }
             }
+
             $document->setField(
                 $field,
                 $product->getData($field),
-                $attribute->getBackendType(),
+                $this->msCatalogHelper->getAttributeFieldType($attribute),
                 $attribute->getIsFilterable() ? true : false,
                 in_array($attribute->getFrontendInput(), MsCatalogHelper::$multiValuedAttributeFrontendInput)
             );
         }
 
-//        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
-//        $document->setField(
-//            'media_gallery',
-//            $mediaGalleryJson,
-//            'string',
-//            false,
-//            false
-//        );
+        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
+        $document->setField(
+            'media_gallery',
+            $mediaGalleryJson,
+            'string',
+            false,
+            false
+        );
 
         $document->setField(
             'category_ids',

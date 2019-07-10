@@ -126,7 +126,7 @@ class CategoryPuller extends AbstractPuller
             $document->setField(
                 $field,
                 $category->getData($field),
-                $attribute->getBackendType(),
+                $this->msCatalogHelper->getAttributeFieldType($attribute),
                 $attribute->getIsFilterable() ? true : false,
                 in_array($attribute->getFrontendInput(), MsCatalogHelper::$multiValuedAttributeFrontendInput)
             );
