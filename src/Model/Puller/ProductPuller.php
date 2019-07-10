@@ -5,6 +5,7 @@ namespace G4NReact\MsCatalogMagento2\Model\Puller;
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
+use G4NReact\MsCatalogMagento2\Helper\AttributeHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Model\Product;
@@ -48,6 +49,10 @@ class ProductPuller extends AbstractPuller
      * @var SearchTerms
      */
     protected $searchTerms;
+    /**
+     * @var AttributeHelper
+     */
+    protected $attributeHelper;
 
     /**
      * ProductPuller constructor
@@ -64,7 +69,8 @@ class ProductPuller extends AbstractPuller
         Attribute $eavAttribute,
         JsonSerializer $jsonSerializer,
         MsCatalogHelper $msCatalogHelper,
-        SearchTerms $searchTerms
+        SearchTerms $searchTerms,
+        AttributeHelper $attributeHelper
     )
     {
         $this->productCollectionFactory = $productCollectionFactory;
@@ -72,6 +78,7 @@ class ProductPuller extends AbstractPuller
         $this->eavAttribute = $eavAttribute;
         $this->jsonSerializer = $jsonSerializer;
         $this->searchTerms = $searchTerms;
+        $this->attributeHelper = $attributeHelper;
 
         parent::__construct($msCatalogHelper);
     }
@@ -114,22 +121,12 @@ class ProductPuller extends AbstractPuller
         foreach ($product->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
             if ($searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode())) {
-                if ($document->getField($searchTermField)) {
-                    $document->setField($searchTermField, $document->getField($searchTermField) . ' ' . $product->getData($attribute->getAttributeCode()));
-                } else {
-                    $document->setField(
-                        $searchTermField,
-                        $product->getData($attribute->getAttributeCode()),
-                        'string',
-                        true,
-                        true
-                    );
-                }
+                $this->searchTerms->setSearchTerms($searchTermField, $document, $attribute, $product);
             }
             $document->setField(
                 $field,
                 $product->getData($field),
-                $attribute->getBackendType(),
+                $this->attributeHelper->getAttributeBackendType($attribute),
                 $attribute->getIsFilterable() ? true : false,
                 in_array($attribute->getFrontendInput(), MsCatalogHelper::$multiValuedAttributeFrontendInput)
             );
@@ -151,7 +148,9 @@ class ProductPuller extends AbstractPuller
             true,
             true
         );
-
+        
+        if($urlKey = $document->getFieldValue('url_key'))
+        $this->attributeHelper->addUrlField($document, $urlKey);
         return $document;
     }
 

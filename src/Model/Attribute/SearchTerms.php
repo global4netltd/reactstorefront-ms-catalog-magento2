@@ -4,6 +4,7 @@ namespace G4NReact\MsCatalogMagento2\Model\Attribute;
 
 use Magento\Eav\Model\AttributeRepository;
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use G4NReact\MsCatalog\Document;
 
 /**
  * Class SearchTerms
@@ -94,6 +95,30 @@ class SearchTerms
         }
         
         return false;
+    }
+
+    /**
+     * @param Document $document
+     * @param $attribute
+     * @param $product
+     *
+     * @return $this
+     */
+    public function setSearchTerms($searchTermField, $document, $attribute, $product)
+    {
+        if ($document->getField($searchTermField)) {
+            $document->setField($searchTermField, $document->getField($searchTermField) . ' ' . $product->getData($attribute->getAttributeCode()));
+        } else {
+            $document->setField(
+                $searchTermField,
+                $product->getData($attribute->getAttributeCode()),
+                'string',
+                true,
+                true
+            );
+        }
+        
+        return $this;
     }
 }
 
