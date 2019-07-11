@@ -6,7 +6,7 @@ use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
-use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Cms\Model\ResourceModel\Page\Collection as CmsPageCollection;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
@@ -59,19 +59,19 @@ class CmsPuller extends AbstractPuller
      * @param CmsPageCollectionFactory $cmsPageCollectionFactory
      * @param EavConfig $eavConfig
      * @param Attribute $eavAttribute
-     * @param MsCatalogHelper $msCatalogHelper
+     * @param ConfigHelper $magento2ConfigHelper
      */
     public function __construct(
         CmsPageCollectionFactory $cmsPageCollectionFactory,
         EavConfig $eavConfig,
         Attribute $eavAttribute,
-        MsCatalogHelper $msCatalogHelper
+        ConfigHelper $magento2ConfigHelper
     ) {
         $this->cmsPageCollectionFactory = $cmsPageCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
 
-        parent::__construct($msCatalogHelper);
+        parent::__construct($magento2ConfigHelper);
     }
 
     /**
@@ -100,7 +100,7 @@ class CmsPuller extends AbstractPuller
             ->addFieldToSelect('update_time')
             ->addFieldToSelect('is_active')
             ->addFieldToSelect('sort_order')
-            ->addStoreFilter($this->msCatalogHelper->getStore()->getId())
+            ->addStoreFilter($this->magento2ConfigHelper->getStore()->getId())
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
@@ -114,7 +114,7 @@ class CmsPuller extends AbstractPuller
     public function current(): Document
     {
         $page = $this->pageArray[$this->position];
-        $storeId = $this->msCatalogHelper->getStore()->getId();
+        $storeId = $this->magento2ConfigHelper->getStore()->getId();
 
         $document = new Document();
 

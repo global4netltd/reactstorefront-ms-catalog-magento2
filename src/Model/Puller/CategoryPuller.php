@@ -6,7 +6,7 @@ use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
-use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
 use Magento\Eav\Model\Config as EavConfig;
@@ -46,14 +46,14 @@ class CategoryPuller extends AbstractPuller
      * @param CategoryCollectionFactory $categoryCollectionFactory
      * @param EavConfig $eavConfig
      * @param Attribute $eavAttribute
-     * @param MsCatalogHelper $msCatalogHelper
+     * @param ConfigHelper $magento2ConfigHelper
      * @param ResourceConnection $resource
      */
     public function __construct(
         CategoryCollectionFactory $categoryCollectionFactory,
         EavConfig $eavConfig,
         Attribute $eavAttribute,
-        MsCatalogHelper $msCatalogHelper,
+        ConfigHelper $magento2ConfigHelper,
         ResourceConnection $resource
     ) {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
@@ -61,7 +61,7 @@ class CategoryPuller extends AbstractPuller
         $this->eavAttribute = $eavAttribute;
         $this->resource = $resource;
 
-        parent::__construct($msCatalogHelper);
+        parent::__construct($magento2ConfigHelper);
     }
 
     /**
@@ -126,9 +126,9 @@ class CategoryPuller extends AbstractPuller
             $document->setField(
                 $field,
                 $category->getData($field),
-                $this->msCatalogHelper->getAttributeFieldType($attribute),
+                $this->magento2ConfigHelper->getAttributeFieldType($attribute),
                 $attribute->getIsFilterable() ? true : false,
-                in_array($attribute->getFrontendInput(), MsCatalogHelper::$multiValuedAttributeFrontendInput)
+                in_array($attribute->getFrontendInput(), ConfigHelper::$multiValuedAttributeFrontendInput)
             );
         }
 

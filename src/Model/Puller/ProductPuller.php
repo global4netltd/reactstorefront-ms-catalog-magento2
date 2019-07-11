@@ -14,7 +14,7 @@ use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Data\Collection as DataCollection;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
-use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
@@ -56,14 +56,14 @@ class ProductPuller extends AbstractPuller
      * @param EavConfig $eavConfig
      * @param Attribute $eavAttribute
      * @param JsonSerializer $jsonSerializer
-     * @param MsCatalogHelper $msCatalogHelper
+     * @param ConfigHelper $magento2ConfigHelper
      */
     public function __construct(
         ProductCollectionFactory $productCollectionFactory,
         EavConfig $eavConfig,
         Attribute $eavAttribute,
         JsonSerializer $jsonSerializer,
-        MsCatalogHelper $msCatalogHelper,
+        ConfigHelper $magento2ConfigHelper,
         SearchTerms $searchTerms
     )
     {
@@ -73,7 +73,7 @@ class ProductPuller extends AbstractPuller
         $this->jsonSerializer = $jsonSerializer;
         $this->searchTerms = $searchTerms;
 
-        parent::__construct($msCatalogHelper);
+        parent::__construct($magento2ConfigHelper);
     }
 
     /**
@@ -132,9 +132,9 @@ class ProductPuller extends AbstractPuller
             $document->setField(
                 $field,
                 $product->getData($field),
-                $this->msCatalogHelper->getAttributeFieldType($attribute),
+                $this->magento2ConfigHelper->getAttributeFieldType($attribute),
                 $attribute->getIsFilterable() ? true : false,
-                in_array($attribute->getFrontendInput(), MsCatalogHelper::$multiValuedAttributeFrontendInput)
+                in_array($attribute->getFrontendInput(), ConfigHelper::$multiValuedAttributeFrontendInput)
             );
         }
 

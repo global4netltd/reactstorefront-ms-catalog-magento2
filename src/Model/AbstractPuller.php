@@ -4,7 +4,7 @@ namespace G4NReact\MsCatalogMagento2\Model;
 
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\PullerInterface;
-use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Iterator;
 
 /**
@@ -54,23 +54,23 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     public $ids;
 
     /**
-     * @var MsCatalogHelper
+     * @var ConfigHelper
      */
-    protected $msCatalogHelper;
+    protected $magento2ConfigHelper;
 
     /**
      * Puller constructor
-     * @param MsCatalogHelper $msCatalogHelper
+     * @param ConfigHelper $magento2ConfigHelper
      */
     public function __construct(
-        MsCatalogHelper $msCatalogHelper
+        ConfigHelper $magento2ConfigHelper
     ) {
-        $this->msCatalogHelper = $msCatalogHelper;
+        $this->magento2ConfigHelper = $magento2ConfigHelper;
         $this->position = 0;
         $this->totalSize = $this->getCollection()->getSize();
         $this->curPage = 0;
 
-        $this->pageSize = $msCatalogHelper->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize') ?: self::PAGE_SIZE_DEFAULT;
+        $this->pageSize = $magento2ConfigHelper->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize') ?: self::PAGE_SIZE_DEFAULT;
     }
 
     /**

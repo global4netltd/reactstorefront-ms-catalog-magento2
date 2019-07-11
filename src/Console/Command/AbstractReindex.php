@@ -5,7 +5,7 @@ namespace G4NReact\MsCatalogMagento2\Console\Command;
 use Exception;
 use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalogIndexer\Indexer;
-use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Framework\App\State as AppState;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
@@ -36,9 +36,9 @@ abstract class AbstractReindex extends Command implements ReindexInterface
     /**#@- */
 
     /**
-     * @var MsCatalogHelper
+     * @var ConfigHelper
      */
-    protected $msCatalogHelper;
+    protected $magento2ConfigHelper;
 
     /**
      * @var Emulation
@@ -53,18 +53,18 @@ abstract class AbstractReindex extends Command implements ReindexInterface
     /**
      * AbstractReindex constructor
      *
-     * @param MsCatalogHelper $msCatalogHelper
+     * @param ConfigHelper $magento2ConfigHelper
      * @param Emulation $emulation
      * @param AppState $appState
      * @param string|null $name
      */
     public function __construct(
-        MsCatalogHelper $msCatalogHelper,
+        ConfigHelper $magento2ConfigHelper,
         Emulation $emulation,
         AppState $appState,
         ?string $name = null
     ) {
-        $this->msCatalogHelper = $msCatalogHelper;
+        $this->magento2ConfigHelper = $magento2ConfigHelper;
         $this->emulation = $emulation;
         $this->appState = $appState;
         parent::__construct($name);
@@ -89,7 +89,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
     {
         try {
             $start = microtime(true);
-            foreach ($this->msCatalogHelper->getAllStores() as $store) {
+            foreach ($this->magento2ConfigHelper->getAllStores() as $store) {
                 $this->appState->emulateAreaCode('adminhtml', function() use ($input, $output, $store) {
                     $this->reindex($input, $output, $store);
                 });
@@ -113,11 +113,11 @@ abstract class AbstractReindex extends Command implements ReindexInterface
         // start store emulation
         $this->emulation->startEnvironmentEmulation($store->getId(), 'adminhtml', true);
 
-        if ($this->msCatalogHelper->isIndexerEnabled()) {
+        if ($this->magento2ConfigHelper->isIndexerEnabled()) {
             $puller = $this->getPuller();
-            $pullerParams = $this->msCatalogHelper->getEcommerceEngineConfiguration();
-            $pusherParams = $this->msCatalogHelper->getSearchEngineConfiguration();
-            $config = $this->msCatalogHelper->getConfiguration($pullerParams, $pusherParams);
+            $pullerParams = $this->magento2ConfigHelper->getEcommerceEngineConfiguration();
+            $pusherParams = $this->magento2ConfigHelper->getSearchEngineConfiguration();
+            $config = $this->magento2ConfigHelper->getConfiguration($pullerParams, $pusherParams);
 
             // @ToDo: Change to PullerFactory - Magento2Puller that gets Query and returns collection of Products
             //        or Categories depending on what we pass in the query

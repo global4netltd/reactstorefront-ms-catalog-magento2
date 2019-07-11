@@ -2,8 +2,8 @@
 
 namespace G4NReact\MsCatalogMagento2\Helper;
 
-use G4NReact\MsCatalog\Config;
-use G4NReact\MsCatalog\Helper;
+use G4NReact\MsCatalog\Config as MsCatalogConfig;
+use G4NReact\MsCatalog\Helper as ConfigHelper;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -16,7 +16,7 @@ use Magento\Store\Model\StoreManagerInterface;
  * Class MsCatalog
  * @package G4NReact\MsCatalogMagento2\Helper
  */
-class MsCatalog extends AbstractHelper
+class Config extends AbstractHelper
 {
     /**
      * @var string Base engine options path in configuration
@@ -106,14 +106,14 @@ class MsCatalog extends AbstractHelper
         $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_delete_index');
 
         $engineConnectionParams = [];
-        if (!isset(Helper::$engines[$engine])) {
+        if (!isset(ConfigHelper::$engines[$engine])) {
             // log error, throw exception etc.
             return [];
         }
 
-        $searchEngineParams = Helper::$engines[$engine];
-        $engineCode = Helper::$engines[$engine]['code'];
-        foreach (Helper::$engines[$engine]['connection'] as $connectionParamName) {
+        $searchEngineParams = ConfigHelper::$engines[$engine];
+        $engineCode = ConfigHelper::$engines[$engine]['code'];
+        foreach (ConfigHelper::$engines[$engine]['connection'] as $connectionParamName) {
             $engineConnectionParams[$connectionParamName] = $this->getConfigByPath(
                 self::BASE_ENGINE_CONFIG_PATH . $engineCode . '_' . $connectionParamName
             );
@@ -149,14 +149,14 @@ class MsCatalog extends AbstractHelper
     /**
      * @param array $pullerParams
      * @param array $pusherParams
-     * @return Config|null
+     * @return MsCatalogConfig|null
      */
-    public function getConfiguration($pullerParams, $pusherParams): ?Config
+    public function getConfiguration($pullerParams, $pusherParams): ?MsCatalogConfig
     {
-        $configParams[Config::PULLER_PARAM] = $pullerParams;
-        $configParams[Config::PUSHER_PARAM] = $pusherParams;
+        $configParams[MsCatalogConfig::PULLER_PARAM] = $pullerParams;
+        $configParams[MsCatalogConfig::PUSHER_PARAM] = $pusherParams;
 
-        return new Config($configParams);
+        return new MsCatalogConfig($configParams);
     }
 
     /**

@@ -2,7 +2,7 @@
 
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
-use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Model\Puller\ProductPuller;
 use Magento\Framework\App\State as AppState;
 use Magento\Store\Model\App\Emulation;
@@ -23,20 +23,20 @@ class ReindexAllProduct extends AbstractReindex
      * ReindexAllProduct constructor
      *
      * @param ProductPuller $productPuller
-     * @param MsCatalogHelper $msCatalogHelper
+     * @param ConfigHelper $magento2ConfigHelper
      * @param Emulation $emulation
      * @param AppState $appState
      * @param string|null $name
      */
     public function __construct(
         ProductPuller $productPuller,
-        MsCatalogHelper $msCatalogHelper,
+        ConfigHelper $magento2ConfigHelper,
         Emulation $emulation,
         AppState $appState,
         ?string $name = null
     ) {
         $this->productPuller = $productPuller;
-        parent::__construct($msCatalogHelper, $emulation, $appState, $name);
+        parent::__construct($magento2ConfigHelper, $emulation, $appState, $name);
     }
 
     /**
