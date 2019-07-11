@@ -2,6 +2,7 @@
 
 namespace G4NReact\MsCatalogMagento2\Helper;
 
+use Exception;
 use G4NReact\MsCatalog\Config as MsCatalogConfig;
 use G4NReact\MsCatalog\Helper as ConfigHelper;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
@@ -22,40 +23,6 @@ class Config extends AbstractHelper
      * @var string Base engine options path in configuration
      */
     const BASE_ENGINE_CONFIG_PATH = 'ms_catalog_indexer/engine_settings/';
-
-    /**
-     * @var array
-     */
-    public static $multiValuedAttributeFrontendInput = [
-        'select',
-        'multiselect',
-    ];
-
-    /**
-     * @var array
-     */
-    public static $mapFrontendInputToFieldType = [
-        'boolean'     => 'boolean',
-        'date'        => 'datetime',
-        'gallery'     => 'string',
-        'hidden'      => 'string',
-        'image'       => 'string',
-        'media_image' => 'string',
-        'multiline'   => 'string',
-        'multiselect' => 'int',
-        'price'       => 'float',
-        'select'      => 'int',
-        'text'        => 'text',
-        'textarea'    => 'string',
-        'weight'      => 'float',
-    ];
-
-    /**
-     * @var array
-     */
-    public static $mapAttributeCodeToFieldType = [
-        'store_id' => 'int'
-    ];
 
     /**
      * @var StoreManagerInterface
@@ -94,10 +61,11 @@ class Config extends AbstractHelper
     }
 
     /**
-     * @return array
+     * @return MsCatalogConfig|null
      * @throws NoSuchEntityException
+     * @throws Exception
      */
-    public function getSearchEngineConfiguration(): array
+    public function getConfiguration(): ?MsCatalogConfig
     {
         $engine = (int)$this->getConfigByPath('ms_catalog_indexer/engine_settings/engine');
 
@@ -107,54 +75,20 @@ class Config extends AbstractHelper
 
         $engineConnectionParams = [];
         if (!isset(ConfigHelper::$engines[$engine])) {
-            // log error, throw exception etc.
-            return [];
+            throw new Exception(sprintf('Unknown engine: %s.', $engine));
         }
 
-        $searchEngineParams = ConfigHelper::$engines[$engine];
+        $configParams = ConfigHelper::$engines[$engine];
         $engineCode = ConfigHelper::$engines[$engine]['code'];
         foreach (ConfigHelper::$engines[$engine]['connection'] as $connectionParamName) {
             $engineConnectionParams[$connectionParamName] = $this->getConfigByPath(
                 self::BASE_ENGINE_CONFIG_PATH . $engineCode . '_' . $connectionParamName
             );
         }
-        $searchEngineParams['connection'] = $engineConnectionParams;
-        $searchEngineParams['puller_page_size'] = $pullerPageSize;
-        $searchEngineParams['pusher_page_size'] = $pusherPageSize;
-        $searchEngineParams['pusher_delete_index'] = $deleteIndexBeforeReindex;
-
-        return $searchEngineParams;
-    }
-
-    /**
-     * @return array
-     * @throws NoSuchEntityException
-     */
-    public function getEcommerceEngineConfiguration(): array
-    {
-        $pullerPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/puller_pagesize');
-        $pusherPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_pagesize');
-        $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_delete_index');
-
-        $ecommerceEngineConfiguration = [
-            'namespace' => 'MsCatalogMagento2\Model',
-            'puller_page_size' => $pullerPageSize,
-            'pusher_page_size' => $pusherPageSize,
-            'pusher_delete_index' => $deleteIndexBeforeReindex,
-        ];
-
-        return $ecommerceEngineConfiguration;
-    }
-
-    /**
-     * @param array $pullerParams
-     * @param array $pusherParams
-     * @return MsCatalogConfig|null
-     */
-    public function getConfiguration($pullerParams, $pusherParams): ?MsCatalogConfig
-    {
-        $configParams[MsCatalogConfig::PULLER_PARAM] = $pullerParams;
-        $configParams[MsCatalogConfig::PUSHER_PARAM] = $pusherParams;
+        $configParams['connection'] = $engineConnectionParams;
+        $configParams['puller_page_size'] = $pullerPageSize;
+        $configParams['pusher_page_size'] = $pusherPageSize;
+        $configParams['pusher_delete_index'] = $deleteIndexBeforeReindex;
 
         return new MsCatalogConfig($configParams);
     }
@@ -180,28 +114,5 @@ class Config extends AbstractHelper
             ScopeInterface::SCOPE_STORE,
             $this->getStore()->getId()
         );
-    }
-
-    /**
-     * @param AbstractAttribute $attribute
-     * @return string
-     */
-    public function getAttributeFieldType(AbstractAttribute $attribute)
-    {
-        $attributeType = $attribute->getBackendType();
-
-        if (!$attributeType || $attributeType === 'static') {
-            $attributeType = self::$mapAttributeCodeToFieldType[$attribute->getAttributeCode()] ?? 'static';
-
-            if ($attributeType === 'static' && $attribute->getFlatColumns()) {
-                $attributeType = $flatColumns[$attribute->getAttributeCode()]['type'] ?? 'static';
-            }
-
-            if ($attributeType === 'static' && $attribute->getFrontendInput()) {
-                $attributeType = self::$mapFrontendInputToFieldType[$attribute->getFrontendInput()] ?? 'static';
-            }
-        }
-
-        return $attributeType;
     }
 }

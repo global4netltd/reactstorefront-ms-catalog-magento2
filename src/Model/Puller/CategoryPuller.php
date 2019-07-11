@@ -7,6 +7,7 @@ use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
+use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
 use Magento\Eav\Model\Config as EavConfig;
@@ -128,7 +129,7 @@ class CategoryPuller extends AbstractPuller
                 $category->getData($field),
                 $this->magento2ConfigHelper->getAttributeFieldType($attribute),
                 $attribute->getIsFilterable() ? true : false,
-                in_array($attribute->getFrontendInput(), ConfigHelper::$multiValuedAttributeFrontendInput)
+                in_array($attribute->getFrontendInput(), QueryHelper::$multiValuedAttributeFrontendInput)
             );
         }
 
