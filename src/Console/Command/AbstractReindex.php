@@ -3,9 +3,12 @@
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
 use Exception;
+use G4NReact\MsCatalog\Client\ClientFactory;
+use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalogIndexer\Indexer;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
+use G4NReact\MsCatalogSolr\Query;
 use Magento\Framework\App\State as AppState;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
@@ -63,7 +66,8 @@ abstract class AbstractReindex extends Command implements ReindexInterface
         Emulation $emulation,
         AppState $appState,
         ?string $name = null
-    ) {
+    )
+    {
         $this->magento2ConfigHelper = $magento2ConfigHelper;
         $this->emulation = $emulation;
         $this->appState = $appState;
@@ -83,6 +87,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
+     *
      * @return void
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -90,7 +95,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
         try {
             $start = microtime(true);
             foreach ($this->magento2ConfigHelper->getAllStores() as $store) {
-                $this->appState->emulateAreaCode('adminhtml', function() use ($input, $output, $store) {
+                $this->appState->emulateAreaCode('adminhtml', function () use ($input, $output, $store) {
                     $this->reindex($input, $output, $store);
                 });
             }
@@ -106,6 +111,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
      * @param InputInterface $input
      * @param OutputInterface $output
      * @param StoreInterface $store
+     *
      * @throws NoSuchEntityException
      */
     public function reindex(InputInterface $input, OutputInterface $output, StoreInterface $store)
@@ -113,33 +119,43 @@ abstract class AbstractReindex extends Command implements ReindexInterface
         // start store emulation
         $this->emulation->startEnvironmentEmulation($store->getId(), 'adminhtml', true);
 
-        if ($this->magento2ConfigHelper->isIndexerEnabled()) {
-            $puller = $this->getPuller();
-            $pullerParams = $this->magento2ConfigHelper->getEcommerceEngineConfiguration();
-            $pusherParams = $this->magento2ConfigHelper->getSearchEngineConfiguration();
-            $config = $this->magento2ConfigHelper->getConfiguration($pullerParams, $pusherParams);
+//        if ($this->magento2ConfigHelper->isIndexerEnabled()) {
+        $puller = $this->getPuller();
+        $pullerParams = $this->magento2ConfigHelper->getEcommerceEngineConfiguration();
+        $pusherParams = $this->magento2ConfigHelper->getSearchEngineConfiguration();
+        $config = $this->magento2ConfigHelper->getConfiguration($pullerParams, $pusherParams);
 
-            // @ToDo: Change to PullerFactory - Magento2Puller that gets Query and returns collection of Products
-            //        or Categories depending on what we pass in the query
+//            // @ToDo: Change to PullerFactory - Magento2Puller that gets Query and returns collection of Products
+//            //        or Categories depending on what we pass in the query
+//
+//            $ids = $input->getOption(self::INPUT_OPTION_IDS);
+//            $reindexAll = $input->getOption(self::INPUT_OPTION_ALL);
+//
+//            if ($ids === [] && $reindexAll === false) {
+//                echo self::REQUIRED_OPTION_INFO . PHP_EOL;
+//
+//                return;
+//            }
+//
+//            if ($ids && $reindexAll === false) {
+//                $this->prepareIds($ids);
+//                $puller->setIds($ids);
+//            }
 
-            $ids = $input->getOption(self::INPUT_OPTION_IDS);
-            $reindexAll = $input->getOption(self::INPUT_OPTION_ALL);
-
-            if ($ids === [] && $reindexAll === false) {
-                echo self::REQUIRED_OPTION_INFO . PHP_EOL;
-
-                return;
-            }
-
-            if ($ids && $reindexAll === false) {
-                $this->prepareIds($ids);
-                $puller->setIds($ids);
-            }
-
-            $indexer = new Indexer($puller, $config);
-            $indexer->reindex();
-            echo self::SUCCESS_INFORMATION . PHP_EOL;
-        }
+//            $indexer = new Indexer($puller, $config);
+        $query = new Query($config);
+        $query->setPageStart(0);
+        $query->setPageSize(10);
+        $field = new Document\Field('parent_id_s', 13);
+        $query->addFacet($field);
+        $field2 = new Document\Field('parent_id_s', 17);
+        $query->addFacet($field2, 'parent_2_test');
+        $fieldToSelect = new Document\Field('children_count_i_ni', 'category');
+        $query->addStat($fieldToSelect);
+        $query->buildQuery();
+//            $indexer->reindex();
+        echo self::SUCCESS_INFORMATION . PHP_EOL;
+//        }
 
         // end store emulation
         $this->emulation->stopEnvironmentEmulation();
@@ -147,6 +163,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
 
     /**
      * @param array $ids
+     *
      * @return void
      */
     public function prepareIds(array &$ids): void
