@@ -15,6 +15,7 @@ use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Data\Collection as DataCollection;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
+use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
@@ -134,7 +135,7 @@ class ProductPuller extends AbstractPuller
                 $product->getData($field),
                 $this->magento2ConfigHelper->getAttributeFieldType($attribute),
                 $attribute->getIsFilterable() ? true : false,
-                in_array($attribute->getFrontendInput(), ConfigHelper::$multiValuedAttributeFrontendInput)
+                in_array($attribute->getFrontendInput(), QueryHelper::$multiValuedAttributeFrontendInput)
             );
         }
 

@@ -115,12 +115,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
 
         if ($this->magento2ConfigHelper->isIndexerEnabled()) {
             $puller = $this->getPuller();
-            $pullerParams = $this->magento2ConfigHelper->getEcommerceEngineConfiguration();
-            $pusherParams = $this->magento2ConfigHelper->getSearchEngineConfiguration();
-            $config = $this->magento2ConfigHelper->getConfiguration($pullerParams, $pusherParams);
-
-            // @ToDo: Change to PullerFactory - Magento2Puller that gets Query and returns collection of Products
-            //        or Categories depending on what we pass in the query
+            $config = $this->magento2ConfigHelper->getConfiguration();
 
             $ids = $input->getOption(self::INPUT_OPTION_IDS);
             $reindexAll = $input->getOption(self::INPUT_OPTION_ALL);
