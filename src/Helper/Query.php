@@ -94,7 +94,7 @@ class Query extends AbstractHelper
             }
         }
 
-        return $attributeType;
+        return $attributeType === 'static' ? 'string' : $attributeType;
     }
 
     /**
