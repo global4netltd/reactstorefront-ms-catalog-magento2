@@ -126,7 +126,7 @@ class CategoryPuller extends AbstractPuller
             $document->setField(
                 'store_id',
                 $category->getStoreId(),
-                '',
+                'int',
                 true
             );
         }
