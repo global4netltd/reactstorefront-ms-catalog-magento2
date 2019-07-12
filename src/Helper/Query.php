@@ -3,7 +3,6 @@
 namespace G4NReact\MsCatalogMagento2\Helper;
 
 use G4NReact\MsCatalog\Document\Field;
-use G4NReact\MsCatalog\Document\FieldInterface;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -98,33 +97,38 @@ class Query extends AbstractHelper
     }
 
     /**
-     * @param FieldInterface $field
+     * @param string $attributeCode
+     * @param mixed $value
      * @param string $entityType
-     * @return FieldInterface
+     * @return Field
      * @throws LocalizedException
      */
-    public function getFieldByAttributeCode(FieldInterface $field, string $entityType = 'catalog_product'): FieldInterface
+    public function getFieldByAttributeCode(string $attributeCode, $value, string $entityType = 'catalog_product'): Field
     {
-        if (isset(self::$fields[$field->getName()])) {
-            return self::$fields[$field->getName()];
+        if (isset(self::$fields[$attributeCode])) {
+            $field = self::$fields[$attributeCode];
+            $field->setValue($value);
+            return $field;
         }
 
-        if (in_array($field->getName(), \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
-            $field->setType('static')->setIndexable(true)->setMultiValued(false);
-            self::$fields[$field->getName()] = $field;
+        if (in_array($attributeCode, \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
+            $field = new Field($attributeCode, null, 'static', true, false);
+            self::$fields[$attributeCode] = $field;
+            $field->setValue($value);
 
             return $field;
         }
 
         /** @var AbstractAttribute $attribute */
-        $attribute = $this->eavConfig->getAttribute($entityType, $field->getName());
+        $attribute = $this->eavConfig->getAttribute($entityType, $attributeCode);
 
         $fieldType = $this->getAttributeFieldType($attribute);
         $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
         $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
 
-        $field->setType($fieldType)->setIndexable($isFieldIndexable)->setMultiValued($isMultiValued);
-        self::$fields[$field->getName()] = $field;
+        $field = new Field($attributeCode, null, $fieldType, $isFieldIndexable, $isMultiValued);
+        self::$fields[$attributeCode] = $field;
+        $field->setValue($value);
 
         return $field;
     }
