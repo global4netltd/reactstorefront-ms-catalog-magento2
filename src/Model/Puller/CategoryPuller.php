@@ -5,6 +5,7 @@ namespace G4NReact\MsCatalogMagento2\Model\Puller;
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
+use G4NReact\MsCatalogMagento2\Helper\Query as Magento2HelperQuery;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
@@ -42,6 +43,11 @@ class CategoryPuller extends AbstractPuller
     protected $resource;
 
     /**
+     * @var Magento2HelperQuery 
+     */
+    protected $helperQuery;
+
+    /**
      * CategoryPuller constructor
      *
      * @param CategoryCollectionFactory $categoryCollectionFactory
@@ -49,18 +55,21 @@ class CategoryPuller extends AbstractPuller
      * @param Attribute $eavAttribute
      * @param ConfigHelper $magento2ConfigHelper
      * @param ResourceConnection $resource
+     * @param Magento2HelperQuery $helperQuery
      */
     public function __construct(
         CategoryCollectionFactory $categoryCollectionFactory,
         EavConfig $eavConfig,
         Attribute $eavAttribute,
         ConfigHelper $magento2ConfigHelper,
-        ResourceConnection $resource
+        ResourceConnection $resource,
+        Magento2HelperQuery $helperQuery
     ) {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->resource = $resource;
+        $this->helperQuery = $helperQuery;
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -127,7 +136,7 @@ class CategoryPuller extends AbstractPuller
             $document->setField(
                 $field,
                 $category->getData($field),
-                $this->magento2ConfigHelper->getAttributeFieldType($attribute),
+                $this->helperQuery->getAttributeFieldType($attribute),
                 $attribute->getIsFilterable() ? true : false,
                 in_array($attribute->getFrontendInput(), QueryHelper::$multiValuedAttributeFrontendInput)
             );
