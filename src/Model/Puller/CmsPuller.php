@@ -123,7 +123,7 @@ class CmsPuller extends AbstractPuller
         $document->setObjectType('cms'); // @ToDo: move it to const
 
         foreach ($page->getData() as $field => $value) {
-            $document->setField(
+            $document->createField(
                 $field,
                 $page->getData($field),
                 self::$fieldTypeMap[$field] ?? 'string',

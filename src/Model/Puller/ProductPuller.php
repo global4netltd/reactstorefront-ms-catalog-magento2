@@ -118,9 +118,9 @@ class ProductPuller extends AbstractPuller
 
             if ($searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode())) {
                 if ($document->getField($searchTermField)) {
-                    $document->setField($searchTermField, $document->getField($searchTermField) . ' ' . $product->getData($attribute->getAttributeCode()));
+                    $document->createField($searchTermField, $document->getField($searchTermField) . ' ' . $product->getData($attribute->getAttributeCode()));
                 } else {
-                    $document->setField(
+                    $document->createField(
                         $searchTermField,
                         $product->getData($attribute->getAttributeCode()),
                         'string',
@@ -130,7 +130,7 @@ class ProductPuller extends AbstractPuller
                 }
             }
 
-            $document->setField(
+            $document->createField(
                 $field,
                 $product->getData($field),
                 $this->magento2ConfigHelper->getAttributeFieldType($attribute),
@@ -140,7 +140,7 @@ class ProductPuller extends AbstractPuller
         }
 
         $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
-        $document->setField(
+        $document->createField(
             'media_gallery',
             $mediaGalleryJson,
             'string',
@@ -148,7 +148,7 @@ class ProductPuller extends AbstractPuller
             false
         );
 
-        $document->setField(
+        $document->createField(
             'category_ids',
             $product->getCategoryIds(),
             'int',

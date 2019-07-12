@@ -115,7 +115,7 @@ class CategoryPuller extends AbstractPuller
                 $glue = ', ';
             }
         }
-        $document->setField(
+        $document->createFieldsetField(
             'category_facets',
             $filterableAttributesCodesList,
             'string',
@@ -123,7 +123,7 @@ class CategoryPuller extends AbstractPuller
         );
         
         if(!$document->getData('store_id')){
-            $document->setField(
+            $document->createField(
                 'store_id',
                 $category->getStoreId(),
                 'int',
@@ -133,7 +133,7 @@ class CategoryPuller extends AbstractPuller
 
         foreach ($category->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_category', $field);
-            $document->setField(
+            $document->createField(
                 $field,
                 $category->getData($field),
                 $this->helperQuery->getAttributeFieldType($attribute),
