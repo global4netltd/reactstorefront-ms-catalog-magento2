@@ -5,16 +5,18 @@ namespace G4NReact\MsCatalogMagento2\Model\Puller;
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
-use G4NReact\MsCatalogMagento2\Helper\Query as Magento2HelperQuery;
-use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
+use G4NReact\MsCatalogMagento2\Helper\Query as Magento2HelperQuery;
 use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
-use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
+use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
+use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
+use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class CategoryPuller
@@ -22,6 +24,11 @@ use Magento\Framework\Exception\LocalizedException;
  */
 class CategoryPuller extends AbstractPuller
 {
+    /**
+     * @var string Type of object
+     */
+    const OBJECT_TYPE = 'category';
+
     /**
      * @var CategoryCollectionFactory
      */
@@ -43,9 +50,14 @@ class CategoryPuller extends AbstractPuller
     protected $resource;
 
     /**
-     * @var Magento2HelperQuery 
+     * @var Magento2HelperQuery
      */
     protected $helperQuery;
+
+    /**
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
 
     /**
      * CategoryPuller constructor
@@ -56,6 +68,7 @@ class CategoryPuller extends AbstractPuller
      * @param ConfigHelper $magento2ConfigHelper
      * @param ResourceConnection $resource
      * @param Magento2HelperQuery $helperQuery
+     * @param StoreManagerInterface $storeManager
      */
     public function __construct(
         CategoryCollectionFactory $categoryCollectionFactory,
@@ -63,29 +76,33 @@ class CategoryPuller extends AbstractPuller
         Attribute $eavAttribute,
         ConfigHelper $magento2ConfigHelper,
         ResourceConnection $resource,
-        Magento2HelperQuery $helperQuery
+        Magento2HelperQuery $helperQuery,
+        StoreManagerInterface $storeManager
     ) {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->resource = $resource;
         $this->helperQuery = $helperQuery;
+        $this->storeManager = $storeManager;
 
         parent::__construct($magento2ConfigHelper);
     }
 
     /**
      * @return CategoryCollection
+     * @throws LocalizedException
      */
     public function getCollection(): CategoryCollection
     {
         $categoryCollection = $this->categoryCollectionFactory->create();
 
         if ($this->ids !== null) {
-            $categoryCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
+            $categoryCollection->addAttributeToFilter('entity_id', ['in' => $this->ids]);
         }
 
         $categoryCollection->addAttributeToSelect('*')
+            ->setStoreId($this->storeManager->getStore()->getId())
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
@@ -98,13 +115,14 @@ class CategoryPuller extends AbstractPuller
      */
     public function current(): Document
     {
+        /** @var Category $category */
         $category = $this->pageArray[$this->position];
 
         $document = new Document();
 
-        $document->setUniqueId($category->getId() . '_' . 'category' . '_' . $category->getStoreId());
+        $document->setUniqueId($category->getId() . '_' . self::OBJECT_TYPE . '_' . $category->getStoreId());
         $document->setObjectId($category->getId());
-        $document->setObjectType('category'); // @ToDo: move it to const
+        $document->setObjectType(self::OBJECT_TYPE);
 
         $filterableAttributesCodes = $this->getFilterableAttributesCodes($category->getId());
         $filterableAttributesCodesList = '';
@@ -115,18 +133,19 @@ class CategoryPuller extends AbstractPuller
                 $glue = ', ';
             }
         }
-        $document->createFieldsetField(
+        $document->createField(
             'category_facets',
             $filterableAttributesCodesList,
             'string',
             false
         );
-        
-        if(!$document->getData('store_id')){
+
+        if (!$document->getData('store_id')) {
             $document->createField(
                 'store_id',
                 $category->getStoreId(),
-                'int',
+                $this->helperQuery
+                    ->getAttributeFieldType($this->eavConfig->getAttribute('catalog_category', 'store_id')),
                 true
             );
         }

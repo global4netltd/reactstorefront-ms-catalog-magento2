@@ -24,8 +24,11 @@ use Magento\Framework\Exception\LocalizedException;
  */
 class ProductPuller extends AbstractPuller
 {
-    /** @var string product */
-    const PRODUCT = 'product';
+    /**
+     * @var string Type of object
+     */
+    const OBJECT_TYPE = 'product';
+
     /**
      * @var ProductCollectionFactory
      */
@@ -109,9 +112,9 @@ class ProductPuller extends AbstractPuller
         $product = $this->pageArray[$this->position];
         $document = new Document();
 
-        $document->setUniqueId($product->getId() . '_' . self::PRODUCT . '_' . $product->getStoreId());
+        $document->setUniqueId($product->getId() . '_' . self::OBJECT_TYPE . '_' . $product->getStoreId());
         $document->setObjectId($product->getId());
-        $document->setObjectType(self::PRODUCT);
+        $document->setObjectType(self::OBJECT_TYPE);
 
         foreach ($product->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);

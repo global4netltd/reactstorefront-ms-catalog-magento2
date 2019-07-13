@@ -20,6 +20,11 @@ use Magento\Framework\Exception\NoSuchEntityException;
 class CmsPuller extends AbstractPuller
 {
     /**
+     * @var string Type of object
+     */
+    const OBJECT_TYPE = 'cms';
+
+    /**
      * @var array
      */
     public static $fieldTypeMap = [
@@ -118,9 +123,9 @@ class CmsPuller extends AbstractPuller
 
         $document = new Document();
 
-        $document->setUniqueId($page->getId() . '_' . 'cms' . '_' . $storeId);
+        $document->setUniqueId($page->getId() . '_' . self::OBJECT_TYPE . '_' . $storeId);
         $document->setObjectId($page->getId());
-        $document->setObjectType('cms'); // @ToDo: move it to const
+        $document->setObjectType(self::OBJECT_TYPE);
 
         foreach ($page->getData() as $field => $value) {
             $document->createField(
