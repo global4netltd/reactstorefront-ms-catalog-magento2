@@ -15,6 +15,7 @@ use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCo
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -60,6 +61,11 @@ class CategoryPuller extends AbstractPuller
     protected $storeManager;
 
     /**
+     * @var EventManager
+     */
+    protected $eventManager;
+
+    /**
      * CategoryPuller constructor
      *
      * @param CategoryCollectionFactory $categoryCollectionFactory
@@ -69,6 +75,7 @@ class CategoryPuller extends AbstractPuller
      * @param ResourceConnection $resource
      * @param Magento2HelperQuery $helperQuery
      * @param StoreManagerInterface $storeManager
+     * @param EventManager $eventManager
      */
     public function __construct(
         CategoryCollectionFactory $categoryCollectionFactory,
@@ -77,7 +84,8 @@ class CategoryPuller extends AbstractPuller
         ConfigHelper $magento2ConfigHelper,
         ResourceConnection $resource,
         Magento2HelperQuery $helperQuery,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        EventManager $eventManager
     ) {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
@@ -85,6 +93,7 @@ class CategoryPuller extends AbstractPuller
         $this->resource = $resource;
         $this->helperQuery = $helperQuery;
         $this->storeManager = $storeManager;
+        $this->eventManager = $eventManager;
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -119,6 +128,12 @@ class CategoryPuller extends AbstractPuller
         $category = $this->pageArray[$this->position];
 
         $document = new Document();
+
+        $eventData = [
+            'category' => $category,
+            'document' => $document,
+        ];
+        $this->eventManager->dispatch('prepare_document_from_category_before', ['eventData' => $eventData]);
 
         $document->setUniqueId($category->getId() . '_' . self::OBJECT_TYPE . '_' . $category->getStoreId());
         $document->setObjectId($category->getId());
@@ -160,6 +175,12 @@ class CategoryPuller extends AbstractPuller
                 in_array($attribute->getFrontendInput(), QueryHelper::$multiValuedAttributeFrontendInput)
             );
         }
+
+        $eventData = [
+            'category' => $category,
+            'document' => $document,
+        ];
+        $this->eventManager->dispatch('prepare_document_from_category_after', ['eventData' => $eventData]);
 
         return $document;
     }
