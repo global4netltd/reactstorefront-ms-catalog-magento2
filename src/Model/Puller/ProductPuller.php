@@ -5,6 +5,8 @@ namespace G4NReact\MsCatalogMagento2\Model\Puller;
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
+use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Model\Product;
@@ -13,10 +15,8 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductColl
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Data\Collection as DataCollection;
-use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
-use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
-use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 
 /**
  * Class ProductPuller
@@ -52,6 +52,10 @@ class ProductPuller extends AbstractPuller
      * @var SearchTerms
      */
     protected $searchTerms;
+    /**
+     * @var QueryHelper
+     */
+    protected $queryHelper;
 
     /**
      * ProductPuller constructor
@@ -61,6 +65,8 @@ class ProductPuller extends AbstractPuller
      * @param Attribute $eavAttribute
      * @param JsonSerializer $jsonSerializer
      * @param ConfigHelper $magento2ConfigHelper
+     * @param SearchTerms $searchTerms
+     * @param QueryHelper $queryHelper
      */
     public function __construct(
         ProductCollectionFactory $productCollectionFactory,
@@ -68,14 +74,15 @@ class ProductPuller extends AbstractPuller
         Attribute $eavAttribute,
         JsonSerializer $jsonSerializer,
         ConfigHelper $magento2ConfigHelper,
-        SearchTerms $searchTerms
-    )
-    {
+        SearchTerms $searchTerms,
+        QueryHelper $queryHelper
+    ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->jsonSerializer = $jsonSerializer;
         $this->searchTerms = $searchTerms;
+        $this->queryHelper = $queryHelper;
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -90,7 +97,7 @@ class ProductPuller extends AbstractPuller
         $productCollection = $this->productCollectionFactory->create();
 
         if ($this->ids !== null) {
-            $productCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
+            $productCollection->addAttributeToFilter('entity_id', ['in' => $this->ids]);
         }
 
         $productCollection->addAttributeToSelect('*')
@@ -119,26 +126,22 @@ class ProductPuller extends AbstractPuller
         foreach ($product->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
 
-            if ($searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode())) {
-                if ($document->getField($searchTermField)) {
-                    $document->createField($searchTermField, $document->getField($searchTermField) . ' ' . $product->getData($attribute->getAttributeCode()));
-                } else {
-                    $document->createField(
-                        $searchTermField,
-                        $product->getData($attribute->getAttributeCode()),
-                        'string',
-                        true,
-                        true
-                    );
-                }
-            }
+//            if ($searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode())) {
+//                if ($document->getField($searchTermField)) {
+//                    $document->createField($searchTermField, $document->getField($searchTermField) . ' ' . $product->getData($attribute->getAttributeCode()));
+//                } else {
+//                    $document->createField(
+//                        $searchTermField,
+//                        $product->getData($attribute->getAttributeCode()),
+//                        'string',
+//                        true,
+//                        true
+//                    );
+//                }
+//            }
 
-            $document->createField(
-                $field,
-                $product->getData($field),
-                $this->magento2ConfigHelper->getAttributeFieldType($attribute),
-                $attribute->getIsFilterable() ? true : false,
-                in_array($attribute->getFrontendInput(), QueryHelper::$multiValuedAttributeFrontendInput)
+            $document->setField(
+                $this->queryHelper->getFieldByAttributeCode($attribute->getAttributeCode(), $product->getData($attribute->getAttributeCode()), 'catalog_category')
             );
         }
 
@@ -188,4 +191,3 @@ class ProductPuller extends AbstractPuller
         // TODO: Implement pull() method.
     }
 }
-
