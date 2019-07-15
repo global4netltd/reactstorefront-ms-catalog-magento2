@@ -132,4 +132,38 @@ class Query extends AbstractHelper
 
         return $field;
     }
+
+    /**
+     * @param AbstractAttribute $attribute
+     * @param mixed $value
+     * @return Field
+     */
+    public function getFieldByAttribute(AbstractAttribute $attribute, $value): Field
+    {
+        $attributeCode = $attribute->getAttributeCode();
+
+        if (isset(self::$fields[$attributeCode])) {
+            $field = self::$fields[$attributeCode];
+            $field->setValue($value);
+            return $field;
+        }
+
+        if (in_array($attributeCode, \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
+            $field = new Field($attributeCode, null, 'static', true, false);
+            self::$fields[$attributeCode] = $field;
+            $field->setValue($value);
+
+            return $field;
+        }
+
+        $fieldType = $this->getAttributeFieldType($attribute);
+        $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
+        $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
+
+        $field = new Field($attributeCode, null, $fieldType, $isFieldIndexable, $isMultiValued);
+        self::$fields[$attributeCode] = $field;
+        $field->setValue($value);
+
+        return $field;
+    }
 }

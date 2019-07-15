@@ -141,7 +141,7 @@ class ProductPuller extends AbstractPuller
 //            }
 
             $document->setField(
-                $this->queryHelper->getFieldByAttributeCode($attribute->getAttributeCode(), $product->getData($attribute->getAttributeCode()), 'catalog_category')
+                $this->queryHelper->getFieldByAttribute($attribute, $product->getData($attribute->getAttributeCode()))
             );
         }
 
