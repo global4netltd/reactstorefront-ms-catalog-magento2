@@ -126,9 +126,17 @@ class ProductPuller extends AbstractPuller
         foreach ($product->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
 
-//            if ($searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode())) {
+            ///////// @ToDo: Fix getting search terms
+            ///
+//            $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
+//            if ($searchTermField) {
 //                if ($document->getField($searchTermField)) {
-//                    $document->createField($searchTermField, $document->getField($searchTermField) . ' ' . $product->getData($attribute->getAttributeCode()));
+//                    $document->createField(
+//                        $searchTermField,
+//                        $document->getField($searchTermField)
+//                        . ' ' . $product->getData(
+//                            $attribute->getAttributeCode()
+//                        ));
 //                } else {
 //                    $document->createField(
 //                        $searchTermField,

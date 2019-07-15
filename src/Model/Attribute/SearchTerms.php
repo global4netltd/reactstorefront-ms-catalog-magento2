@@ -3,7 +3,9 @@
 namespace G4NReact\MsCatalogMagento2\Model\Attribute;
 
 use Magento\Eav\Model\AttributeRepository;
+use Magento\Eav\Model\Entity\Attribute;
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Exception\InputException;
 
 /**
  * Class SearchTerms
@@ -11,89 +13,93 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
  */
 class SearchTerms
 {
-    /** @var string use in react store front */
+    /**
+     * @var string use in react store front
+     */
     const USE_IN_REACT_STORE_FRONT = 'use_in_react_store_front';
     
-    /** @var string attribute weight in react store front */
+    /**
+     * @var string attribute weight in react store front
+     */
     const WEIGHT_REACT_STORE_FRONT = 'weight_react_store_front';
-    /**
-     * @var \Magento\Eav\Model\AttributeRepository
-     */
-    protected $attributeRepository;
-    /**
-     * @var \Magento\Framework\Api\SearchCriteriaBuilder
-     */
-    protected $searchCriteriaBuilder;
-    /**
-     * @var
-     */
-    protected $searchTerms;
 
     /**
-     * SearchTerms constructor.
+     * @var AttributeRepository
+     */
+    protected $attributeRepository;
+
+    /**
+     * @var SearchCriteriaBuilder
+     */
+    protected $searchCriteriaBuilder;
+
+    /**
+     * @var array
+     */
+    public static $searchTerms = [];
+
+    /**
+     * SearchTerms constructor
      *
-     * @param \Magento\Eav\Model\AttributeRepository $attributeRepository
-     * @param \Magento\Framework\Api\SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param AttributeRepository $attributeRepository
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
      */
     public function __construct(
         AttributeRepository $attributeRepository,
         SearchCriteriaBuilder $searchCriteriaBuilder
-    )
-    {
+    ) {
         $this->attributeRepository = $attributeRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     /**
      * @return array
-     * @throws \Magento\Framework\Exception\InputException
+     * @throws InputException
      */
     public function getAttributeSearchTerms()
     {
-        if(!$this->searchTerms) {
-            $attributes = $this->attributeRepository->getList(
-                \Magento\Catalog\Api\Data\ProductAttributeInterface::ENTITY_TYPE_CODE,
-                $this->searchCriteriaBuilder->create());
+        $getAttributeListStart = microtime(true);
+        $attributes = $this->attributeRepository->getList(
+            \Magento\Catalog\Api\Data\ProductAttributeInterface::ENTITY_TYPE_CODE,
+            $this->searchCriteriaBuilder->create());
+        echo '$getAttributeList: ' . (round(microtime(true) - $getAttributeListStart, 4)) . 's' . PHP_EOL;
 
-            $attr = [];
-            /** @var \Magento\Eav\Model\Entity\Attribute $attribute */
-            foreach ($attributes->getItems() as $attribute) {
-                if ($weight = (int) $attribute->getData(self::WEIGHT_REACT_STORE_FRONT) > 0) {
-                    $attr[$attribute->getAttributeCode()] = (int) $attribute->getData(self::WEIGHT_REACT_STORE_FRONT);
-                }
+        $attributeWeights = [];
+        /** @var Attribute $attribute */
+        foreach ($attributes->getItems() as $attribute) {
+            if ((int)$attribute->getData(self::WEIGHT_REACT_STORE_FRONT) > 0) {
+                $attributeWeights[$attribute->getAttributeCode()] = (int)$attribute->getData(self::WEIGHT_REACT_STORE_FRONT);
+            } else {
+                $attributeWeights[$attribute->getAttributeCode()] = false;
             }
-
-            $this->searchTerms = $attr;
         }
-        return $this->searchTerms;
+
+        self::$searchTerms = $attributeWeights;
+
+        return self::$searchTerms;
     }
 
     /**
      * @param $attributeCode
-     *
-     * @return bool|mixed
-     */
-    protected function checkIfAttributeCodeInSearchTerms($attributeCode)
-    {
-        if(isset($this->getAttributeSearchTerms()[$attributeCode])){
-            return $this->getAttributeSearchTerms()[$attributeCode];
-        }
-        
-        return false;
-    }
-
-    /**
-     * @param $attributeCode
-     *
-     * @return bool|string
+     * @return string|null
+     * @throws InputException
      */
     public function prepareSearchTermField($attributeCode)
     {
-        if($attributeSearchTerm = $this->checkIfAttributeCodeInSearchTerms($attributeCode)){
-            return 'search_terms_' . $attributeSearchTerm;
+        if (isset(self::$searchTerms[$attributeCode])) {
+            return (self::$searchTerms[$attributeCode] !== false)
+                ? ('search_terms_' . self::$searchTerms[$attributeCode])
+                : null;
+        }
+
+        $this->getAttributeSearchTerms();
+
+        if (isset(self::$searchTerms[$attributeCode])) {
+            return (self::$searchTerms[$attributeCode] !== false)
+                ? ('search_terms_' . self::$searchTerms[$attributeCode])
+                : null;
         }
         
-        return false;
+        return null;
     }
 }
-
