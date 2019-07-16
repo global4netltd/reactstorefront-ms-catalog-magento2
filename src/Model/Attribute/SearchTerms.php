@@ -86,13 +86,9 @@ class SearchTerms
      */
     public function prepareSearchTermField($attributeCode)
     {
-        if (isset(self::$searchTerms[$attributeCode])) {
-            return (self::$searchTerms[$attributeCode] !== false)
-                ? ('search_terms_' . self::$searchTerms[$attributeCode])
-                : null;
+        if (!self::$searchTerms) {
+            $this->getAttributeSearchTerms();
         }
-
-        $this->getAttributeSearchTerms();
 
         if (isset(self::$searchTerms[$attributeCode])) {
             return (self::$searchTerms[$attributeCode] !== false)

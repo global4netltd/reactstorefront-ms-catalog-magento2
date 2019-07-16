@@ -128,25 +128,25 @@ class ProductPuller extends AbstractPuller
 
             ///////// @ToDo: Fix getting search terms
             ///
-//            $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
-//            if ($searchTermField) {
-//                if ($document->getField($searchTermField)) {
-//                    $document->createField(
-//                        $searchTermField,
-//                        $document->getField($searchTermField)
-//                        . ' ' . $product->getData(
-//                            $attribute->getAttributeCode()
-//                        ));
-//                } else {
-//                    $document->createField(
-//                        $searchTermField,
-//                        $product->getData($attribute->getAttributeCode()),
-//                        'string',
-//                        true,
-//                        true
-//                    );
-//                }
-//            }
+            $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
+            if ($searchTermField) {
+                if ($document->getField($searchTermField)) {
+                    $document->createField(
+                        $searchTermField,
+                        $document->getField($searchTermField)
+                        . ' ' . $product->getData(
+                            $attribute->getAttributeCode()
+                        ));
+                } else {
+                    $document->createField(
+                        $searchTermField,
+                        $product->getData($attribute->getAttributeCode()),
+                        'string',
+                        true,
+                        true
+                    );
+                }
+            }
 
             $document->setField(
                 $this->queryHelper->getFieldByAttribute($attribute, $product->getData($attribute->getAttributeCode()))
@@ -163,11 +163,11 @@ class ProductPuller extends AbstractPuller
         );
 
         $document->createField(
-            'category_ids',
+            'category_id',
             $product->getCategoryIds(),
-            'int',
-            true,
-            true
+            QueryHelper::$mapAttributeCodeToFieldType['category_id']['type'] ?? 'int',
+            QueryHelper::$mapAttributeCodeToFieldType['category_id']['indexable'] ?? true,
+            QueryHelper::$mapAttributeCodeToFieldType['category_id']['multivalued'] ?? true
         );
 
         return $document;

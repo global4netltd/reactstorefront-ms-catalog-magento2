@@ -3,10 +3,10 @@
 namespace G4NReact\MsCatalogMagento2\Helper;
 
 use G4NReact\MsCatalog\Document\Field;
+use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\Exception\LocalizedException;
 
 /**
@@ -51,7 +51,16 @@ class Query extends AbstractHelper
      * @var array
      */
     public static $mapAttributeCodeToFieldType = [
-        'store_id' => 'int'
+        'store_id'    => [
+            'type'        => 'int',
+            'indexable'   => true,
+            'multivalued' => false,
+        ],
+        'category_id' => [
+            'type'        => 'int',
+            'indexable'   => true,
+            'multivalued' => true,
+        ],
     ];
 
     /**
@@ -82,7 +91,7 @@ class Query extends AbstractHelper
         $attributeType = $attribute->getBackendType();
 
         if (!$attributeType || $attributeType === 'static') {
-            $attributeType = self::$mapAttributeCodeToFieldType[$attribute->getAttributeCode()] ?? 'static';
+            $attributeType = self::$mapAttributeCodeToFieldType[$attribute->getAttributeCode()]['type'] ?? 'static';
 
             if ($attributeType === 'static' && $attribute->getFlatColumns()) {
                 $attributeType = $flatColumns[$attribute->getAttributeCode()]['type'] ?? 'static';
@@ -103,9 +112,10 @@ class Query extends AbstractHelper
      * @return Field
      * @throws LocalizedException
      */
-    public function getFieldByAttributeCode(string $attributeCode, $value, string $entityType = 'catalog_product'): Field
+    public function getFieldByAttributeCode(string $attributeCode, $value = null, string $entityType = 'catalog_product'): Field
     {
         if (isset(self::$fields[$entityType][$attributeCode])) {
+            /** @var Field $field */
             $field = self::$fields[$entityType][$attributeCode];
             $field->setValue($value);
             return $field;
@@ -113,6 +123,20 @@ class Query extends AbstractHelper
 
         if (in_array($attributeCode, \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
             $field = new Field($attributeCode, null, 'static', true, false);
+            self::$fields[$entityType][$attributeCode] = $field;
+            $field->setValue($value);
+
+            return $field;
+        }
+
+        if (in_array($attributeCode, array_keys(self::$mapAttributeCodeToFieldType))) {
+            $field = new Field(
+                $attributeCode,
+                null,
+                self::$mapAttributeCodeToFieldType[$attributeCode]['type'],
+                self::$mapAttributeCodeToFieldType[$attributeCode]['indexable'],
+                self::$mapAttributeCodeToFieldType[$attributeCode]['multivalued']
+            );
             self::$fields[$entityType][$attributeCode] = $field;
             $field->setValue($value);
 
@@ -138,12 +162,13 @@ class Query extends AbstractHelper
      * @param mixed $value
      * @return Field
      */
-    public function getFieldByAttribute(AbstractAttribute $attribute, $value): Field
+    public function getFieldByAttribute(AbstractAttribute $attribute, $value = null): Field
     {
         $attributeCode = $attribute->getAttributeCode();
         $entityType = $attribute->getEntityType()->getEntityTypeCode();
 
         if (isset(self::$fields[$entityType][$attributeCode])) {
+            /** @var Field $field */
             $field = self::$fields[$entityType][$attributeCode];
             $field->setValue($value);
             return $field;
@@ -151,6 +176,20 @@ class Query extends AbstractHelper
 
         if (in_array($attributeCode, \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
             $field = new Field($attributeCode, null, 'static', true, false);
+            self::$fields[$entityType][$attributeCode] = $field;
+            $field->setValue($value);
+
+            return $field;
+        }
+
+        if (in_array($attributeCode, array_keys(self::$mapAttributeCodeToFieldType))) {
+            $field = new Field(
+                $attributeCode,
+                null,
+                self::$mapAttributeCodeToFieldType[$attributeCode]['type'],
+                self::$mapAttributeCodeToFieldType[$attributeCode]['indexable'],
+                self::$mapAttributeCodeToFieldType[$attributeCode]['multivalued']
+            );
             self::$fields[$entityType][$attributeCode] = $field;
             $field->setValue($value);
 
