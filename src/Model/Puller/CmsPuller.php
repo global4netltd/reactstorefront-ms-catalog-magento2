@@ -10,6 +10,7 @@ use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Cms\Model\ResourceModel\Page\Collection as CmsPageCollection;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
+use Magento\Framework\Event\Manager as EventManager;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -59,22 +60,30 @@ class CmsPuller extends AbstractPuller
     protected $eavConfig;
 
     /**
+     * @var EventManager
+     */
+    protected $eventManager;
+
+    /**
      * CmsPuller constructor
      *
      * @param CmsPageCollectionFactory $cmsPageCollectionFactory
      * @param EavConfig $eavConfig
      * @param Attribute $eavAttribute
      * @param ConfigHelper $magento2ConfigHelper
+     * @param EventManager $eventManager
      */
     public function __construct(
         CmsPageCollectionFactory $cmsPageCollectionFactory,
         EavConfig $eavConfig,
         Attribute $eavAttribute,
-        ConfigHelper $magento2ConfigHelper
+        ConfigHelper $magento2ConfigHelper,
+        EventManager $eventManager
     ) {
         $this->cmsPageCollectionFactory = $cmsPageCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
+        $this->eventManager = $eventManager;
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -109,6 +118,8 @@ class CmsPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
+        $this->eventManager->dispatch('ms_catalog_get_cms_page_collection', ['collection' => $cmsPageCollection]);
+
         return $cmsPageCollection;
     }
 
@@ -123,6 +134,12 @@ class CmsPuller extends AbstractPuller
 
         $document = new Document();
 
+        $eventData = [
+            'cms_page' => $page,
+            'document' => $document,
+        ];
+        $this->eventManager->dispatch('prepare_document_from_cms_page_before', ['eventData' => $eventData]);
+
         $document->setUniqueId($page->getId() . '_' . self::OBJECT_TYPE . '_' . $storeId);
         $document->setObjectId($page->getId());
         $document->setObjectType(self::OBJECT_TYPE);
@@ -136,6 +153,12 @@ class CmsPuller extends AbstractPuller
                 is_array($value)
             );
         }
+
+        $eventData = [
+            'cms_page' => $page,
+            'document' => $document,
+        ];
+        $this->eventManager->dispatch('prepare_document_from_cms_page_after', ['eventData' => $eventData]);
 
         return $document;
     }
