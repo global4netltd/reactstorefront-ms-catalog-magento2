@@ -2,6 +2,7 @@
 
 namespace G4NReact\MsCatalogMagento2\Model\Attribute;
 
+use Magento\Catalog\Api\Data\ProductAttributeInterface;
 use Magento\Eav\Model\AttributeRepository;
 use Magento\Eav\Model\Entity\Attribute;
 use Magento\Framework\Api\SearchCriteriaBuilder;
@@ -17,7 +18,7 @@ class SearchTerms
      * @var string use in react store front
      */
     const USE_IN_REACT_STORE_FRONT = 'use_in_react_store_front';
-    
+
     /**
      * @var string attribute weight in react store front
      */
@@ -60,8 +61,9 @@ class SearchTerms
     {
         $getAttributeListStart = microtime(true);
         $attributes = $this->attributeRepository->getList(
-            \Magento\Catalog\Api\Data\ProductAttributeInterface::ENTITY_TYPE_CODE,
-            $this->searchCriteriaBuilder->create());
+            ProductAttributeInterface::ENTITY_TYPE_CODE,
+            $this->searchCriteriaBuilder->create()
+        );
         echo '$getAttributeList: ' . (round(microtime(true) - $getAttributeListStart, 4)) . 's' . PHP_EOL;
 
         $attributeWeights = [];
@@ -95,7 +97,7 @@ class SearchTerms
                 ? ('search_terms_' . self::$searchTerms[$attributeCode])
                 : null;
         }
-        
+
         return null;
     }
 }
