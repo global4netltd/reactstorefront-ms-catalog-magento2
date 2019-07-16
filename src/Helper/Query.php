@@ -77,7 +77,8 @@ class Query extends AbstractHelper
     public function __construct(
         EavConfig $eavConfig,
         Context $context
-    ) {
+    )
+    {
         $this->eavConfig = $eavConfig;
         parent::__construct($context);
     }
@@ -114,21 +115,20 @@ class Query extends AbstractHelper
      */
     public function getFieldByAttributeCode(string $attributeCode, $value = null, string $entityType = 'catalog_product'): Field
     {
-        if (isset(self::$fields[$entityType][$attributeCode])) {
-            /** @var Field $field */
-            $field = self::$fields[$entityType][$attributeCode];
-            $field->setValue($value);
-            return $field;
-        }
+//        if (isset(self::$fields[$entityType][$attributeCode])) {
+//            /** @var Field $field */
+//            $field = self::$fields[$entityType][$attributeCode];
+//            $field->setValue($value);
+//
+//            return $field;
+//        } @todo cache attributes 
 
         if (in_array($attributeCode, \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
             $field = new Field($attributeCode, null, 'static', true, false);
-            self::$fields[$entityType][$attributeCode] = $field;
             $field->setValue($value);
 
             return $field;
         }
-
         if (in_array($attributeCode, array_keys(self::$mapAttributeCodeToFieldType))) {
             $field = new Field(
                 $attributeCode,
@@ -137,7 +137,6 @@ class Query extends AbstractHelper
                 self::$mapAttributeCodeToFieldType[$attributeCode]['indexable'],
                 self::$mapAttributeCodeToFieldType[$attributeCode]['multivalued']
             );
-            self::$fields[$entityType][$attributeCode] = $field;
             $field->setValue($value);
 
             return $field;
@@ -151,7 +150,6 @@ class Query extends AbstractHelper
         $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
 
         $field = new Field($attributeCode, null, $fieldType, $isFieldIndexable, $isMultiValued);
-        self::$fields[$entityType][$attributeCode] = $field;
         $field->setValue($value);
 
         return $field;
@@ -171,6 +169,7 @@ class Query extends AbstractHelper
             /** @var Field $field */
             $field = self::$fields[$entityType][$attributeCode];
             $field->setValue($value);
+
             return $field;
         }
 
