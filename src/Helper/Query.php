@@ -61,6 +61,11 @@ class Query extends AbstractHelper
             'indexable'   => true,
             'multivalued' => true,
         ],
+        'final_price' => [
+            'type'        => 'float',
+            'indexable'   => true,
+            'multivalued' => false,
+        ],
     ];
 
     /**

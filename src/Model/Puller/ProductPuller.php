@@ -15,6 +15,7 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductColl
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Data\Collection as DataCollection;
+use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 
@@ -58,6 +59,11 @@ class ProductPuller extends AbstractPuller
     protected $queryHelper;
 
     /**
+     * @var EventManager
+     */
+    protected $eventManager;
+
+    /**
      * ProductPuller constructor
      *
      * @param ProductCollectionFactory $productCollectionFactory
@@ -67,6 +73,7 @@ class ProductPuller extends AbstractPuller
      * @param ConfigHelper $magento2ConfigHelper
      * @param SearchTerms $searchTerms
      * @param QueryHelper $queryHelper
+     * @param EventManager $eventManager
      */
     public function __construct(
         ProductCollectionFactory $productCollectionFactory,
@@ -75,7 +82,8 @@ class ProductPuller extends AbstractPuller
         JsonSerializer $jsonSerializer,
         ConfigHelper $magento2ConfigHelper,
         SearchTerms $searchTerms,
-        QueryHelper $queryHelper
+        QueryHelper $queryHelper,
+        EventManager $eventManager
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
@@ -83,6 +91,7 @@ class ProductPuller extends AbstractPuller
         $this->jsonSerializer = $jsonSerializer;
         $this->searchTerms = $searchTerms;
         $this->queryHelper = $queryHelper;
+        $this->eventManager = $eventManager;
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -104,7 +113,11 @@ class ProductPuller extends AbstractPuller
             ->addStoreFilter()
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage)
+            ->addFinalPrice()
+            ->addUrlRewrite()
             ->addMediaGalleryData();
+
+        $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
 
         return $productCollection;
     }
@@ -119,6 +132,12 @@ class ProductPuller extends AbstractPuller
         $product = $this->pageArray[$this->position];
         $document = new Document();
 
+        $eventData = [
+            'product' => $product,
+            'document' => $document,
+        ];
+        $this->eventManager->dispatch('prepare_document_from_product_before', ['eventData' => $eventData]);
+
         $document->setUniqueId($product->getId() . '_' . self::OBJECT_TYPE . '_' . $product->getStoreId());
         $document->setObjectId($product->getId());
         $document->setObjectType(self::OBJECT_TYPE);
@@ -126,8 +145,6 @@ class ProductPuller extends AbstractPuller
         foreach ($product->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
 
-            ///////// @ToDo: Fix getting search terms
-            ///
             $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
             if ($searchTermField) {
                 if ($document->getField($searchTermField)) {
@@ -169,6 +186,12 @@ class ProductPuller extends AbstractPuller
             QueryHelper::$mapAttributeCodeToFieldType['category_id']['indexable'] ?? true,
             QueryHelper::$mapAttributeCodeToFieldType['category_id']['multivalued'] ?? true
         );
+
+        $eventData = [
+            'product' => $product,
+            'document' => $document,
+        ];
+        $this->eventManager->dispatch('prepare_document_from_product_after', ['eventData' => $eventData]);
 
         return $document;
     }
