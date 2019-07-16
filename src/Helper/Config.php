@@ -69,6 +69,7 @@ class Config extends AbstractHelper
     {
         $engine = (int)$this->getConfigByPath('ms_catalog_indexer/engine_settings/engine');
 
+        $isDebugEnabled = (bool)$this->getConfigByPath('ms_catalog_indexer/general_settings/logging');
         $pullerPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/puller_pagesize');
         $pusherPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_pagesize');
         $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_delete_index');
@@ -89,6 +90,7 @@ class Config extends AbstractHelper
         $configParams['puller_page_size'] = $pullerPageSize;
         $configParams['pusher_page_size'] = $pusherPageSize;
         $configParams['pusher_delete_index'] = $deleteIndexBeforeReindex;
+        $configParams['debug_enabled'] = $isDebugEnabled;
 
         return new MsCatalogConfig($configParams);
     }
