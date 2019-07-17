@@ -17,12 +17,15 @@ class SearchTerms
     /**
      * @var string use in react store front
      */
-    const USE_IN_REACT_STORE_FRONT = 'use_in_react_store_front';
+    const USE_IN_REACT_STORE_FRONT = 'use_in_react_storefront';
 
     /**
      * @var string attribute weight in react store front
      */
     const WEIGHT_REACT_STORE_FRONT = 'weight_react_store_front';
+    
+    /** @var string force indexing in react storefront */
+    const FORCE_INDEXING_IN_REACT_STORE_FRONT = 'force_indexing_in_react_storefront';
 
     /**
      * @var AttributeRepository
