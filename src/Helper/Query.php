@@ -24,7 +24,6 @@ class Query extends AbstractHelper
      * @var array
      */
     public static $multiValuedAttributeFrontendInput = [
-        'select',
         'multiselect',
     ];
 
