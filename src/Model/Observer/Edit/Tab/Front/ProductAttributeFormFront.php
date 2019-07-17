@@ -18,7 +18,7 @@ class ProductAttributeFormFront implements ObserverInterface
      * @var \Magento\Config\Model\Config\Source\Yesno
      */
     protected $configSourceYesNo;
-    
+
     /**
      * @var \G4NReact\MsCatalogMagento2\Model\Config\Source\AttributeWeight
      */
@@ -47,26 +47,39 @@ class ProductAttributeFormFront implements ObserverInterface
         $form = $observer->getForm();
 
         $fieldset = $form->getElement('front_fieldset');
-        
+
         $fieldset->addField(
             SearchTerms::USE_IN_REACT_STORE_FRONT,
             'select',
             [
-                'name'     => SearchTerms::USE_IN_REACT_STORE_FRONT,
-                'label'    => __('Use in React Store Front'),
-                'title'    => __('Use in React Store Front'),
-                'values'   => $this->configSourceYesNo->toOptionArray(),
+                'name' => SearchTerms::USE_IN_REACT_STORE_FRONT,
+                'label' => __('Use in React Store Front'),
+                'title' => __('Use in React Store Front'),
+                'values' => $this->configSourceYesNo->toOptionArray(),
+                'note' => __('Add attribute as field to React Storefront search engine')
             ]
         );
-        
+
         $fieldset->addField(
             SearchTerms::WEIGHT_REACT_STORE_FRONT,
             'select',
             [
-                'name'     => SearchTerms::WEIGHT_REACT_STORE_FRONT,
-                'label'    => __('Attribute weight React Store Front'),
-                'title'    => __('Attribute weight React Store Front'),
-                'values'   => $this->configAttributeWeight->toOptionArray(),
+                'name' => SearchTerms::WEIGHT_REACT_STORE_FRONT,
+                'label' => __('Attribute weight React Store Front'),
+                'title' => __('Attribute weight React Store Front'),
+                'values' => $this->configAttributeWeight->toOptionArray(),
+            ]
+        );
+
+        $fieldset->addField(
+            SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT,
+            'select',
+            [
+                'name' => SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT,
+                'label' => __('Force indexing in React Storefront'),
+                'title' => __('Force indexing in React Storefront'),
+                'values' => $this->configSourceYesNo->toOptionArray(),
+                'note' => __('Set field as indexable in React Storefront search engine')
             ]
         );
     }
