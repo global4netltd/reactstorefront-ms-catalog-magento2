@@ -3,10 +3,11 @@
 namespace G4NReact\MsCatalogMagento2\Helper;
 
 use G4NReact\MsCatalog\Document\Field;
+use G4NReact\MsCatalog\Helper;
 use G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
+use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Api\Data\CategoryAttributeInterface;
 use Magento\Catalog\Api\Data\ProductAttributeInterface;
-use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -64,6 +65,18 @@ class Query extends AbstractHelper
      * @var array
      */
     public static $mapAttributeCodeToFieldType = [
+        'ids'         => [
+            'type'        => Field::FIELD_TYPE_STATIC,
+            'indexable'   => true,
+            'multivalued' => false,
+            'real_code'   => 'id'
+        ],
+        'skus'         => [
+            'type'        => Field::FIELD_TYPE_TEXT, // @todo change to string
+            'indexable'   => true,
+            'multivalued' => false,
+            'real_code'   => 'sku'
+        ],
         'store_id'    => [
             'type'        => 'int',
             'indexable'   => true,
@@ -174,7 +187,7 @@ class Query extends AbstractHelper
 
         if (in_array($attributeCode, array_keys(self::$mapAttributeCodeToFieldType))) {
             $field = new Field(
-                $attributeCode,
+                self::$mapAttributeCodeToFieldType[$attributeCode]['real_code'] ?? $attributeCode,
                 null,
                 self::$mapAttributeCodeToFieldType[$attributeCode]['type'],
                 self::$mapAttributeCodeToFieldType[$attributeCode]['indexable'],
@@ -197,7 +210,7 @@ class Query extends AbstractHelper
 
         $field = new Field($attributeCode, null, $fieldType, $isFieldIndexable, $isMultiValued);
         $field->setValue($value);
-        
+
         if ($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT)) {
             $field->setIndexable(true);
         }
@@ -223,7 +236,7 @@ class Query extends AbstractHelper
             return $field;
         }
 
-        if (in_array($attributeCode, \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
+        if (in_array($attributeCode, Helper::$coreDocumentFieldsNames)) {
             $field = new Field($attributeCode, null, 'static', true, false);
             self::$fields[$entityType][$attributeCode] = $field;
             $field->setValue($value);
@@ -263,7 +276,7 @@ class Query extends AbstractHelper
      */
     public function getCoreField(string $attributeCode, $value)
     {
-        if (in_array($attributeCode, \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
+        if (in_array($attributeCode, Helper::$coreDocumentFieldsNames)) {
             $field = new Field($attributeCode, null, 'static', true, false);
             $field->setValue($value);
 

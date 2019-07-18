@@ -6,10 +6,11 @@ use G4NReact\MsCatalogMagento2\Model\Config\Source\AttributesReactFilter;
 use Global4net\Core\Model\Logger;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\CategoryRepository;
+use Magento\Catalog\Model\Product;
+use Magento\Eav\Api\Data\AttributeInterface;
 use Magento\Eav\Model\AttributeRepository;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\InputException;
-use Magento\Eav\Api\Data\AttributeInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\SerializerInterface;
 
@@ -56,8 +57,7 @@ class ReactStoreFrontFilters
         CategoryRepository $categoryRepository,
         SerializerInterface $serializer,
         Logger $logger
-    )
-    {
+    ) {
         $this->attributeRepository = $attributeRepository;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->categoryRepository = $categoryRepository;
@@ -75,7 +75,7 @@ class ReactStoreFrontFilters
             ->addFilter('is_filterable', true)
             ->create();
 
-        return $this->attributeRepository->getList(Category::ENTITY, $criteria)->getItems();
+        return $this->attributeRepository->getList(Product::ENTITY, $criteria)->getItems();
     }
 
     /**
@@ -98,7 +98,7 @@ class ReactStoreFrontFilters
             );
         }
 
-        if($filters) {
+        if ($filters) {
             if ($jsonFormat) {
                 return $filters;
             }
