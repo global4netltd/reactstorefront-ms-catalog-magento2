@@ -34,16 +34,16 @@ class Query extends AbstractHelper
     public static $mapFrontendInputToFieldType = [
         'boolean'     => 'boolean',
         'date'        => 'datetime',
-        'gallery'     => 'string',
+        'gallery'     => 'text',
         'hidden'      => 'string',
         'image'       => 'string',
         'media_image' => 'string',
-        'multiline'   => 'string',
+        'multiline'   => 'text',
         'multiselect' => 'int',
         'price'       => 'float',
         'select'      => 'int',
-        'text'        => 'text',
-        'textarea'    => 'string',
+        'text'        => 'string',
+        'textarea'    => 'text',
         'weight'      => 'float',
     ];
 
