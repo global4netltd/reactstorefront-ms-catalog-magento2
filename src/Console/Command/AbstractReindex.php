@@ -112,7 +112,6 @@ abstract class AbstractReindex extends Command implements ReindexInterface
     {
         // start store emulation
         $this->emulation->startEnvironmentEmulation($store->getId(), 'adminhtml', true);
-
         if ($this->magento2ConfigHelper->isIndexerEnabled()) {
             $puller = $this->getPuller();
             $config = $this->magento2ConfigHelper->getConfiguration();
@@ -147,7 +146,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
     {
         $ids = explode(',', reset($ids));
         foreach ($ids as $key => $id) {
-            if (!is_int($id)) {
+            if (!is_numeric($id)) {
                 unset($ids[$key]);
             }
         }
