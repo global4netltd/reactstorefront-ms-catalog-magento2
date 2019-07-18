@@ -12,4 +12,9 @@
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Catalog\Model\Category\DataProvider">
+        <plugin sortOrder="1" name="g4nReeactMsCatalogMagento2DataProvider"
+                type="G4NReact\MsCatalogMagento2\Plugin\Model\Category\DataProviderPlugin"/>
+    </type>
 </config>
+
