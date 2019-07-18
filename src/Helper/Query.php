@@ -4,6 +4,8 @@ namespace G4NReact\MsCatalogMagento2\Helper;
 
 use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
+use Magento\Catalog\Api\Data\CategoryAttributeInterface;
+use Magento\Catalog\Api\Data\ProductAttributeInterface;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
@@ -48,6 +50,9 @@ class Query extends AbstractHelper
         'weight'      => 'float',
     ];
 
+    /**
+     * @var array
+     */
     public static $normalizeFieldType = [
         'smallint'  => 'int',
         'integer'   => 'int',
@@ -97,7 +102,6 @@ class Query extends AbstractHelper
 
     /**
      * @param AbstractAttribute $attribute
-     *
      * @return string
      */
     public function getAttributeFieldType(AbstractAttribute $attribute)
@@ -124,14 +128,38 @@ class Query extends AbstractHelper
 
     /**
      * @param string $attributeCode
-     * @param null $value
-     * @param string $entityType
-     *
+     * @param mixed|null $value
      * @return Field
      * @throws LocalizedException
      */
-    public function getFieldByAttributeCode(string $attributeCode, $value = null, string $entityType = 'catalog_product'): Field
+    public function getFieldByCategoryAttributeCode(string $attributeCode, $value = null): Field
     {
+        return $this->getFieldByAttributeCode($attributeCode, $value, CategoryAttributeInterface::ENTITY_TYPE_CODE);
+    }
+
+    /**
+     * @param string $attributeCode
+     * @param mixed|null $value
+     * @return Field
+     * @throws LocalizedException
+     */
+    public function getFieldByProductAttributeCode(string $attributeCode, $value = null): Field
+    {
+        return $this->getFieldByAttributeCode($attributeCode, $value, ProductAttributeInterface::ENTITY_TYPE_CODE);
+    }
+
+    /**
+     * @param string $attributeCode
+     * @param mixed|null $value
+     * @param string $entityType
+     * @return Field
+     * @throws LocalizedException
+     */
+    public function getFieldByAttributeCode(
+        string $attributeCode,
+        $value = null,
+        string $entityType = ProductAttributeInterface::ENTITY_TYPE_CODE
+    ): Field {
 //        if (isset(self::$fields[$entityType][$attributeCode])) {
 //            /** @var Field $field */
 //            $field = self::$fields[$entityType][$attributeCode];
@@ -180,7 +208,6 @@ class Query extends AbstractHelper
     /**
      * @param AbstractAttribute $attribute
      * @param mixed $value
-     *
      * @return Field
      */
     public function getFieldByAttribute(AbstractAttribute $attribute, $value = null): Field
@@ -232,7 +259,6 @@ class Query extends AbstractHelper
 
     /**
      * @param string $attributeCode
-     *
      * @return bool|Field
      */
     public function getCoreField(string $attributeCode, $value)
