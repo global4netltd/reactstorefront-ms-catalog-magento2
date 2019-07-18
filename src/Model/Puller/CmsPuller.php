@@ -5,6 +5,7 @@ namespace G4NReact\MsCatalogMagento2\Model\Puller;
 use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
+use G4NReact\MsCatalogMagento2\Helper\Cms\Field;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Cms\Model\ResourceModel\Page\Collection as CmsPageCollection;
@@ -24,25 +25,6 @@ class CmsPuller extends AbstractPuller
      * @var string Type of object
      */
     const OBJECT_TYPE = 'cms';
-
-    /**
-     * @var array
-     */
-    public static $fieldTypeMap = [
-        'page_id' => 'int',
-        'title' => 'string',
-        'page_layout' => 'string',
-        'meta_keywords' => 'string',
-        'meta_description' => 'string',
-        'identifier' => 'string',
-        'content_heading' => 'string',
-        'content' => 'string',
-        'creation_time' => 'datetime',
-        'update_time' => 'datetime',
-        'is_active' => 'bool',
-        'sort_order' => 'int',
-        'store_id' => 'int',
-    ];
 
     /**
      * @var CmsPageCollectionFactory
@@ -148,7 +130,7 @@ class CmsPuller extends AbstractPuller
             $document->createField(
                 $field,
                 $page->getData($field),
-                self::$fieldTypeMap[$field] ?? 'string',
+                Field::$fieldTypeMap[$field] ?? 'string',
                 false,
                 is_array($value)
             );

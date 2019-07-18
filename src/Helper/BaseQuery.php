@@ -8,12 +8,13 @@ use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
+use \G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
 
 /**
- * Class Query
+ * Class BaseQuery
  * @package G4NReact\MsCatalogMagento2\Helper
  */
-class Query extends AbstractHelper
+class BaseQuery extends AbstractHelper
 {
     /**
      * @var array
@@ -31,38 +32,38 @@ class Query extends AbstractHelper
      * @var array
      */
     public static $mapFrontendInputToFieldType = [
-        'boolean'     => 'boolean',
-        'date'        => 'datetime',
-        'gallery'     => 'string',
-        'hidden'      => 'string',
-        'image'       => 'string',
+        'boolean' => 'boolean',
+        'date' => 'datetime',
+        'gallery' => 'string',
+        'hidden' => 'string',
+        'image' => 'string',
         'media_image' => 'string',
-        'multiline'   => 'string',
+        'multiline' => 'string',
         'multiselect' => 'int',
-        'price'       => 'float',
-        'select'      => 'int',
-        'text'        => 'text',
-        'textarea'    => 'string',
-        'weight'      => 'float',
+        'price' => 'float',
+        'select' => 'int',
+        'text' => 'text',
+        'textarea' => 'string',
+        'weight' => 'float',
     ];
 
     /**
      * @var array
      */
     public static $mapAttributeCodeToFieldType = [
-        'store_id'    => [
-            'type'        => 'int',
-            'indexable'   => true,
+        'store_id' => [
+            'type' => 'int',
+            'indexable' => true,
             'multivalued' => false,
         ],
         'category_id' => [
-            'type'        => 'int',
-            'indexable'   => true,
+            'type' => 'int',
+            'indexable' => true,
             'multivalued' => true,
         ],
         'final_price' => [
-            'type'        => 'float',
-            'indexable'   => true,
+            'type' => 'float',
+            'indexable' => true,
             'multivalued' => false,
         ],
     ];
@@ -89,6 +90,7 @@ class Query extends AbstractHelper
 
     /**
      * @param AbstractAttribute $attribute
+     *
      * @return string
      */
     public function getAttributeFieldType(AbstractAttribute $attribute)
@@ -112,8 +114,9 @@ class Query extends AbstractHelper
 
     /**
      * @param string $attributeCode
-     * @param mixed $value
+     * @param null $value
      * @param string $entityType
+     *
      * @return Field
      * @throws LocalizedException
      */
@@ -125,14 +128,12 @@ class Query extends AbstractHelper
 //            $field->setValue($value);
 //
 //            return $field;
-//        } @todo cache attributes 
+//        } @todo cache attributes
 
-        if (in_array($attributeCode, \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
-            $field = new Field($attributeCode, null, 'static', true, false);
-            $field->setValue($value);
-
+        if($field = $this->getCoreField($attributeCode, $value)){
             return $field;
         }
+
         if (in_array($attributeCode, array_keys(self::$mapAttributeCodeToFieldType))) {
             $field = new Field(
                 $attributeCode,
@@ -148,8 +149,11 @@ class Query extends AbstractHelper
 
         /** @var AbstractAttribute $attribute */
         $attribute = $this->eavConfig->getAttribute($entityType, $attributeCode);
-
-        $fieldType = $this->getAttributeFieldType($attribute);
+        if ($entityType == HelperCmsField::OBJECT_TYPE && isset(HelperCmsField::$fieldTypeMap[$attributeCode])) {
+            $fieldType = HelperCmsField::$fieldTypeMap[$attributeCode];
+        } else {
+            $fieldType = $this->getAttributeFieldType($attribute);
+        }
         $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
         $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
 
@@ -162,6 +166,7 @@ class Query extends AbstractHelper
     /**
      * @param AbstractAttribute $attribute
      * @param mixed $value
+     *
      * @return Field
      */
     public function getFieldByAttribute(AbstractAttribute $attribute, $value = null): Field
@@ -208,5 +213,22 @@ class Query extends AbstractHelper
         $field->setValue($value);
 
         return $field;
+    }
+
+    /**
+     * @param string $attributeCode
+     *
+     * @return bool|Field
+     */
+    public function getCoreField(string $attributeCode, $value)
+    {
+        if (in_array($attributeCode, \G4NReact\MsCatalog\Helper::$coreDocumentFieldsNames)) {
+            $field = new Field($attributeCode, null, 'static', true, false);
+            $field->setValue($value);
+
+            return $field;
+        }
+
+        return false;
     }
 }
