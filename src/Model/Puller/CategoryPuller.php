@@ -72,7 +72,7 @@ class CategoryPuller extends AbstractPuller
      * @param Attribute $eavAttribute
      * @param ConfigHelper $magento2ConfigHelper
      * @param ResourceConnection $resource
-     * @param Magento2HelperQuery $helperQuery
+     * @param QueryHelper $helperQuery
      * @param StoreManagerInterface $storeManager
      * @param EventManager $eventManager
      */

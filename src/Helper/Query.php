@@ -3,12 +3,12 @@
 namespace G4NReact\MsCatalogMagento2\Helper;
 
 use G4NReact\MsCatalog\Document\Field;
+use G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
-use \G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
 
 /**
  * Class Query
@@ -47,6 +47,13 @@ class Query extends AbstractHelper
         'weight'      => 'float',
     ];
 
+    public static $normalizeFieldType = [
+        'smallint'  => 'int',
+        'integer'   => 'int',
+        'bool'      => 'boolean',
+        'timestamp' => 'datetime',
+    ];
+
     /**
      * @var array
      */
@@ -82,8 +89,7 @@ class Query extends AbstractHelper
     public function __construct(
         EavConfig $eavConfig,
         Context $context
-    )
-    {
+    ) {
         $this->eavConfig = $eavConfig;
         parent::__construct($context);
     }
@@ -109,6 +115,8 @@ class Query extends AbstractHelper
                 $attributeType = self::$mapFrontendInputToFieldType[$attribute->getFrontendInput()] ?? 'static';
             }
         }
+
+        $attributeType = self::$normalizeFieldType[$attributeType] ?? $attributeType;
 
         return $attributeType === 'static' ? 'string' : $attributeType;
     }
