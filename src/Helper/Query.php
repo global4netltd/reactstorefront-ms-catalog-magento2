@@ -101,6 +101,7 @@ class Query extends AbstractHelper
             $attributeType = self::$mapAttributeCodeToFieldType[$attribute->getAttributeCode()]['type'] ?? 'static';
 
             if ($attributeType === 'static' && $attribute->getFlatColumns()) {
+                $flatColumns = $attribute->getFlatColumns();
                 $attributeType = $flatColumns[$attribute->getAttributeCode()]['type'] ?? 'static';
             }
 
