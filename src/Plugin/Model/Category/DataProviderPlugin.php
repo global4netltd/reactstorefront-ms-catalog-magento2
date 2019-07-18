@@ -6,6 +6,7 @@ use G4NReact\MsCatalogMagento2\Model\Attribute\ReactStoreFrontFilters;
 use G4NReact\MsCatalogMagento2\Model\Config\Source\AttributesReactFilter;
 use Magento\Catalog\Model\Category\DataProvider;
 use Magento\Framework\App\RequestInterface;
+use Magento\Framework\Serialize\SerializerInterface;
 
 /**
  * Class DataProviderPlugin
@@ -27,25 +28,26 @@ class DataProviderPlugin
     protected $attributesReactFilter;
 
     /**
-     * @var RequestInterface
+     * @var SerializerInterface
      */
-    protected $request;
+    protected $serializer;
 
     /**
      * DataProviderPlugin constructor.
      *
      * @param ReactStoreFrontFilters $reactStoreFrontFilters
      * @param AttributesReactFilter $attributesReactFilter
+     * @param SerializerInterface $serializer
      */
     public function __construct(
         ReactStoreFrontFilters $reactStoreFrontFilters,
         AttributesReactFilter $attributesReactFilter,
-        RequestInterface $request
+        SerializerInterface $serializer
     )
     {
         $this->reactStoreFrontFilters = $reactStoreFrontFilters;
         $this->attributesReactFilter = $attributesReactFilter;
-        $this->request = $request;
+        $this->serializer = $serializer;
     }
 
     /**
@@ -71,16 +73,21 @@ class DataProviderPlugin
      */
     public function afterGetData(DataProvider $subject, $result)
     {
-        $categoryId = $this->request->getParam('id');
-        $filters = $this->reactStoreFrontFilters->getReactStoreFrontFiltersByCategoryId($categoryId);
-        foreach ($filters[AttributesReactFilter::FACETS] as $facets){
-            $result[$categoryId][$facets . self::REACT_STOREFRONT_FILTERS_SUFFIX][0] = AttributesReactFilter::FACETS;
-        }
-        foreach ($filters[AttributesReactFilter::STATS] as $stats){
-            if(!isset($result[$categoryId][$stats . self::REACT_STOREFRONT_FILTERS_SUFFIX])){
-                $result[$categoryId][$stats . self::REACT_STOREFRONT_FILTERS_SUFFIX][0] = null;
+        $category = $subject->getCurrentCategory();
+        $categoryId = $category->getId();
+        $filters = $category->getReactStorefrontFilters();
+        
+        if($filters) {
+            $filters = $this->serializer->unserialize($filters);
+            foreach ($filters[AttributesReactFilter::FACETS] as $facets) {
+                $result[$categoryId][$facets . self::REACT_STOREFRONT_FILTERS_SUFFIX][0] = AttributesReactFilter::FACETS;
             }
-            $result[$categoryId][$stats . self::REACT_STOREFRONT_FILTERS_SUFFIX][1] = AttributesReactFilter::STATS;
+            foreach ($filters[AttributesReactFilter::STATS] as $stats) {
+                if (!isset($result[$categoryId][$stats . self::REACT_STOREFRONT_FILTERS_SUFFIX])) {
+                    $result[$categoryId][$stats . self::REACT_STOREFRONT_FILTERS_SUFFIX][0] = null;
+                }
+                $result[$categoryId][$stats . self::REACT_STOREFRONT_FILTERS_SUFFIX][1] = AttributesReactFilter::STATS;
+            }
         }
         return $result;
     }

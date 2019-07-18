@@ -71,7 +71,10 @@ class ReactStoreFrontFilters
      */
     public function getCategoryAttributes()
     {
-        $criteria = $this->searchCriteriaBuilder->create();
+        $criteria = $this->searchCriteriaBuilder
+            ->addFilter('is_filterable', true)
+            ->create();
+
         return $this->attributeRepository->getList(Category::ENTITY, $criteria)->getItems();
     }
 
@@ -95,11 +98,15 @@ class ReactStoreFrontFilters
             );
         }
 
-        if ($jsonFormat) {
-            return $filters;
+        if($filters) {
+            if ($jsonFormat) {
+                return $filters;
+            }
+
+            return $this->serializer->unserialize($filters);
         }
 
-        return $this->serializer->unserialize($filters);
+        return [];
     }
 
     /**
