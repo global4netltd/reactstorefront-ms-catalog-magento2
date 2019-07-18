@@ -11,10 +11,10 @@ use Magento\Framework\Exception\LocalizedException;
 use \G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
 
 /**
- * Class BaseQuery
+ * Class Query
  * @package G4NReact\MsCatalogMagento2\Helper
  */
-class BaseQuery extends AbstractHelper
+class Query extends AbstractHelper
 {
     /**
      * @var array
@@ -32,38 +32,38 @@ class BaseQuery extends AbstractHelper
      * @var array
      */
     public static $mapFrontendInputToFieldType = [
-        'boolean' => 'boolean',
-        'date' => 'datetime',
-        'gallery' => 'string',
-        'hidden' => 'string',
-        'image' => 'string',
+        'boolean'     => 'boolean',
+        'date'        => 'datetime',
+        'gallery'     => 'string',
+        'hidden'      => 'string',
+        'image'       => 'string',
         'media_image' => 'string',
-        'multiline' => 'string',
+        'multiline'   => 'string',
         'multiselect' => 'int',
-        'price' => 'float',
-        'select' => 'int',
-        'text' => 'text',
-        'textarea' => 'string',
-        'weight' => 'float',
+        'price'       => 'float',
+        'select'      => 'int',
+        'text'        => 'text',
+        'textarea'    => 'string',
+        'weight'      => 'float',
     ];
 
     /**
      * @var array
      */
     public static $mapAttributeCodeToFieldType = [
-        'store_id' => [
-            'type' => 'int',
-            'indexable' => true,
+        'store_id'    => [
+            'type'        => 'int',
+            'indexable'   => true,
             'multivalued' => false,
         ],
         'category_id' => [
-            'type' => 'int',
-            'indexable' => true,
+            'type'        => 'int',
+            'indexable'   => true,
             'multivalued' => true,
         ],
         'final_price' => [
-            'type' => 'float',
-            'indexable' => true,
+            'type'        => 'float',
+            'indexable'   => true,
             'multivalued' => false,
         ],
     ];
@@ -130,7 +130,7 @@ class BaseQuery extends AbstractHelper
 //            return $field;
 //        } @todo cache attributes
 
-        if($field = $this->getCoreField($attributeCode, $value)){
+        if ($field = $this->getCoreField($attributeCode, $value)) {
             return $field;
         }
 

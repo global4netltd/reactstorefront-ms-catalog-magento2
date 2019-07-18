@@ -3,14 +3,14 @@
 namespace G4NReact\MsCatalogMagento2\Helper\Cms;
 
 use G4NReact\MsCatalog\Document\Field;
-use G4NReact\MsCatalogMagento2\Helper\BaseQuery;
+use G4NReact\MsCatalogMagento2\Helper\Query;
 use G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
 
 /**
  * Class CmsQuery
  * @package G4NReact\MsCatalogMagento2\Helper\Cms
  */
-class CmsQuery extends BaseQuery
+class CmsQuery extends Query
 {
     /**
      * @param string $attributeCode

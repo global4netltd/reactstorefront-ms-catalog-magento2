@@ -6,8 +6,7 @@ use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
-use G4NReact\MsCatalogMagento2\Helper\BaseQuery as Magento2HelperQuery;
-use G4NReact\MsCatalogMagento2\Helper\BaseQuery as QueryHelper;
+use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
@@ -83,7 +82,7 @@ class CategoryPuller extends AbstractPuller
         Attribute $eavAttribute,
         ConfigHelper $magento2ConfigHelper,
         ResourceConnection $resource,
-        Magento2HelperQuery $helperQuery,
+        QueryHelper $helperQuery,
         StoreManagerInterface $storeManager,
         EventManager $eventManager
     ) {
