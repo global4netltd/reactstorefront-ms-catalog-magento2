@@ -84,7 +84,8 @@ class ProductPuller extends AbstractPuller
         SearchTerms $searchTerms,
         QueryHelper $queryHelper,
         EventManager $eventManager
-    ) {
+    )
+    {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -133,7 +134,7 @@ class ProductPuller extends AbstractPuller
         $document = new Document();
 
         $eventData = [
-            'product' => $product,
+            'product'  => $product,
             'document' => $document,
         ];
         $this->eventManager->dispatch('prepare_document_from_product_before', ['eventData' => $eventData]);
@@ -147,20 +148,15 @@ class ProductPuller extends AbstractPuller
 
             $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
             if ($searchTermField) {
-                if ($document->getField($searchTermField)) {
-                    $document->createField(
-                        $searchTermField,
-                        $document->getField($searchTermField)
-                        . ' ' . $product->getData(
-                            $attribute->getAttributeCode()
-                        ));
+                if ($field = $document->getField($searchTermField)) {
+                    $field->setValue($field->getValue() . $value);
                 } else {
                     $document->createField(
                         $searchTermField,
-                        $product->getData($attribute->getAttributeCode()),
-                        'string',
+                        $value,
+                        Document\Field::FIELD_TYPE_TEXT,
                         true,
-                        true
+                        false
                     );
                 }
             }
@@ -188,7 +184,7 @@ class ProductPuller extends AbstractPuller
         );
 
         $eventData = [
-            'product' => $product,
+            'product'  => $product,
             'document' => $document,
         ];
         $this->eventManager->dispatch('prepare_document_from_product_after', ['eventData' => $eventData]);

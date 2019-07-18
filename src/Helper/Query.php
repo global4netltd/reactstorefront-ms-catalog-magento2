@@ -4,6 +4,7 @@ namespace G4NReact\MsCatalogMagento2\Helper;
 
 use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
+use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\App\Helper\AbstractHelper;
@@ -168,6 +169,10 @@ class Query extends AbstractHelper
 
         $field = new Field($attributeCode, null, $fieldType, $isFieldIndexable, $isMultiValued);
         $field->setValue($value);
+        
+        if ($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT)) {
+            $field->setIndexable(true);
+        }
 
         return $field;
     }

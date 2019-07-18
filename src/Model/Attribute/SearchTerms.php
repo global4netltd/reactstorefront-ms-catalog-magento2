@@ -27,6 +27,9 @@ class SearchTerms
     /** @var string force indexing in react storefront */
     const FORCE_INDEXING_IN_REACT_STORE_FRONT = 'force_indexing_in_react_storefront';
 
+    /** @var string search terms field name */
+    const SEARCH_TERMS_FIELD_NAME = 'search_terms';
+
     /**
      * @var AttributeRepository
      */
@@ -72,6 +75,8 @@ class SearchTerms
         $attributeWeights = [];
         /** @var Attribute $attribute */
         foreach ($attributes->getItems() as $attribute) {
+            if ($attribute->getAttributeCode() == 'availability') {
+            }
             if ((int)$attribute->getData(self::WEIGHT_REACT_STORE_FRONT) > 0) {
                 $attributeWeights[$attribute->getAttributeCode()] = (int)$attribute->getData(self::WEIGHT_REACT_STORE_FRONT);
             } else {
@@ -97,7 +102,7 @@ class SearchTerms
 
         if (isset(self::$searchTerms[$attributeCode])) {
             return (self::$searchTerms[$attributeCode] !== false)
-                ? ('search_terms_' . self::$searchTerms[$attributeCode])
+                ? (self::SEARCH_TERMS_FIELD_NAME . '_' .self::$searchTerms[$attributeCode])
                 : null;
         }
 
