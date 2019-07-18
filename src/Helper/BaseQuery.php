@@ -206,6 +206,7 @@ class BaseQuery extends AbstractHelper
 
         $fieldType = $this->getAttributeFieldType($attribute);
         $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
+        $isFieldIndexable = $attribute->getForceIndexingInReactStorefront() ? true : $isFieldIndexable;
         $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
 
         $field = new Field($attributeCode, null, $fieldType, $isFieldIndexable, $isMultiValued);
