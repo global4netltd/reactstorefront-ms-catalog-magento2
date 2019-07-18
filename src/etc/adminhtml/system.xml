@@ -111,6 +111,10 @@
                 <field id="image_size_swatch_image" translate="label comment" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Set swatch image size</label>
                 </field>
+                <field id="automatic_detection_of_filters_in_category" translate="label" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Automatic detection of filters in category</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
         </section>
     </system>
