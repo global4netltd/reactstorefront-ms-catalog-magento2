@@ -93,6 +93,7 @@ class CategoryPuller extends AbstractPuller
         $this->helperQuery = $helperQuery;
         $this->storeManager = $storeManager;
         $this->eventManager = $eventManager;
+        $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -152,7 +153,7 @@ class CategoryPuller extends AbstractPuller
         $document->createField(
             'category_facets',
             $filterableAttributesCodesList,
-            'string',
+            Document\Field::FIELD_TYPE_STRING,
             false
         );
 

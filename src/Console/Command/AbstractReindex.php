@@ -3,6 +3,8 @@
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
 use Exception;
+use G4NReact\MsCatalog\Client\ClientFactory;
+use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalogIndexer\Indexer;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
@@ -14,6 +16,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use G4NReact\MsCatalog\ResponseInterface;
 
 /**
  * Class AbstractReindex
@@ -63,7 +66,8 @@ abstract class AbstractReindex extends Command implements ReindexInterface
         Emulation $emulation,
         AppState $appState,
         ?string $name = null
-    ) {
+    )
+    {
         $this->magento2ConfigHelper = $magento2ConfigHelper;
         $this->emulation = $emulation;
         $this->appState = $appState;
@@ -83,6 +87,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
     /**
      * @param InputInterface $input
      * @param OutputInterface $output
+     *
      * @return void
      */
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -90,7 +95,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
         try {
             $start = microtime(true);
             foreach ($this->magento2ConfigHelper->getAllStores() as $store) {
-                $this->appState->emulateAreaCode('adminhtml', function() use ($input, $output, $store) {
+                $this->appState->emulateAreaCode('adminhtml', function () use ($input, $output, $store) {
                     $this->reindex($input, $output, $store);
                 });
             }
@@ -106,6 +111,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
      * @param InputInterface $input
      * @param OutputInterface $output
      * @param StoreInterface $store
+     *
      * @throws NoSuchEntityException
      */
     public function reindex(InputInterface $input, OutputInterface $output, StoreInterface $store)
@@ -130,6 +136,9 @@ abstract class AbstractReindex extends Command implements ReindexInterface
             }
 
             $indexer = new Indexer($puller, $config);
+            if ($config->getPusherDeleteIndex()) {
+                $this->clearIndexByObjectType($puller->getType(), $config, $store->getId());
+            }
             $indexer->reindex();
             echo self::SUCCESS_INFORMATION . PHP_EOL;
         }
@@ -140,6 +149,7 @@ abstract class AbstractReindex extends Command implements ReindexInterface
 
     /**
      * @param array $ids
+     *
      * @return void
      */
     public function prepareIds(array &$ids): void
@@ -172,6 +182,36 @@ abstract class AbstractReindex extends Command implements ReindexInterface
                 false
             ),
         ];
+    }
+
+    /**
+     * @param string $type
+     * @param $config
+     * @param $storeId
+     *
+     * @return ResponseInterface
+     * @throws Exception
+     */
+    protected function clearIndexByObjectType(string $type, $config, $storeId)
+    {
+        $client = ClientFactory::getInstance($config);
+        if ($type) {
+            return $client->deleteByFields(
+                [
+                    new Field(
+                        'object_type',
+                        $type
+                    ),
+                    new Field(
+                        'store_id',
+                        $storeId,
+                        'int',
+                        true,
+                        false
+                    )
+                ]
+            );
+        }
     }
 
     /**

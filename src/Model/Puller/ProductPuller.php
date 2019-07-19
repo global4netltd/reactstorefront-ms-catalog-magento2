@@ -93,6 +93,7 @@ class ProductPuller extends AbstractPuller
         $this->searchTerms = $searchTerms;
         $this->queryHelper = $queryHelper;
         $this->eventManager = $eventManager;
+        $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -170,7 +171,7 @@ class ProductPuller extends AbstractPuller
         $document->createField(
             'media_gallery',
             $mediaGalleryJson,
-            'string',
+            Document\Field::FIELD_TYPE_TEXT,
             false,
             false
         );
@@ -178,7 +179,7 @@ class ProductPuller extends AbstractPuller
         $document->createField(
             'category_id',
             $product->getCategoryIds(),
-            QueryHelper::$mapAttributeCodeToFieldType['category_id']['type'] ?? 'int',
+            QueryHelper::$mapAttributeCodeToFieldType['category_id']['type'] ?? Document\Field::FIELD_TYPE_INT,
             QueryHelper::$mapAttributeCodeToFieldType['category_id']['indexable'] ?? true,
             QueryHelper::$mapAttributeCodeToFieldType['category_id']['multivalued'] ?? true
         );
