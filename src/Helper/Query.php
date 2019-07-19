@@ -5,7 +5,6 @@ namespace G4NReact\MsCatalogMagento2\Helper;
 use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalog\Helper;
 use G4NReact\MsCatalogMagento2\Helper\Cms\CmsQuery;
-use G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Api\Data\CategoryAttributeInterface;
 use Magento\Catalog\Api\Data\ProductAttributeInterface;
@@ -177,7 +176,7 @@ class Query extends AbstractHelper
      */
     public function getFieldByCmsPageColumnName(string $columnName, $value = null) : Field
     {
-        if($coreField = $this->getCoreField($columnName, $value)){
+        if ($coreField = $this->getCoreField($columnName, $value)) {
             return $coreField;
         }
 
