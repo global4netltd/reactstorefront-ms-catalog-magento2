@@ -54,6 +54,11 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     public $ids;
 
     /**
+     * @var string
+     */
+    public $type;
+
+    /**
      * @var ConfigHelper
      */
     protected $magento2ConfigHelper;
@@ -113,6 +118,26 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         $this->ids = $ids;
 
         return $this;
+    }
+
+    /**
+     * @param string $type
+     *
+     * @return $this
+     */
+    public function setType(string $type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
     }
 
     /**

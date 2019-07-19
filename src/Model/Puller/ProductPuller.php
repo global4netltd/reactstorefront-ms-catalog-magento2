@@ -93,6 +93,7 @@ class ProductPuller extends AbstractPuller
         $this->searchTerms = $searchTerms;
         $this->queryHelper = $queryHelper;
         $this->eventManager = $eventManager;
+        $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
     }

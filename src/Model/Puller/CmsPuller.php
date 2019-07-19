@@ -73,6 +73,7 @@ class CmsPuller extends AbstractPuller
         $this->eavAttribute = $eavAttribute;
         $this->eventManager = $eventManager;
         $this->helperCmsField = $helperCmsField;
+        $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
     }
