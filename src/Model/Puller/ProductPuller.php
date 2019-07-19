@@ -170,7 +170,7 @@ class ProductPuller extends AbstractPuller
         $document->createField(
             'media_gallery',
             $mediaGalleryJson,
-            'string',
+            Document\Field::FIELD_TYPE_TEXT,
             false,
             false
         );
@@ -178,7 +178,7 @@ class ProductPuller extends AbstractPuller
         $document->createField(
             'category_id',
             $product->getCategoryIds(),
-            QueryHelper::$mapAttributeCodeToFieldType['category_id']['type'] ?? 'int',
+            QueryHelper::$mapAttributeCodeToFieldType['category_id']['type'] ?? Document\Field::FIELD_TYPE_INT,
             QueryHelper::$mapAttributeCodeToFieldType['category_id']['indexable'] ?? true,
             QueryHelper::$mapAttributeCodeToFieldType['category_id']['multivalued'] ?? true
         );

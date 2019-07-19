@@ -152,7 +152,7 @@ class CategoryPuller extends AbstractPuller
         $document->createField(
             'category_facets',
             $filterableAttributesCodesList,
-            'string',
+            Document\Field::FIELD_TYPE_STRING,
             false
         );
 
