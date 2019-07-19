@@ -47,6 +47,11 @@ class CmsPuller extends AbstractPuller
     protected $eventManager;
 
     /**
+     * @var Field
+     */
+    protected $helperCmsField;
+
+    /**
      * CmsPuller constructor
      *
      * @param CmsPageCollectionFactory $cmsPageCollectionFactory
@@ -60,12 +65,14 @@ class CmsPuller extends AbstractPuller
         EavConfig $eavConfig,
         Attribute $eavAttribute,
         ConfigHelper $magento2ConfigHelper,
-        EventManager $eventManager
+        EventManager $eventManager,
+        Field $helperCmsField
     ) {
         $this->cmsPageCollectionFactory = $cmsPageCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->eventManager = $eventManager;
+        $this->helperCmsField = $helperCmsField;
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -130,9 +137,9 @@ class CmsPuller extends AbstractPuller
             $document->createField(
                 $field,
                 $page->getData($field),
-                Field::$fieldTypeMap[$field] ?? 'string',
+                $this->helperCmsField->getFieldTypeByCmsColumnName($field)?? 'string',
                 false,
-                is_array($value)
+                Field::getIsCmsMultivalued($field, $value)
             );
         }
 

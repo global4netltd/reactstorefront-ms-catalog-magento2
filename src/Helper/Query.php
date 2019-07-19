@@ -4,6 +4,7 @@ namespace G4NReact\MsCatalogMagento2\Helper;
 
 use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalog\Helper;
+use G4NReact\MsCatalogMagento2\Helper\Cms\CmsQuery;
 use G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Api\Data\CategoryAttributeInterface;
@@ -100,6 +101,11 @@ class Query extends AbstractHelper
     protected $eavConfig;
 
     /**
+     * @var CmsQuery
+     */
+    protected $cmsQuery;
+
+    /**
      * Query constructor
      *
      * @param EavConfig $eavConfig
@@ -107,9 +113,11 @@ class Query extends AbstractHelper
      */
     public function __construct(
         EavConfig $eavConfig,
-        Context $context
+        Context $context,
+        CmsQuery $cmsQuery
     ) {
         $this->eavConfig = $eavConfig;
+        $this->cmsQuery = $cmsQuery;
         parent::__construct($context);
     }
 
@@ -162,6 +170,21 @@ class Query extends AbstractHelper
     }
 
     /**
+     * @param string $columnName
+     * @param null $value
+     *
+     * @return Field
+     */
+    public function getFieldByCmsPageColumnName(string $columnName, $value = null) : Field
+    {
+        if($coreField = $this->getCoreField($columnName, $value)){
+            return $coreField;
+        }
+
+        return $this->cmsQuery->getFieldByCmsColumnName($columnName, $value);
+    }
+
+    /**
      * @param string $attributeCode
      * @param mixed|null $value
      * @param string $entityType
@@ -200,11 +223,8 @@ class Query extends AbstractHelper
 
         /** @var AbstractAttribute $attribute */
         $attribute = $this->eavConfig->getAttribute($entityType, $attributeCode);
-        if ($entityType == HelperCmsField::OBJECT_TYPE && isset(HelperCmsField::$fieldTypeMap[$attributeCode])) {
-            $fieldType = HelperCmsField::$fieldTypeMap[$attributeCode];
-        } else {
-            $fieldType = $this->getAttributeFieldType($attribute);
-        }
+
+        $fieldType = $this->getAttributeFieldType($attribute);
         $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
         $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
 

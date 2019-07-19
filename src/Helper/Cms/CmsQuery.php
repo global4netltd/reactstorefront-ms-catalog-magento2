@@ -5,40 +5,49 @@ namespace G4NReact\MsCatalogMagento2\Helper\Cms;
 use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalogMagento2\Helper\Query;
 use G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
+use Magento\Eav\Model\Config as EavConfig;
+use Magento\Framework\App\Helper\Context;
 
 /**
  * Class CmsQuery
  * @package G4NReact\MsCatalogMagento2\Helper\Cms
  */
-class CmsQuery extends Query
+class CmsQuery
 {
+
     /**
-     * @param string $attributeCode
+     * @var HelperCmsField
+     */
+    protected $helperCmsField;
+
+    /**
+     * CmsQuery constructor.
+     *
+     * @param HelperCmsField $helperCmsField
+     */
+    public function __construct(
+        HelperCmsField $helperCmsField
+    )
+    {
+        $this->helperCmsField = $helperCmsField;
+    }
+
+    /**
+     * @param string $columnName
      * @param null $value
-     * @param string $entityType
      *
      * @return Field
-     * @throws \Magento\Framework\Exception\LocalizedException
      */
-    public function getFieldByAttributeCode(string $attributeCode, $value = null, string $entityType = 'catalog_product'): Field
+    public function getFieldByCmsColumnName(string $columnName, $value = null)
     {
-        if($field = $this->getCoreField($attributeCode, $value)){
-            return $field;
-        }
+        $type = $this->helperCmsField->getFieldTypeByCmsColumnName($columnName);
 
-        /** @var AbstractAttribute $attribute */
-        $attribute = $this->eavConfig->getAttribute($entityType, $attributeCode);
-        if(isset(HelperCmsField::$fieldTypeMap[$attributeCode])){
-            $fieldType = HelperCmsField::$fieldTypeMap[$attributeCode];
-        }else {
-            $fieldType = $this->getAttributeFieldType($attribute);
-        }
-        $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
-        $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
-
-        $field = new Field($attributeCode, null, $fieldType, $isFieldIndexable, $isMultiValued);
-        $field->setValue($value);
-
-        return $field;
+        return new Field(
+            $columnName,
+            $value,
+            $type,
+            false,
+            HelperCmsField::getIsCmsMultivalued($columnName, $value)
+        );
     }
 }
