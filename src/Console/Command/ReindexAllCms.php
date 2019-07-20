@@ -2,10 +2,8 @@
 
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
-use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
-use G4NReact\MsCatalogMagento2\Model\Puller\CmsPuller;
-use Magento\Framework\App\State as AppState;
-use Magento\Store\Model\App\Emulation;
+use G4NReact\MsCatalogMagento2\Model\Indexer\AbstractIndexer;
+use G4NReact\MsCatalogMagento2\Model\Indexer\CmsIndexer;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
@@ -15,28 +13,22 @@ use Symfony\Component\Console\Input\InputOption;
 class ReindexAllCms extends AbstractReindex
 {
     /**
-     * @var CmsPuller
+     * @var CmsIndexer
      */
-    protected $cmsPuller;
+    protected $cmsIndexer;
 
     /**
      * ReindexAllCms constructor
      *
-     * @param CmsPuller $cmsPuller
-     * @param ConfigHelper $magento2ConfigHelper
-     * @param Emulation $emulation
-     * @param AppState $appState
+     * @param CmsIndexer $cmsIndexer
      * @param string|null $name
      */
     public function __construct(
-        CmsPuller $cmsPuller,
-        ConfigHelper $magento2ConfigHelper,
-        Emulation $emulation,
-        AppState $appState,
-        ?string $name = null
+        CmsIndexer $cmsIndexer,
+        string $name = null
     ) {
-        $this->cmsPuller = $cmsPuller;
-        parent::__construct($magento2ConfigHelper, $emulation, $appState, $name);
+        $this->cmsIndexer = $cmsIndexer;
+        parent::__construct($name);
     }
 
     /**
@@ -79,10 +71,10 @@ class ReindexAllCms extends AbstractReindex
     }
 
     /**
-     * @return CmsPuller
+     * @return AbstractIndexer
      */
-    public function getPuller(): CmsPuller
+    public function getIndexer()
     {
-        return $this->cmsPuller;
+        return $this->cmsIndexer;
     }
 }

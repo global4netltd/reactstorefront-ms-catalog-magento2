@@ -2,10 +2,8 @@
 
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
-use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
-use G4NReact\MsCatalogMagento2\Model\Puller\ProductPuller;
-use Magento\Framework\App\State as AppState;
-use Magento\Store\Model\App\Emulation;
+use G4NReact\MsCatalogMagento2\Model\Indexer\AbstractIndexer;
+use G4NReact\MsCatalogMagento2\Model\Indexer\ProductIndexer;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
@@ -15,28 +13,22 @@ use Symfony\Component\Console\Input\InputOption;
 class ReindexAllProduct extends AbstractReindex
 {
     /**
-     * @var ProductPuller
+     * @var ProductIndexer
      */
-    protected $productPuller;
+    protected $productIndexer;
 
     /**
      * ReindexAllProduct constructor
      *
-     * @param ProductPuller $productPuller
-     * @param ConfigHelper $magento2ConfigHelper
-     * @param Emulation $emulation
-     * @param AppState $appState
+     * @param ProductIndexer $productIndexer
      * @param string|null $name
      */
     public function __construct(
-        ProductPuller $productPuller,
-        ConfigHelper $magento2ConfigHelper,
-        Emulation $emulation,
-        AppState $appState,
-        ?string $name = null
+        ProductIndexer $productIndexer,
+        string $name = null
     ) {
-        $this->productPuller = $productPuller;
-        parent::__construct($magento2ConfigHelper, $emulation, $appState, $name);
+        $this->productIndexer = $productIndexer;
+        parent::__construct($name);
     }
 
     /**
@@ -79,10 +71,10 @@ class ReindexAllProduct extends AbstractReindex
     }
 
     /**
-     * @return ProductPuller
+     * @return AbstractIndexer
      */
-    public function getPuller(): ProductPuller
+    public function getIndexer()
     {
-        return $this->productPuller;
+        return $this->productIndexer;
     }
 }

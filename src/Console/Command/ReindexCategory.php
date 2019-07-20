@@ -2,10 +2,8 @@
 
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
-use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
-use G4NReact\MsCatalogMagento2\Model\Puller\CategoryPuller;
-use Magento\Framework\App\State as AppState;
-use Magento\Store\Model\App\Emulation;
+use G4NReact\MsCatalogMagento2\Model\Indexer\AbstractIndexer;
+use G4NReact\MsCatalogMagento2\Model\Indexer\CategoryIndexer;
 
 /**
  * Class ReindexCategory
@@ -14,28 +12,22 @@ use Magento\Store\Model\App\Emulation;
 class ReindexCategory extends AbstractReindex
 {
     /**
-     * @var CategoryPuller
+     * @var CategoryIndexer
      */
-    protected $categoryPuller;
+    protected $categoryIndexer;
 
     /**
      * ReindexCategory constructor
      *
-     * @param CategoryPuller $categoryPuller
-     * @param ConfigHelper $magento2ConfigHelper
-     * @param Emulation $emulation
-     * @param AppState $appState
+     * @param CategoryIndexer $categoryIndexer
      * @param string|null $name
      */
     public function __construct(
-        CategoryPuller $categoryPuller,
-        ConfigHelper $magento2ConfigHelper,
-        Emulation $emulation,
-        AppState $appState,
-        ?string $name = null
+        CategoryIndexer $categoryIndexer,
+        string $name = null
     ) {
-        $this->categoryPuller = $categoryPuller;
-        parent::__construct($magento2ConfigHelper, $emulation, $appState, $name);
+        parent::__construct($name);
+        $this->categoryIndexer = $categoryIndexer;
     }
 
     /**
@@ -55,10 +47,10 @@ class ReindexCategory extends AbstractReindex
     }
 
     /**
-     * @return CategoryPuller
+     * @return AbstractIndexer
      */
-    public function getPuller(): CategoryPuller
+    public function getIndexer()
     {
-        return $this->categoryPuller;
+        return $this->categoryIndexer;
     }
 }

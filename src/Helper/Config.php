@@ -5,7 +5,6 @@ namespace G4NReact\MsCatalogMagento2\Helper;
 use Exception;
 use G4NReact\MsCatalog\Config as MsCatalogConfig;
 use G4NReact\MsCatalog\Helper as ConfigHelper;
-use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\NoSuchEntityException;

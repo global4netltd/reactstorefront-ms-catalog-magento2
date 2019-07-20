@@ -17,6 +17,7 @@ use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Data\Collection as DataCollection;
 use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 
 /**
@@ -74,6 +75,7 @@ class ProductPuller extends AbstractPuller
      * @param SearchTerms $searchTerms
      * @param QueryHelper $queryHelper
      * @param EventManager $eventManager
+     * @throws NoSuchEntityException
      */
     public function __construct(
         ProductCollectionFactory $productCollectionFactory,
@@ -93,7 +95,6 @@ class ProductPuller extends AbstractPuller
         $this->searchTerms = $searchTerms;
         $this->queryHelper = $queryHelper;
         $this->eventManager = $eventManager;
-        $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -107,8 +108,8 @@ class ProductPuller extends AbstractPuller
         /** @var ProductCollection $productCollection */
         $productCollection = $this->productCollectionFactory->create();
 
-        if ($this->ids !== null) {
-            $productCollection->addAttributeToFilter('entity_id', ['in' => $this->ids]);
+        if ($this->getIds()) {
+            $productCollection->addAttributeToFilter('entity_id', ['in' => $this->getIds()]);
         }
 
         $productCollection->addAttributeToSelect('*')
@@ -217,5 +218,13 @@ class ProductPuller extends AbstractPuller
     public function pull(QueryInterface $query = null): ResponseInterface
     {
         // TODO: Implement pull() method.
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return self::OBJECT_TYPE;
     }
 }

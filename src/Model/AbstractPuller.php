@@ -6,6 +6,7 @@ use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Iterator;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class AbstractPuller
@@ -16,12 +17,12 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     /**
      * @var int
      */
-    const PAGE_SIZE_DEFAULT = 10;
+    const PAGE_SIZE_DEFAULT = 100;
 
     /**
      * @var int
      */
-    public $totalSize = 1000;
+    public $totalSize = null;
 
     /**
      * @var int
@@ -66,13 +67,13 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     /**
      * Puller constructor
      * @param ConfigHelper $magento2ConfigHelper
+     * @throws NoSuchEntityException
      */
     public function __construct(
         ConfigHelper $magento2ConfigHelper
     ) {
         $this->magento2ConfigHelper = $magento2ConfigHelper;
         $this->position = 0;
-        $this->totalSize = $this->getCollection()->getSize();
         $this->curPage = 0;
 
         $this->pageSize = $magento2ConfigHelper->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize') ?: self::PAGE_SIZE_DEFAULT;
@@ -96,17 +97,18 @@ abstract class AbstractPuller implements Iterator, PullerInterface
 
         return $this;
     }
-    
-    public function getCollection()
-    {
-    }
+
+    /**
+     * @return mixed
+     */
+    public abstract function getCollection();
 
     /**
      * @return array
      */
     public function getIds(): array
     {
-        return $this->ids;
+        return is_array($this->ids) ? $this->ids : [];
     }
 
     /**
@@ -135,10 +137,7 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     /**
      * @return string
      */
-    public function getType()
-    {
-        return $this->type;
-    }
+    public abstract function getType(): string;
 
     /**
      * @inheritdoc
@@ -181,6 +180,13 @@ abstract class AbstractPuller implements Iterator, PullerInterface
      */
     public function valid()
     {
+        $collection = null;
+
+        if (is_null($this->totalSize)) {
+            $collection = $this->getCollection();
+            $this->totalSize = $collection->getSize();
+        }
+
         if ($this->totalPosition == $this->totalSize) {
             return false;
         }
@@ -190,10 +196,10 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         }
 
         if ($this->position == 0) {
-            $collection = $this->getCollection();
+            $collection = is_null($collection) ? $this->getCollection() : $collection;
             $this->curPage++;
 
-            $this->pageArray = array();
+            $this->pageArray = [];
             foreach ($collection as $item) {
                 $this->pageArray[] = $item;
             }

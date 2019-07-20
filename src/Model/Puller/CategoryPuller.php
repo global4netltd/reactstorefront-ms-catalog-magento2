@@ -218,4 +218,12 @@ class CategoryPuller extends AbstractPuller
     {
         // TODO: Implement pull() method.
     }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return self::OBJECT_TYPE;
+    }
 }

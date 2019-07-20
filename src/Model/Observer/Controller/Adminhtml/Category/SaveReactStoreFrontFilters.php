@@ -27,8 +27,7 @@ class SaveReactStoreFrontFilters implements ObserverInterface
      */
     public function __construct(
         ReactStoreFrontFilters $reactStoreFrontFilters
-    )
-    {
+    ) {
         $this->reactStoreFrontFilters = $reactStoreFrontFilters;
     }
 
