@@ -2,6 +2,7 @@
 
 namespace G4NReact\MsCatalogMagento2\Model\Attribute;
 
+use Exception;
 use G4NReact\MsCatalogMagento2\Model\Config\Source\AttributesReactFilter;
 use Global4net\Core\Model\Logger;
 use Magento\Catalog\Model\Category;
@@ -50,6 +51,9 @@ class ReactStoreFrontFilters
      *
      * @param AttributeRepository $attributeRepository
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param CategoryRepository $categoryRepository
+     * @param SerializerInterface $serializer
+     * @param Logger $logger
      */
     public function __construct(
         AttributeRepository $attributeRepository,
@@ -81,7 +85,9 @@ class ReactStoreFrontFilters
     /**
      * @param int $id
      *
+     * @param bool $jsonFormat
      * @return array
+     * @throws Exception
      */
     public function getReactStoreFrontFiltersByCategoryId(int $id, $jsonFormat = false)
     {
@@ -91,7 +97,7 @@ class ReactStoreFrontFilters
             $filters = $category->getData('react_storefront_filters');
         } catch (NoSuchEntityException $exception) {
             $this->logger->log(
-                'G4NReact\MsCatalogMagento2',
+                'g4n-react-ms-catalog-magento2',
                 [
                     'exception' => $exception->getMessage()
                 ]

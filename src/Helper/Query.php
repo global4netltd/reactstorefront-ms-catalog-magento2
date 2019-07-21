@@ -42,7 +42,7 @@ class Query extends AbstractHelper
      * @var array
      */
     public static $mapBackendTypeToFieldType = [
-        'text'      => Field::FIELD_TYPE_STRING,
+        'text' => Field::FIELD_TYPE_STRING,
     ];
 
     /**
@@ -84,7 +84,7 @@ class Query extends AbstractHelper
             'multivalued' => false,
             'real_code'   => 'id'
         ],
-        'skus'         => [
+        'skus'        => [
             'type'        => Field::FIELD_TYPE_STRING,
             'indexable'   => true,
             'multivalued' => false,
@@ -99,6 +99,11 @@ class Query extends AbstractHelper
             'type'        => Field::FIELD_TYPE_INT,
             'indexable'   => true,
             'multivalued' => true,
+        ],
+        'request_path' => [
+            'type'        => Field::FIELD_TYPE_STRING,
+            'indexable'   => true,
+            'multivalued' => false,
         ],
         'final_price' => [
             'type'        => Field::FIELD_TYPE_FLOAT,
@@ -203,7 +208,7 @@ class Query extends AbstractHelper
      * @param null $value
      * @return Field
      */
-    public function getFieldByCmsPageColumnName(string $columnName, $value = null) : Field
+    public function getFieldByCmsPageColumnName(string $columnName, $value = null): Field
     {
         if ($coreField = $this->getCoreField($columnName, $value)) {
             return $coreField;
