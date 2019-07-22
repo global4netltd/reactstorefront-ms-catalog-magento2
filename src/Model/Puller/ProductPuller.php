@@ -50,10 +50,12 @@ class ProductPuller extends AbstractPuller
      * @var JsonSerializer
      */
     protected $jsonSerializer;
+
     /**
      * @var SearchTerms
      */
     protected $searchTerms;
+
     /**
      * @var QueryHelper
      */
@@ -169,27 +171,21 @@ class ProductPuller extends AbstractPuller
         }
 
         $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
-        $document->createField(
-            'media_gallery',
-            $mediaGalleryJson,
-            Document\Field::FIELD_TYPE_TEXT,
-            false,
-            false
+        $document->setField(
+            $this->queryHelper
+                ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
         );
 
-        $document->createField(
-            'category_id',
-            $product->getCategoryIds(),
-            QueryHelper::$mapAttributeCodeToFieldType['category_id']['type'] ?? Document\Field::FIELD_TYPE_INT,
-            QueryHelper::$mapAttributeCodeToFieldType['category_id']['indexable'] ?? true,
-            QueryHelper::$mapAttributeCodeToFieldType['category_id']['multivalued'] ?? true
+        $document->setField(
+            $this->queryHelper
+                ->getFieldByAttributeCode('category_id', $product->getCategoryIds())
         );
 
         $eventData = [
             'product'  => $product,
             'document' => $document,
         ];
-        $this->eventManager->dispatch('prepare_document_from_product_after', ['eventData' => $eventData]);
+        $this->eventManager->dispatch('prepare_document_from_product_after', $eventData);
 
         return $document;
     }
