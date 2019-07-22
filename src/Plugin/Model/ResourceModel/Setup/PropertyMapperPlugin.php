@@ -4,7 +4,6 @@ namespace G4NReact\MsCatalogMagento2\Plugin\Model\ResourceModel\Setup;
 
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Model\ResourceModel\Setup\PropertyMapper;
-use Magento\Eav\Model\Entity\Setup\PropertyMapperAbstract;
 
 /**
  * Class PropertyMapperPlugin
