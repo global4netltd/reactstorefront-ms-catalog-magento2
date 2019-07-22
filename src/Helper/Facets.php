@@ -2,20 +2,18 @@
 
 namespace G4NReact\MsCatalogMagento2\Helper;
 
+use Exception;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\CategoryRepository;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
-use Magento\Framework\Exception\LocalizedException;
-use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
- * Class Query
+ * Class Facets
  * @package G4NReact\MsCatalogMagento2\Helper
  */
 class Facets extends AbstractHelper
 {
-
     /**
      * @var Query
      */
@@ -27,7 +25,7 @@ class Facets extends AbstractHelper
     protected $categoryRepository;
 
     /**
-     * Query constructor
+     * Facets constructor
      *
      * @param Context $context
      * @param CategoryRepository $categoryRepository
@@ -37,8 +35,7 @@ class Facets extends AbstractHelper
         Context $context,
         CategoryRepository $categoryRepository,
         Query $queryHelper
-    )
-    {
+    ) {
         $this->categoryRepository = $categoryRepository;
         $this->queryHelper = $queryHelper;
 
@@ -48,8 +45,6 @@ class Facets extends AbstractHelper
     /**
      * @param $categoryId
      * @return array
-     * @throws NoSuchEntityException
-     * @throws LocalizedException
      */
     public function getFacetFieldsByCategory($categoryId)
     {
@@ -69,7 +64,7 @@ class Facets extends AbstractHelper
             }
 
         } catch (Exception $exception) {
-            $this->logger->log(
+            $this->_logger->error(
                 'g4n-react-ms-catalog-magento2',
                 [
                     'exception' => $exception->getMessage()
