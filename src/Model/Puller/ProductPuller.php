@@ -156,7 +156,7 @@ class ProductPuller extends AbstractPuller
                     $document->createField(
                         $searchTermField,
                         $value,
-                        Document\Field::FIELD_TYPE_TEXT,
+                        Document\Field::FIELD_TYPE_TEXT_SEARCH,
                         true,
                         false
                     );
