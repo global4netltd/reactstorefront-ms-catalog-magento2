@@ -16,5 +16,9 @@
         <plugin sortOrder="1" name="g4nReeactMsCatalogMagento2DataProvider"
                 type="G4NReact\MsCatalogMagento2\Plugin\Model\Category\DataProviderPlugin"/>
     </type>
+    <type name="Magento\Catalog\Model\ResourceModel\Setup\PropertyMapper">
+        <plugin sortOrder="1" name="grodnoGrodnoPropertyMapper"
+                type="G4NReact\MsCatalogMagento2\Plugin\Model\ResourceModel\Setup\PropertyMapperPlugin"/>
+    </type>
 </config>
 
