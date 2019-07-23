@@ -78,43 +78,57 @@ class Query extends AbstractHelper
      * @var array
      */
     public static $mapAttributeCodeToFieldType = [
-        'ids'         => [
-            'type'        => Field::FIELD_TYPE_STATIC,
-            'indexable'   => true,
-            'multivalued' => false,
-            'real_code'   => 'id'
+        ProductAttributeInterface::ENTITY_TYPE_CODE  => [
+            'ids'           => [
+                'type'        => Field::FIELD_TYPE_STATIC,
+                'indexable'   => true,
+                'multivalued' => false,
+                'real_code'   => 'id'
+            ],
+            'skus'          => [
+                'type'        => Field::FIELD_TYPE_STRING,
+                'indexable'   => true,
+                'multivalued' => false,
+                'real_code'   => 'sku'
+            ],
+            'store_id'      => [
+                'type'        => Field::FIELD_TYPE_INT,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
+            'category_id'   => [
+                'type'        => Field::FIELD_TYPE_INT,
+                'indexable'   => true,
+                'multivalued' => true,
+            ],
+            'request_path'  => [
+                'type'        => Field::FIELD_TYPE_STRING,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
+            'final_price'   => [
+                'type'        => Field::FIELD_TYPE_FLOAT,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
+            'media_gallery' => [
+                'type'        => Field::FIELD_TYPE_TEXT,
+                'indexable'   => false,
+                'multivalued' => false,
+            ],
         ],
-        'skus'        => [
-            'type'        => Field::FIELD_TYPE_STRING,
-            'indexable'   => true,
-            'multivalued' => false,
-            'real_code'   => 'sku'
-        ],
-        'store_id'    => [
-            'type'        => Field::FIELD_TYPE_INT,
-            'indexable'   => true,
-            'multivalued' => false,
-        ],
-        'category_id' => [
-            'type'        => Field::FIELD_TYPE_INT,
-            'indexable'   => true,
-            'multivalued' => true,
-        ],
-        'request_path' => [
-            'type'        => Field::FIELD_TYPE_STRING,
-            'indexable'   => true,
-            'multivalued' => false,
-        ],
-        'final_price' => [
-            'type'        => Field::FIELD_TYPE_FLOAT,
-            'indexable'   => true,
-            'multivalued' => false,
-        ],
-        'media_gallery' => [
-            'type'        => Field::FIELD_TYPE_TEXT,
-            'indexable'   => false,
-            'multivalued' => false,
-        ],
+        CategoryAttributeInterface::ENTITY_TYPE_CODE => [
+            'store_id'      => [
+                'type'        => Field::FIELD_TYPE_INT,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
+            'parent_id' => [
+                'type'        => Field::FIELD_TYPE_INT,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
+        ]
     ];
 
     /**
@@ -168,7 +182,8 @@ class Query extends AbstractHelper
         $attributeType = self::$mapBackendTypeToFieldType[$attribute->getBackendType()] ?? $attribute->getBackendType();
 
         if (!$attributeType || $attributeType === Field::FIELD_TYPE_STATIC) {
-            $attributeType = $this->getAttributeCodeToFieldTypeMap()[$attribute->getAttributeCode()]['type'] ?? Field::FIELD_TYPE_STATIC;
+            $attributeCodeToFieldTypeMap = $this->getAttributeCodeToFieldTypeMap($attribute->getEntityType()->getEntityTypeCode());
+            $attributeType = $attributeCodeToFieldTypeMap[$attribute->getAttributeCode()]['type'] ?? Field::FIELD_TYPE_STATIC;
             if ($attributeType === Field::FIELD_TYPE_STATIC) {
                 $attributeType = $this->getStaticAttributeType($attribute);
             }
@@ -243,7 +258,7 @@ class Query extends AbstractHelper
             return $field;
         }
 
-        $attributeCodeToFieldTypeMap = $this->getAttributeCodeToFieldTypeMap();
+        $attributeCodeToFieldTypeMap = $this->getAttributeCodeToFieldTypeMap($entityType);
         if (in_array($attributeCode, array_keys($attributeCodeToFieldTypeMap))) {
             $field = new Field(
                 $attributeCodeToFieldTypeMap[$attributeCode]['real_code'] ?? $attributeCode,
@@ -269,6 +284,15 @@ class Query extends AbstractHelper
         $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
         $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
 
+        if ($attributeCode == 'parent_id') {
+//            var_dump($attribute->getData());
+            var_dump($fieldType);
+            var_dump($isFieldIndexable);
+            var_dump($isMultiValued);
+            var_dump($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT));
+            die('B');
+        }
+
         $field = new Field($attributeCode, $value, $fieldType, $isFieldIndexable, $isMultiValued);
         if ($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT)) {
             $field->setIndexable(true);
@@ -286,6 +310,7 @@ class Query extends AbstractHelper
     public function getFieldByAttribute(AbstractAttribute $attribute, $value = null): Field
     {
         $attributeCode = $attribute->getAttributeCode();
+        $entityType = $attribute->getEntityType()->getEntityTypeCode();
 
         if (in_array($attributeCode, Helper::$coreDocumentFieldsNames)) {
             $field = new Field($attributeCode, $value, Field::FIELD_TYPE_STATIC, true, false);
@@ -293,7 +318,7 @@ class Query extends AbstractHelper
             return $field;
         }
 
-        $attributeCodeToFieldTypeMap = $this->getAttributeCodeToFieldTypeMap();
+        $attributeCodeToFieldTypeMap = $this->getAttributeCodeToFieldTypeMap($entityType);
         if (in_array($attributeCode, array_keys($attributeCodeToFieldTypeMap))) {
             $field = new Field(
                 $attributeCode,
@@ -370,10 +395,14 @@ class Query extends AbstractHelper
     }
 
     /**
+     * @param string $entityType
      * @return array
      */
-    public function getAttributeCodeToFieldTypeMap(): array
+    public function getAttributeCodeToFieldTypeMap(string $entityType = ProductAttributeInterface::ENTITY_TYPE_CODE): array
     {
-        return array_merge(self::$mapAttributeCodeToFieldType, self::$additionalMapping);
+        $baseMapping = self::$mapAttributeCodeToFieldType[$entityType] ?? [];
+        $additionalMapping = self::$additionalMapping[$entityType] ?? [];
+
+        return array_merge($baseMapping, $additionalMapping);
     }
 }

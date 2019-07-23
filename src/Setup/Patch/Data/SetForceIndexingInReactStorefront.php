@@ -2,16 +2,16 @@
 
 namespace G4NReact\MsCatalogMagento2\Setup\Patch\Data;
 
-use Magento\Catalog\Model\Category;
+use Magento\Catalog\Api\Data\CategoryAttributeInterface;
 use Magento\Eav\Setup\EavSetupFactory;
 use Magento\Framework\Setup\ModuleDataSetupInterface;
 use Magento\Framework\Setup\Patch\DataPatchInterface;
 
 /**
- * Class AddReactStorefrontFilters
+ * Class SetForceIndexingInReactStorefront
  * @package G4NReact\MsCatalogMagento2\Setup\Patch\Data
  */
-class AddReactStorefrontFilters implements DataPatchInterface
+class SetForceIndexingInReactStorefront implements DataPatchInterface
 {
     /**
      * @var ModuleDataSetupInterface
@@ -24,7 +24,7 @@ class AddReactStorefrontFilters implements DataPatchInterface
     protected $eavSetupFactory;
 
     /**
-     * AddReactStorefrontFilters constructor
+     * SetForceIndexingInReactStorefront constructor
      *
      * @param ModuleDataSetupInterface $moduleDataSetup
      * @param EavSetupFactory $eavSetupFactory
@@ -44,13 +44,12 @@ class AddReactStorefrontFilters implements DataPatchInterface
     {
         $eavSetup = $this->eavSetupFactory->create(['setup' => $this->moduleDataSetup]);
 
-        $eavSetup->addAttribute(Category::ENTITY, 'react_storefront_filters', [
-            'type' => 'text',
-            'label' => 'React Storefront Filters',
-            'input' => 'text',
-            'required' => false,
-            'user_defined' => false
-        ]);
+        $eavSetup->updateAttribute(
+            CategoryAttributeInterface::ENTITY_TYPE_CODE,
+            'level',
+            'force_indexing_in_react_storefront',
+            true
+        );
     }
 
     /**
@@ -68,5 +67,4 @@ class AddReactStorefrontFilters implements DataPatchInterface
     {
         return [];
     }
-
 }

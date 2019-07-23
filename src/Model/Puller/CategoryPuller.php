@@ -169,12 +169,9 @@ class CategoryPuller extends AbstractPuller
 
         foreach ($category->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_category', $field);
-            $document->createField(
-                $field,
-                $category->getData($field),
-                $this->helperQuery->getAttributeFieldType($attribute),
-                $attribute->getIsFilterable() ? true : false,
-                in_array($attribute->getFrontendInput(), QueryHelper::$multiValuedAttributeFrontendInput)
+
+            $document->setField(
+                $this->helperQuery->getFieldByAttribute($attribute, $value)
             );
         }
 
