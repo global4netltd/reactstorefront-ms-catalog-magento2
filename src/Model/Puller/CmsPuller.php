@@ -149,7 +149,7 @@ class CmsPuller extends AbstractPuller
             'cms_page' => $page,
             'document' => $document,
         ];
-        $this->eventManager->dispatch('prepare_document_from_cms_page_after', ['eventData' => $eventData]);
+        $this->eventManager->dispatch('prepare_document_from_cms_page_after', $eventData);
 
         return $document;
     }

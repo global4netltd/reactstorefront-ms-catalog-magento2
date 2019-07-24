@@ -193,7 +193,7 @@ class CategoryPuller extends AbstractPuller
             'category' => $category,
             'document' => $document,
         ];
-        $this->eventManager->dispatch('prepare_document_from_category_after', ['eventData' => $eventData]);
+        $this->eventManager->dispatch('prepare_document_from_category_after', $eventData);
 
         return $document;
     }
