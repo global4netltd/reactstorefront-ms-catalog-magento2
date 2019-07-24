@@ -179,6 +179,14 @@ class CategoryPuller extends AbstractPuller
             $requestPath = (string)$requestPathField->getValue();
             $requestPath = '/' . ltrim($requestPath, '/');
             $requestPathField->setValue($requestPath);
+
+            $document->createField( // @ToDo: Temporarily. I hope so...
+                'url_path',
+                $requestPathField->getValue(),
+                $requestPathField->getType(),
+                $requestPathField->getIndexable(),
+                $requestPathField->getMultiValued()
+            );
         }
 
         $eventData = [
