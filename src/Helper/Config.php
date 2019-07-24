@@ -23,6 +23,18 @@ class Config extends AbstractHelper
      */
     const BASE_ENGINE_CONFIG_PATH = 'ms_catalog_indexer/engine_settings/';
 
+    /** @var string category attributes use in react storefront */
+    const CATEGORY_ATTRIBUTES_USE_IN_REACT_STOREFRONT = 'ms_catalog_indexer/indexer_settings/category_attributes_use_in_react_storefront';
+
+    /** @var string category attributes force indexing in react storefron */
+    const CATEGORY_ATTRIBUTES_FORCE_INDEXING_IN_REACT_STOREFRONT = 'ms_catalog_indexer/indexer_settings/category_attributes_force_indexing_in_react_storefront';
+
+    /** @var string product attributes base stats */
+    const PRODUCT_ATTRIBUTES_BASE_STATS = 'ms_catalog_indexer/indexer_settings/product_attributes_base_stats';
+
+    /** @var string product attributes base facets */
+    const PRODUCT_ATTRIBUTES_BASE_FACETS = 'ms_catalog_indexer/indexer_settings/product_attributes_base_facets';
+
     /**
      * @var StoreManagerInterface
      */
@@ -37,7 +49,8 @@ class Config extends AbstractHelper
     public function __construct(
         StoreManagerInterface $storeManager,
         Context $context
-    ) {
+    )
+    {
         $this->storeManager = $storeManager;
         parent::__construct($context);
     }
@@ -105,6 +118,7 @@ class Config extends AbstractHelper
 
     /**
      * @param string $configPath
+     *
      * @return mixed
      * @throws NoSuchEntityException
      */
@@ -116,4 +130,59 @@ class Config extends AbstractHelper
             $this->getStore()->getId()
         );
     }
+
+    /**
+     * @return mixed
+     */
+    public function getProductAttributesBaseFacets()
+    {
+        return $this->prepareDataFromMultiSelectConfig(
+            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_FACETS, ScopeInterface::SCOPE_STORE)
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public function getProductAttributesBaseStats()
+    {
+        return $this->prepareDataFromMultiSelectConfig(
+            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_STATS, ScopeInterface::SCOPE_STORE)
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public function getCategoryAttributesUseInReact()
+    {
+        return $this->prepareDataFromMultiSelectConfig(
+            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_USE_IN_REACT_STOREFRONT, ScopeInterface::SCOPE_STORE)
+        );
+    }
+
+    /**
+     * @return array
+     */
+    public function getCategoryAttributesForceIndexingInReact()
+    {
+        return $this->prepareDataFromMultiSelectConfig(
+            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_FORCE_INDEXING_IN_REACT_STOREFRONT, ScopeInterface::SCOPE_STORE)
+        );
+    }
+
+    /**
+     * @param $data
+     *
+     * @return array
+     */
+    public function prepareDataFromMultiSelectConfig($data)
+    {
+        if ($data) {
+            return explode(',', $data);
+        }
+
+        return [];
+    }
+
 }
