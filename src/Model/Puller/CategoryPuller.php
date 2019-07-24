@@ -8,6 +8,7 @@ use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
+use Magento\Catalog\Api\Data\CategoryAttributeInterface;
 use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\ResourceModel\Category\Collection as CategoryCollection;
 use Magento\Catalog\Model\ResourceModel\Category\CollectionFactory as CategoryCollectionFactory;
@@ -16,6 +17,7 @@ use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
 
 /**
@@ -29,6 +31,10 @@ class CategoryPuller extends AbstractPuller
      */
     const OBJECT_TYPE = 'category';
 
+    /**
+     * @var array fully loaded count of products from facets
+     */
+    public $productsCount;
     /**
      * @var CategoryCollectionFactory
      */
@@ -75,6 +81,7 @@ class CategoryPuller extends AbstractPuller
      * @param QueryHelper $helperQuery
      * @param StoreManagerInterface $storeManager
      * @param EventManager $eventManager
+     * @throws NoSuchEntityException
      */
     public function __construct(
         CategoryCollectionFactory $categoryCollectionFactory,
@@ -85,7 +92,8 @@ class CategoryPuller extends AbstractPuller
         QueryHelper $helperQuery,
         StoreManagerInterface $storeManager,
         EventManager $eventManager
-    ) {
+    )
+    {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -118,6 +126,21 @@ class CategoryPuller extends AbstractPuller
         $this->eventManager->dispatch('ms_catalog_get_category_collection', ['collection' => $categoryCollection]);
 
         return $categoryCollection;
+    }
+
+    /**
+     * @param $categoryId
+     * @return int|mixed
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
+     */
+    public function getProductCount($categoryId)
+    {
+        if ($this->productsCount === null) {
+            $this->productsCount = $this->helperQuery->getCategoriesProductsCount($this->storeManager->getStore()->getId());
+        }
+
+        return $this->productsCount[$categoryId] ?? 0;
     }
 
     /**
@@ -174,6 +197,14 @@ class CategoryPuller extends AbstractPuller
                 $this->helperQuery->getFieldByAttribute($attribute, $value)
             );
         }
+
+        $document->setField(
+            $this->helperQuery->getFieldByAttributeCode(
+                'product_count',
+                $this->getProductCount($category->getId()),
+                CategoryAttributeInterface::ENTITY_TYPE_CODE
+            )
+        );
 
         if ($requestPathField = $document->getField('url_path')) {
             $requestPath = (string)$requestPathField->getValue();

@@ -2,9 +2,11 @@
 
 namespace G4NReact\MsCatalogMagento2\Helper;
 
+use G4NReact\MsCatalog\Client\ClientFactory;
 use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalog\Helper;
 use G4NReact\MsCatalogMagento2\Helper\Cms\CmsQuery;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Api\Data\CategoryAttributeInterface;
 use Magento\Catalog\Api\Data\ProductAttributeInterface;
@@ -14,6 +16,7 @@ use Magento\Eav\Model\ResourceModel\Entity\Attribute as AttributeResource;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\LocalizedException;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class Query
@@ -121,7 +124,7 @@ class Query extends AbstractHelper
                 'indexable'   => false,
                 'multivalued' => false,
             ],
-            'url_key'   => [ // @ToDo: temporarily - upgrade attribute
+            'url_key'       => [ // @ToDo: temporarily - upgrade attribute
                 'type'        => Field::FIELD_TYPE_STRING,
                 'indexable'   => true,
                 'multivalued' => false,
@@ -148,6 +151,12 @@ class Query extends AbstractHelper
                 'indexable'   => true,
                 'multivalued' => false,
             ],
+            'product_count'   => [
+                'type'        => Field::FIELD_TYPE_INT,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
+
         ]
     ];
 
@@ -172,22 +181,31 @@ class Query extends AbstractHelper
     protected $attributeResource;
 
     /**
+     * @var ConfigHelper
+     */
+    protected $configHelper;
+
+    /**
      * Query constructor
      *
      * @param EavConfig $eavConfig
      * @param Context $context
      * @param CmsQuery $cmsQuery
      * @param AttributeResource $attributeResource
+     * @param Config $configHelper
      */
     public function __construct(
         EavConfig $eavConfig,
         Context $context,
         CmsQuery $cmsQuery,
-        AttributeResource $attributeResource
+        AttributeResource $attributeResource,
+        ConfigHelper $configHelper
     ) {
+        $this->configHelper = $configHelper;
         $this->eavConfig = $eavConfig;
         $this->cmsQuery = $cmsQuery;
         $this->attributeResource = $attributeResource;
+        $this->configHelper = $configHelper;
 
         parent::__construct($context);
     }
@@ -389,5 +407,44 @@ class Query extends AbstractHelper
         $additionalMapping = self::$additionalMapping[$entityType] ?? [];
 
         return array_merge($baseMapping, $additionalMapping);
+    }
+
+    /**
+     * @param $storeId
+     * @return array
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function getCategoriesProductsCount($storeId)
+    {
+        $searchEngineConfig = $this->configHelper->getConfiguration();
+        $searchEngineClient = ClientFactory::create($searchEngineConfig);
+        $query = $searchEngineClient->getQuery();
+        $query->addFilters([
+            [$this->getFieldByAttributeCode(
+                'store_id',
+                $storeId
+            )],
+            [$this->getFieldByAttributeCode(
+                'object_type',
+                'product'
+            )],
+        ]);
+
+        $query->addFacet(
+            $this->getFieldByAttributeCode(
+                'category_id',
+                null,
+                'catalog_product'
+            )
+        );
+
+        $query->setPageSize(0);
+
+        if (isset($query->getResponse()->getFacets()['category_id'])) {
+            return $query->getResponse()->getFacets()['category_id']->getValues() ?? [];
+        }
+
+        return [];
     }
 }
