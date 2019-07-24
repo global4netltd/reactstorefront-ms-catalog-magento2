@@ -175,16 +175,16 @@ class CategoryPuller extends AbstractPuller
             );
         }
 
-        if ($requestPathField = $document->getField('request_path')) {
+        if ($requestPathField = $document->getField('url_path')) {
             $requestPath = (string)$requestPathField->getValue();
             $requestPath = '/' . ltrim($requestPath, '/');
             $requestPathField->setValue($requestPath);
 
             $document->createField( // @ToDo: Temporarily. I hope so...
-                'url_path',
+                'request_path',
                 $requestPathField->getValue(),
                 $requestPathField->getType(),
-                $requestPathField->getIndexable(),
+                true,
                 $requestPathField->getMultiValued()
             );
         }

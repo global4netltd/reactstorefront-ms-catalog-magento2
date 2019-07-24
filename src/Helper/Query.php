@@ -143,12 +143,6 @@ class Query extends AbstractHelper
                 'indexable'   => true,
                 'multivalued' => false,
             ],
-            'url_path'  => [
-                'type'        => Field::FIELD_TYPE_STRING,
-                'indexable'   => true,
-                'multivalued' => false,
-                'real_code'   => 'request_path',
-            ],
             'url_key'   => [ // @ToDo: temporarily - upgrade attribute
                 'type'        => Field::FIELD_TYPE_STRING,
                 'indexable'   => true,
