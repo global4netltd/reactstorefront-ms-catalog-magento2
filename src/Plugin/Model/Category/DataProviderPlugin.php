@@ -100,7 +100,7 @@ class DataProviderPlugin
     protected function prepareAttributesFields()
     {
         $res = [];
-        foreach ($this->reactStoreFrontFilters->getCategoryAttributes() as $attribute) {
+        foreach ($this->reactStoreFrontFilters->getProductAttributes() as $attribute) {
             $res[$attribute->getAttributeCode() . self::REACT_STOREFRONT_FILTERS_SUFFIX] = [
                 'arguments' => [
                     'data' => [

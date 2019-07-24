@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <ms_catalog_indexer>
+            <indexer_settings>
+                <base_stats>price</base_stats>
+            </indexer_settings>
+        </ms_catalog_indexer>
+    </default>
+</config>

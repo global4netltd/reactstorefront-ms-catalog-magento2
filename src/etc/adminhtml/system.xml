@@ -115,6 +115,14 @@
                     <label>Automatic detection of filters in category</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
+                <field id="base_stats" translate="label" type="multiselect" sortOrder="110" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                    <label>Attribute base stats</label>
+                    <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\CategoryAttributes</source_model>
+                </field>
+                <field id="base_facets" translate="label" type="multiselect" sortOrder="110" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                    <label>Attribute base facets</label>
+                    <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\CategoryAttributes</source_model>
+                </field>
             </group>
         </section>
     </system>

@@ -73,7 +73,7 @@ class ReactStoreFrontFilters
      * @return AttributeInterface[]
      * @throws InputException
      */
-    public function getCategoryAttributes()
+    public function getProductAttributes()
     {
         $criteria = $this->searchCriteriaBuilder
             ->addFilter('is_filterable', true)
@@ -95,6 +95,13 @@ class ReactStoreFrontFilters
             /** @var Category $category */
             $category = $this->categoryRepository->get($id);
             $filters = $category->getData('react_storefront_filters');
+            if ($filters) {
+                if ($jsonFormat) {
+                    return $filters;
+                }
+
+                return $this->serializer->unserialize($filters);
+            }
         } catch (NoSuchEntityException $exception) {
             $this->logger->log(
                 'g4n-react-ms-catalog-magento2',
@@ -102,14 +109,6 @@ class ReactStoreFrontFilters
                     'exception' => $exception->getMessage()
                 ]
             );
-        }
-
-        if ($filters) {
-            if ($jsonFormat) {
-                return $filters;
-            }
-
-            return $this->serializer->unserialize($filters);
         }
 
         return [];
