@@ -181,6 +181,12 @@ class ProductPuller extends AbstractPuller
                 ->getFieldByAttributeCode('category_id', $product->getCategoryIds())
         );
 
+        if ($requestPathField = $document->getField('request_path')) {
+            $requestPath = (string)$requestPathField->getValue();
+            $requestPath = '/' . ltrim($requestPath, '/');
+            $requestPathField->setValue($requestPath);
+        }
+
         $eventData = [
             'product'  => $product,
             'document' => $document,

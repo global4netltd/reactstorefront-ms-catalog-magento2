@@ -175,6 +175,12 @@ class CategoryPuller extends AbstractPuller
             );
         }
 
+        if ($requestPathField = $document->getField('request_path')) {
+            $requestPath = (string)$requestPathField->getValue();
+            $requestPath = '/' . ltrim($requestPath, '/');
+            $requestPathField->setValue($requestPath);
+        }
+
         $eventData = [
             'category' => $category,
             'document' => $document,
