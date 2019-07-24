@@ -85,6 +85,11 @@ class Query extends AbstractHelper
                 'multivalued' => false,
                 'real_code'   => 'id'
             ],
+            'entity_id'     => [
+                'type'        => Field::FIELD_TYPE_INT,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
             'skus'          => [
                 'type'        => Field::FIELD_TYPE_STRING,
                 'indexable'   => true,
@@ -116,8 +121,18 @@ class Query extends AbstractHelper
                 'indexable'   => false,
                 'multivalued' => false,
             ],
+            'url_key'   => [ // @ToDo: temporarily - upgrade attribute
+                'type'        => Field::FIELD_TYPE_STRING,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
         ],
         CategoryAttributeInterface::ENTITY_TYPE_CODE => [
+            'entity_id' => [
+                'type'        => Field::FIELD_TYPE_INT,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
             'store_id'  => [
                 'type'        => Field::FIELD_TYPE_INT,
                 'indexable'   => true,
@@ -133,6 +148,11 @@ class Query extends AbstractHelper
                 'indexable'   => true,
                 'multivalued' => false,
                 'real_code'   => 'request_path',
+            ],
+            'url_key'   => [ // @ToDo: temporarily - upgrade attribute
+                'type'        => Field::FIELD_TYPE_STRING,
+                'indexable'   => true,
+                'multivalued' => false,
             ],
         ]
     ];
@@ -309,39 +329,7 @@ class Query extends AbstractHelper
         $attributeCode = $attribute->getAttributeCode();
         $entityType = $attribute->getEntityType()->getEntityTypeCode();
 
-        if (in_array($attributeCode, Helper::$coreDocumentFieldsNames)) {
-            $field = new Field(
-                $attributeCode,
-                $value,
-                Field::FIELD_TYPE_STATIC,
-                true,
-                false
-            );
-
-            return $field;
-        }
-
-        $attributeCodeToFieldTypeMap = $this->getAttributeCodeToFieldTypeMap($entityType);
-        if (in_array($attributeCode, array_keys($attributeCodeToFieldTypeMap))) {
-            $field = new Field(
-                $attributeCodeToFieldTypeMap[$attributeCode]['real_code'] ?? $attributeCode,
-                $value,
-                $attributeCodeToFieldTypeMap[$attributeCode]['type'],
-                $attributeCodeToFieldTypeMap[$attributeCode]['indexable'],
-                $attributeCodeToFieldTypeMap[$attributeCode]['multivalued']
-            );
-
-            return $field;
-        }
-
-        $fieldType = $this->getAttributeFieldType($attribute);
-        $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
-        $isFieldIndexable = $attribute->getForceIndexingInReactStorefront() ? true : $isFieldIndexable;
-        $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
-
-        $field = new Field($attributeCode, $value, $fieldType, $isFieldIndexable, $isMultiValued);
-
-        return $field;
+        return $this->getFieldByAttributeCode($attributeCode, $value, $entityType);
     }
 
     /**
