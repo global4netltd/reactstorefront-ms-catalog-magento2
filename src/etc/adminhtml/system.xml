@@ -117,10 +117,18 @@
                 </field>
                 <field id="base_stats" translate="label" type="multiselect" sortOrder="110" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
                     <label>Attribute base stats</label>
+                    <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+                <field id="base_facets" translate="label" type="multiselect" sortOrder="120" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                    <label>Attribute base facets</label>
+                    <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\ProductAttributes</source_model>
+                </field>
+                <field id="category_attributes_use_in_react_storefront" translate="label" type="multiselect" sortOrder="130" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                    <label>Category attributes use in react storefront</label>
                     <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\CategoryAttributes</source_model>
                 </field>
-                <field id="base_facets" translate="label" type="multiselect" sortOrder="110" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
-                    <label>Attribute base facets</label>
+                <field id="category_attributes_force_indexing_in_react_storefront" translate="label" type="multiselect" sortOrder="140" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                    <label>Category attributes force indexing in react storefront</label>
                     <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\CategoryAttributes</source_model>
                 </field>
             </group>

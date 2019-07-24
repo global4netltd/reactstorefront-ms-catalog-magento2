@@ -14,6 +14,7 @@ use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\SerializerInterface;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class ReactStoreFrontFilters
@@ -80,6 +81,15 @@ class ReactStoreFrontFilters
             ->create();
 
         return $this->attributeRepository->getList(Product::ENTITY, $criteria)->getItems();
+    }
+
+    /**
+     * @return AttributeInterface[]
+     * @throws InputException
+     */
+    public function getCategoryAttributes()
+    {
+        return $this->attributeRepository->getList(Category::ENTITY, $this->searchCriteriaBuilder->create())->getItems();
     }
 
     /**

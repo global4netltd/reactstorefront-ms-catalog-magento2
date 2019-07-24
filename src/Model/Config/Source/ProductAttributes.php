@@ -10,7 +10,7 @@ use Magento\Framework\Exception\InputException;
  * Class CategoryAttributes
  * @package G4NReact\MsCatalogMagento2\Model\Config\Source
  */
-class CategoryAttributes implements OptionSourceInterface
+class ProductAttributes implements OptionSourceInterface
 {
     /**
      * @var ReactStoreFrontFilters
@@ -36,14 +36,13 @@ class CategoryAttributes implements OptionSourceInterface
     public function toOptionArray()
     {
         $res = [];
-        foreach ($this->reactStoreFrontFilters->getCategoryAttributes() as $categoryAttribute){
+        foreach ($this->reactStoreFrontFilters->getProductAttributes() as $productAttribute){
             $res[] = [
-                'value' => $categoryAttribute->getAttributeCode(),
-                'label' => $categoryAttribute->getAttributeCode() . ' (' . $categoryAttribute->getDefaultFrontendLabel() . ')'
+                'value' => $productAttribute->getAttributeCode(),
+                'label' => $productAttribute->getAttributeCode() . ' (' . $productAttribute->getDefaultFrontendLabel() . ')'
             ];
-        }
-
+        }   
+        
         return $res;
     }
 }
-
