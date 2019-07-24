@@ -74,4 +74,37 @@ class Facets extends AbstractHelper
 
         return $facetFields;
     }
+
+    /**
+     * @param $categoryId
+     * @return array
+     */
+    public function getStatsFieldsByCategory($categoryId)
+    {
+        $facetFields = [];
+
+        try {
+            /** @var Category $category */
+            $category = $this->categoryRepository->get($categoryId);
+            $filters = json_decode($category->getData('react_storefront_filters'), true);
+
+            if (isset($filters['stats'])) {
+                foreach ($filters['stats'] as $stat) {
+                    if ($field = $this->queryHelper->getFieldByAttributeCode($stat)) {
+                        $facetFields[$field->getName()] = $field;
+                    }
+                }
+            }
+
+        } catch (Exception $exception) {
+            $this->_logger->error(
+                'g4n-react-ms-catalog-magento2',
+                [
+                    'exception' => $exception->getMessage()
+                ]
+            );
+        }
+
+        return $facetFields;
+    }
 }
