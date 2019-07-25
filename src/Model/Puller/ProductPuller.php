@@ -121,7 +121,7 @@ class ProductPuller extends AbstractPuller
             ->setCurPage($this->curPage)
             ->addFinalPrice()
             ->addUrlRewrite()
-            ->addFieldToFilter('stastus', ProductAttributeStatus::STATUS_ENABLED)
+            ->addFieldToFilter('status', ProductAttributeStatus::STATUS_ENABLED)
             ->addMediaGalleryData();
 
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
