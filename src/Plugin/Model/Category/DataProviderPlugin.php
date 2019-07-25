@@ -109,7 +109,7 @@ class DataProviderPlugin
                             'formElement' => 'checkboxset',
                             'visible' => true,
                             'required' => false,
-                            'label' => $attribute->getAttributeCode(),
+                            'label' => $attribute->getAttributeCode() . ' (' . $attribute->getDefaultFrontendLabel() . ')',
                             'componentType' => 'field',
                             'multiple' => true,
                             'source' => 'module',
