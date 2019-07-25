@@ -112,6 +112,7 @@ class CategoryPuller extends AbstractPuller
      */
     public function getCollection(): CategoryCollection
     {
+        /** @var CategoryCollection $categoryCollection */
         $categoryCollection = $this->categoryCollectionFactory->create();
 
         if ($this->ids !== null) {
@@ -119,9 +120,11 @@ class CategoryPuller extends AbstractPuller
         }
 
         $categoryCollection->addAttributeToSelect('*')
+            ->addAttributeToFilter('entity_id', ['gt' => 2])
             ->setStoreId($this->storeManager->getStore()->getId())
-            ->setPageSize($this->pageSize)
             ->addIsActiveFilter()
+            ->addUrlRewriteToResult()
+            ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
         $this->eventManager->dispatch('ms_catalog_get_category_collection', ['collection' => $categoryCollection]);
@@ -207,18 +210,23 @@ class CategoryPuller extends AbstractPuller
             )
         );
 
-        if ($requestPathField = $document->getField('url_path')) {
+        if ($requestPathField = $document->getField('request_path')) {
             $requestPath = (string)$requestPathField->getValue();
             $requestPath = '/' . ltrim($requestPath, '/');
             $requestPathField->setValue($requestPath);
+            $requestPathField->setIndexable(true);
 
-            $document->createField( // @ToDo: Temporarily. I hope so...
-                'request_path',
-                $requestPathField->getValue(),
-                $requestPathField->getType(),
-                true,
-                $requestPathField->getMultiValued()
-            );
+            if ($urlPathField = $document->getField('url_path')) { // @ToDo: Temporarily. I hope so...
+                $urlPathField->setValue($requestPath);
+            } else {
+                $document->createField(
+                    'url_path',
+                    $requestPath,
+                    $requestPathField->getType(),
+                    false,
+                    $requestPathField->getMultiValued()
+                );
+            }
         }
 
         $eventData = [
