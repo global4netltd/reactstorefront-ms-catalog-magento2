@@ -20,7 +20,7 @@ $documentList = $documents->getData(); ?>
                     <span style="color: black; display: block; padding: 1em;"><?= $document->getName(); ?></span>
                 </td>
                 <td class="data-grid-checkbox-cell">
-                    <span style="color: green; display: block; padding: 1em;"><?= $value; ?></span>
+                    <span style="color: green; display: block; padding: 1em;"><?= htmlentities($value); ?></span>
                 </td>
             </tr>
         <?php endforeach; ?>
