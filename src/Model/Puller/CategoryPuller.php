@@ -127,7 +127,10 @@ class CategoryPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
-        $this->eventManager->dispatch('ms_catalog_get_category_collection', ['collection' => $categoryCollection]);
+        $this->eventManager->dispatch('ms_catalog_m2_category_puller_before_load', ['collection' => $categoryCollection]);
+        $categoryCollection->load();
+        $this->eventManager->dispatch('ms_catalog_m2_category_puller_after_load', ['collection' => $categoryCollection]);
+
 
         return $categoryCollection;
     }
