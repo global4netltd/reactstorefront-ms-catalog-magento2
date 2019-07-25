@@ -99,6 +99,11 @@ class Query extends AbstractHelper
                 'multivalued' => false,
                 'real_code'   => 'sku'
             ],
+            'sku'          => [
+                'type'        => Field::FIELD_TYPE_STRING,
+                'indexable'   => true,
+                'multivalued' => false,
+            ],
             'store_id'      => [
                 'type'        => Field::FIELD_TYPE_INT,
                 'indexable'   => true,
