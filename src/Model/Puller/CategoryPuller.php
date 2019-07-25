@@ -121,6 +121,7 @@ class CategoryPuller extends AbstractPuller
         $categoryCollection->addAttributeToSelect('*')
             ->setStoreId($this->storeManager->getStore()->getId())
             ->setPageSize($this->pageSize)
+            ->addIsActiveFilter()
             ->setCurPage($this->curPage);
 
         $this->eventManager->dispatch('ms_catalog_get_category_collection', ['collection' => $categoryCollection]);

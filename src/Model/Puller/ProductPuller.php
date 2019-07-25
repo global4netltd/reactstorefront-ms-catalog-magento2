@@ -19,6 +19,7 @@ use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Catalog\Model\Product\Attribute\Source\Status as ProductAttributeStatus;
 
 /**
  * Class ProductPuller
@@ -120,6 +121,7 @@ class ProductPuller extends AbstractPuller
             ->setCurPage($this->curPage)
             ->addFinalPrice()
             ->addUrlRewrite()
+            ->addFieldToFilter('stastus', ProductAttributeStatus::STATUS_ENABLED)
             ->addMediaGalleryData();
 
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
