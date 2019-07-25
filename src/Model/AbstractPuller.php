@@ -196,15 +196,14 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         }
 
         if ($this->position == 0) {
-            $collection = is_null($collection) ? $this->getCollection() : $collection;
             $this->curPage++;
+            $collection = is_null($collection) ? $this->getCollection() : $collection;
 
             $this->pageArray = [];
             foreach ($collection as $item) {
                 $this->pageArray[] = $item;
             }
         }
-
         return isset($this->pageArray[$this->position]);
     }
 }
