@@ -88,8 +88,7 @@ class ProductPuller extends AbstractPuller
         SearchTerms $searchTerms,
         QueryHelper $queryHelper,
         EventManager $eventManager
-    )
-    {
+    ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -115,11 +114,11 @@ class ProductPuller extends AbstractPuller
         }
 
         $productCollection->addAttributeToSelect('*')
+            ->addUrlRewrite()
             ->addStoreFilter()
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage)
             ->addFinalPrice()
-            ->addUrlRewrite()
             ->addMediaGalleryData();
 
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
