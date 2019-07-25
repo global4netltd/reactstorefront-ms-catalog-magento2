@@ -5,10 +5,10 @@ namespace G4NReact\MsCatalogMagento2\Model\Indexer;
 use Exception;
 use G4NReact\MsCatalog\Client\ClientFactory;
 use G4NReact\MsCatalog\Document\Field;
+use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalog\Response;
 use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogIndexer\Indexer;
-use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Framework\App\State as AppState;
 use Magento\Framework\Exception\NoSuchEntityException;
@@ -78,7 +78,7 @@ abstract class AbstractIndexer
             $start = microtime(true);
             $stores = $store ? [$store] : $this->storeManager->getStores();
             foreach ($stores as $store) {
-                $this->appState->emulateAreaCode('adminhtml', function () use ($store, $ids) {
+                $this->appState->emulateAreaCode('frontend', function () use ($store, $ids) {
                     $this->reindex($store, $ids);
                 });
             }
@@ -87,7 +87,6 @@ abstract class AbstractIndexer
             return "Caught exception: " . $exception->getMessage();
         }
     }
-
 
     /**
      * @param StoreInterface $store
@@ -98,7 +97,7 @@ abstract class AbstractIndexer
     public function reindex(StoreInterface $store, array $ids = [])
     {
         // start store emulation
-        $this->emulation->startEnvironmentEmulation($store->getId(), 'adminhtml', true);
+        $this->emulation->startEnvironmentEmulation($store->getId(), 'frontend', true);
         if ($this->configHelper->isIndexerEnabled()) {
             $puller = $this->getPuller();
             $config = $this->configHelper->getConfiguration();
@@ -159,5 +158,5 @@ abstract class AbstractIndexer
     /**
      * @return null|PullerInterface
      */
-    public abstract function getPuller();
+    abstract public function getPuller();
 }

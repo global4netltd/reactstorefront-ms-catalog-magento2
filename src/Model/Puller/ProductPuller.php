@@ -9,6 +9,7 @@ use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
+use G4NReact\MsCatalogMagento2\Model\ResourceModel\ProductExtended;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
@@ -67,6 +68,11 @@ class ProductPuller extends AbstractPuller
     protected $eventManager;
 
     /**
+     * @var ProductExtended
+     */
+    protected $productExtended;
+
+    /**
      * ProductPuller constructor
      *
      * @param ProductCollectionFactory $productCollectionFactory
@@ -77,6 +83,7 @@ class ProductPuller extends AbstractPuller
      * @param SearchTerms $searchTerms
      * @param QueryHelper $queryHelper
      * @param EventManager $eventManager
+     * @param ProductExtended $productExtended
      * @throws NoSuchEntityException
      */
     public function __construct(
@@ -87,7 +94,8 @@ class ProductPuller extends AbstractPuller
         ConfigHelper $magento2ConfigHelper,
         SearchTerms $searchTerms,
         QueryHelper $queryHelper,
-        EventManager $eventManager
+        EventManager $eventManager,
+        ProductExtended $productExtended
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
@@ -96,6 +104,7 @@ class ProductPuller extends AbstractPuller
         $this->searchTerms = $searchTerms;
         $this->queryHelper = $queryHelper;
         $this->eventManager = $eventManager;
+        $this->productExtended = $productExtended;
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -119,11 +128,25 @@ class ProductPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage)
             ->addFinalPrice()
+            ->addCategoryIds()
             ->addMediaGalleryData();
 
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
 
+        $this->loadCategoryIds($productCollection);
+
         return $productCollection;
+    }
+
+    /**
+     * @param ProductCollection $productCollection
+     * @throws NoSuchEntityException
+     */
+    public function loadCategoryIds($productCollection)
+    {
+        $ids = $productCollection->getLoadedIds();
+
+        $this->productExtended->eagerLoadCategoriesWithParents($ids, $productCollection);
     }
 
     /**
@@ -145,6 +168,12 @@ class ProductPuller extends AbstractPuller
         $document->setUniqueId($product->getId() . '_' . self::OBJECT_TYPE . '_' . $product->getStoreId());
         $document->setObjectId($product->getId());
         $document->setObjectType(self::OBJECT_TYPE);
+
+        $document->setField(
+            $this->queryHelper
+                ->getFieldByAttributeCode('category_id', $product->getCategoryIds())
+        );
+        $product->unsetData('category_ids');
 
         foreach ($product->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
@@ -173,11 +202,6 @@ class ProductPuller extends AbstractPuller
         $document->setField(
             $this->queryHelper
                 ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
-        );
-
-        $document->setField(
-            $this->queryHelper
-                ->getFieldByAttributeCode('category_id', $product->getCategoryIds())
         );
 
         if ($requestPathField = $document->getField('request_path')) {
