@@ -134,6 +134,16 @@ class Query extends AbstractHelper
                 'indexable'   => true,
                 'multivalued' => false,
             ],
+            'visibility'    => [
+                'type' => Field::FIELD_TYPE_INT,
+                'indexable' => true,
+                'multivalued' => false
+            ],
+            'status'        => [
+                'type' => Field::FIELD_TYPE_INT,
+                'indexable' => true,
+                'multivalued' => false
+            ]
         ],
         CategoryAttributeInterface::ENTITY_TYPE_CODE => [
             'entity_id' => [

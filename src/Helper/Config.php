@@ -24,16 +24,19 @@ class Config extends AbstractHelper
     const BASE_ENGINE_CONFIG_PATH = 'ms_catalog_indexer/engine_settings/';
 
     /** @var string category attributes use in react storefront */
-    const CATEGORY_ATTRIBUTES_USE_IN_REACT_STOREFRONT = 'ms_catalog_indexer/indexer_settings/category_attributes_use_in_react_storefront';
+    const CATEGORY_ATTRIBUTES_USE_IN_REACT_STOREFRONT_XML = 'ms_catalog_indexer/indexer_settings/category_attributes_use_in_react_storefront';
 
     /** @var string category attributes force indexing in react storefron */
-    const CATEGORY_ATTRIBUTES_FORCE_INDEXING_IN_REACT_STOREFRONT = 'ms_catalog_indexer/indexer_settings/category_attributes_force_indexing_in_react_storefront';
+    const CATEGORY_ATTRIBUTES_FORCE_INDEXING_IN_REACT_STOREFRONT_XML = 'ms_catalog_indexer/indexer_settings/category_attributes_force_indexing_in_react_storefront';
 
     /** @var string product attributes base stats */
-    const PRODUCT_ATTRIBUTES_BASE_STATS = 'ms_catalog_indexer/indexer_settings/product_attributes_base_stats';
+    const PRODUCT_ATTRIBUTES_BASE_STATS_XML = 'ms_catalog_indexer/indexer_settings/product_attributes_base_stats';
 
     /** @var string product attributes base facets */
-    const PRODUCT_ATTRIBUTES_BASE_FACETS = 'ms_catalog_indexer/indexer_settings/product_attributes_base_facets';
+    const PRODUCT_ATTRIBUTES_BASE_FACETS_XML = 'ms_catalog_indexer/indexer_settings/product_attributes_base_facets';
+
+    /** @var string show out of stock */
+    const SHOW_OUT_OF_STOCK_XML = 'cataloginventory/options/show_out_of_stock';
 
     /**
      * @var StoreManagerInterface
@@ -137,7 +140,7 @@ class Config extends AbstractHelper
     public function getProductAttributesBaseFacets()
     {
         return $this->prepareDataFromMultiSelectConfig(
-            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_FACETS, ScopeInterface::SCOPE_STORE)
+            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_FACETS_XML, ScopeInterface::SCOPE_STORE)
         );
     }
 
@@ -147,7 +150,7 @@ class Config extends AbstractHelper
     public function getProductAttributesBaseStats()
     {
         return $this->prepareDataFromMultiSelectConfig(
-            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_STATS, ScopeInterface::SCOPE_STORE)
+            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_STATS_XML, ScopeInterface::SCOPE_STORE)
         );
     }
 
@@ -157,7 +160,7 @@ class Config extends AbstractHelper
     public function getCategoryAttributesUseInReact()
     {
         return $this->prepareDataFromMultiSelectConfig(
-            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_USE_IN_REACT_STOREFRONT, ScopeInterface::SCOPE_STORE)
+            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_USE_IN_REACT_STOREFRONT_XML, ScopeInterface::SCOPE_STORE)
         );
     }
 
@@ -167,7 +170,7 @@ class Config extends AbstractHelper
     public function getCategoryAttributesForceIndexingInReact()
     {
         return $this->prepareDataFromMultiSelectConfig(
-            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_FORCE_INDEXING_IN_REACT_STOREFRONT, ScopeInterface::SCOPE_STORE)
+            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_FORCE_INDEXING_IN_REACT_STOREFRONT_XML, ScopeInterface::SCOPE_STORE)
         );
     }
 
@@ -183,6 +186,17 @@ class Config extends AbstractHelper
         }
 
         return [];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getShowOutOfStockProducts()
+    {
+        return $this->scopeConfig->getValue(
+            self::SHOW_OUT_OF_STOCK_XML,
+            ScopeInterface::SCOPE_STORE
+        );
     }
 
 }
