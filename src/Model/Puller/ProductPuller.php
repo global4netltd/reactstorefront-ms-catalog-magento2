@@ -196,6 +196,16 @@ class ProductPuller extends AbstractPuller
             $document->setField(
                 $this->queryHelper->getFieldByAttribute($attribute, $product->getData($attribute->getAttributeCode()))
             );
+
+            // force creating Fields that should be indexed but have not any value
+            foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
+                if (!$document->getField($attributeCode)) {
+                    $document->setField(
+                        $this->queryHelper
+                            ->getFieldByAttributeCode($attributeCode, null)
+                    );
+                }
+            }
         }
 
         $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
