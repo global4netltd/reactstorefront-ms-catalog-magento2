@@ -46,6 +46,11 @@ class SearchTerms
     public static $searchTerms = [];
 
     /**
+     * @var array
+     */
+    public static $forceIndexingAttributes = [];
+
+    /**
      * SearchTerms constructor
      *
      * @param AttributeRepository $attributeRepository
@@ -75,12 +80,14 @@ class SearchTerms
         $attributeWeights = [];
         /** @var Attribute $attribute */
         foreach ($attributes->getItems() as $attribute) {
-            if ($attribute->getAttributeCode() == 'availability') {
-            }
             if ((int)$attribute->getData(self::WEIGHT_REACT_STORE_FRONT) > 0) {
                 $attributeWeights[$attribute->getAttributeCode()] = (int)$attribute->getData(self::WEIGHT_REACT_STORE_FRONT);
             } else {
                 $attributeWeights[$attribute->getAttributeCode()] = false;
+            }
+
+            if ((int)$attribute->getData(self::FORCE_INDEXING_IN_REACT_STORE_FRONT) == 1) {
+                self::$forceIndexingAttributes[] = $attribute->getAttributeCode();
             }
         }
 
@@ -107,5 +114,19 @@ class SearchTerms
         }
 
         return null;
+    }
+
+    /**
+     * @ToDo: Move things like this to some more proper place than SearchTerms model
+     * @return array
+     * @throws InputException
+     */
+    public function getForceIndexingAttributes(): array
+    {
+        if (!self::$forceIndexingAttributes) {
+            $this->getAttributeSearchTerms();
+        }
+
+        return self::$forceIndexingAttributes;
     }
 }
