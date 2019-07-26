@@ -60,11 +60,12 @@ abstract class AbstractEditTabDocumentStorefront extends Template
         $query->addFilters(
             [
                 [$this->helperQuery->getFieldByAttributeCode('id', $this->getId())],
-                [$this->helperQuery->getFieldByAttributeCode('object_type', $this->getObjectType())]
+                [$this->helperQuery->getFieldByAttributeCode('object_type', $this->getObjectType())],
+                [$this->helperQuery->getFieldByAttributeCode('store_id', $this->_storeManager->getStore()->getId())]
             ]
         );
 
-        $result = $query->getResponse();
+        $result = $query->getResponse(true);
 
         $result = $result->getNumFound() ? $result->getDocumentsCollection() : [];
         return $result;
