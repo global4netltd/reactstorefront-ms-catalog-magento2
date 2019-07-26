@@ -4,7 +4,7 @@ namespace G4NReact\MsCatalogMagento2\Helper;
 
 use G4NReact\MsCatalog\Client\ClientFactory;
 use G4NReact\MsCatalog\Document\Field;
-use G4NReact\MsCatalog\Document\FieldValue;
+use G4NReact\MsCatalog\FieldHelper;
 use G4NReact\MsCatalog\Helper;
 use G4NReact\MsCatalogMagento2\Helper\Cms\CmsQuery;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
@@ -312,13 +312,13 @@ class Query extends AbstractHelper
             return $field;
         }
 
-        $value = $this->handleValue($value, $attributeCode);
-
         $attributeCodeToFieldTypeMap = $this->getAttributeCodeToFieldTypeMap($entityType);
         if (in_array($attributeCode, array_keys($attributeCodeToFieldTypeMap))) {
             $field = new Field(
                 $attributeCodeToFieldTypeMap[$attributeCode]['real_code'] ?? $attributeCode,
-                $value,
+                FieldHelper::shouldHandleValue($value, $attributeCodeToFieldTypeMap[$attributeCode]['type'])
+                    ? FieldHelper::handleValue($value)
+                    : $value,
                 $attributeCodeToFieldTypeMap[$attributeCode]['type'],
                 $attributeCodeToFieldTypeMap[$attributeCode]['indexable'],
                 $attributeCodeToFieldTypeMap[$attributeCode]['multivalued']
@@ -340,34 +340,14 @@ class Query extends AbstractHelper
         $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
         $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
 
+        $value = FieldHelper::shouldHandleValue($value, $fieldType) ? FieldHelper::handleValue($value) : $value;
+
         $field = new Field($attributeCode, $value, $fieldType, $isFieldIndexable, $isMultiValued);
         if ($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT)) {
             $field->setIndexable(true);
         }
 
         return $field;
-    }
-
-    /**
-     * @param mixed $value
-     * @return mixed|FieldValue
-     */
-    public function handleValue($value, $attributeCode)
-    {
-        if (is_string($value)) {
-            $pattern = '/^(-?\d+\.?\d{0,})-(-?\d+\.?\d{0,})$/m';
-            preg_match_all($pattern, $value, $matches, PREG_SET_ORDER, 0);
-
-            if (!$matches) {
-                return $value;
-            }
-
-            if (isset($matches[0][1]) && isset($matches[0][2])) {
-                $value = new FieldValue($matches[0][0], $matches[0][1], $matches[0][2]);
-            }
-        }
-
-        return $value;
     }
 
     /**
