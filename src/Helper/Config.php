@@ -136,41 +136,45 @@ class Config extends AbstractHelper
 
     /**
      * @return mixed
+     * @throws NoSuchEntityException
      */
     public function getProductAttributesBaseFacets()
     {
         return $this->prepareDataFromMultiSelectConfig(
-            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_FACETS_XML, ScopeInterface::SCOPE_STORE)
+            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_FACETS_XML, ScopeInterface::SCOPE_STORE, $this->getStore()->getId())
         );
     }
 
     /**
      * @return array
+     * @throws NoSuchEntityException
      */
     public function getProductAttributesBaseStats()
     {
         return $this->prepareDataFromMultiSelectConfig(
-            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_STATS_XML, ScopeInterface::SCOPE_STORE)
+            $this->scopeConfig->getValue(self::PRODUCT_ATTRIBUTES_BASE_STATS_XML, ScopeInterface::SCOPE_STORE, $this->storeManager->getStore()->getId())
         );
     }
 
     /**
      * @return array
+     * @throws NoSuchEntityException
      */
     public function getCategoryAttributesUseInReact()
     {
         return $this->prepareDataFromMultiSelectConfig(
-            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_USE_IN_REACT_STOREFRONT_XML, ScopeInterface::SCOPE_STORE)
+            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_USE_IN_REACT_STOREFRONT_XML, ScopeInterface::SCOPE_STORE, $this->getStore()->getId())
         );
     }
 
     /**
      * @return array
+     * @throws NoSuchEntityException
      */
     public function getCategoryAttributesForceIndexingInReact()
     {
         return $this->prepareDataFromMultiSelectConfig(
-            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_FORCE_INDEXING_IN_REACT_STOREFRONT_XML, ScopeInterface::SCOPE_STORE)
+            $this->scopeConfig->getValue(self::CATEGORY_ATTRIBUTES_FORCE_INDEXING_IN_REACT_STOREFRONT_XML, ScopeInterface::SCOPE_STORE, $this->getStore()->getId())
         );
     }
 
@@ -190,12 +194,14 @@ class Config extends AbstractHelper
 
     /**
      * @return mixed
+     * @throws NoSuchEntityException
      */
     public function getShowOutOfStockProducts()
     {
         return $this->scopeConfig->getValue(
             self::SHOW_OUT_OF_STOCK_XML,
-            ScopeInterface::SCOPE_STORE
+            ScopeInterface::SCOPE_STORE,
+            $this->getStore()->getId()
         );
     }
 
