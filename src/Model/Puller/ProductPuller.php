@@ -15,11 +15,14 @@ use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
+use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Data\Collection as DataCollection;
 use Magento\Framework\Event\Manager as EventManager;
+use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+
 
 /**
  * Class ProductPuller
@@ -31,6 +34,11 @@ class ProductPuller extends AbstractPuller
      * @var string Type of object
      */
     const OBJECT_TYPE = 'product';
+
+    /**
+     * @var int
+     */
+    const MAX_CATEGORY_PRODUCT_POSITION = 1000000;
 
     /**
      * @var ProductCollectionFactory
@@ -73,6 +81,16 @@ class ProductPuller extends AbstractPuller
     protected $productExtended;
 
     /**
+     * @var ResourceConnection
+     */
+    protected $resource;
+
+    /**
+     * @var array
+     */
+    public static $productPositionInCategory = [];
+
+    /**
      * ProductPuller constructor
      *
      * @param ProductCollectionFactory $productCollectionFactory
@@ -84,6 +102,7 @@ class ProductPuller extends AbstractPuller
      * @param QueryHelper $queryHelper
      * @param EventManager $eventManager
      * @param ProductExtended $productExtended
+     * @param ResourceConnection $resource
      * @throws NoSuchEntityException
      */
     public function __construct(
@@ -95,7 +114,8 @@ class ProductPuller extends AbstractPuller
         SearchTerms $searchTerms,
         QueryHelper $queryHelper,
         EventManager $eventManager,
-        ProductExtended $productExtended
+        ProductExtended $productExtended,
+        ResourceConnection $resource
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
@@ -105,6 +125,7 @@ class ProductPuller extends AbstractPuller
         $this->queryHelper = $queryHelper;
         $this->eventManager = $eventManager;
         $this->productExtended = $productExtended;
+        $this->resource = $resource;
 
         parent::__construct($magento2ConfigHelper);
     }
@@ -133,9 +154,36 @@ class ProductPuller extends AbstractPuller
 
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
 
+        $this->getPositionInCategory($productCollection);
+
         $this->loadCategoryIds($productCollection);
 
         return $productCollection;
+    }
+
+    /**
+     * @param ProductCollection $productCollection
+     * @return void
+     */
+    public function getPositionInCategory(ProductCollection $productCollection): void
+    {
+        $ids = $productCollection->getLoadedIds();
+
+        $connection = $this->resource->getConnection();
+        $select = $connection->select()
+            ->from(
+                ['ccp' => $connection->getTableName('catalog_category_product')],
+                ['product_id', 'category_id', 'position']
+            )
+            ->where('ccp.product_id IN(?)', $ids);
+        $positions = $connection->fetchAll($select);
+
+        $productPositionInCategory = [];
+        foreach ($positions as $position) {
+            $productPositionInCategory[$position['product_id']][$position['category_id']] = $position['position'];
+        }
+
+        self::$productPositionInCategory = $productPositionInCategory;
     }
 
     /**
@@ -157,6 +205,7 @@ class ProductPuller extends AbstractPuller
     {
         /** @var Product $product */
         $product = $this->pageArray[$this->position];
+        /** @var Document $document */
         $document = new Document();
 
         $eventData = [
@@ -169,56 +218,15 @@ class ProductPuller extends AbstractPuller
         $document->setObjectId($product->getId());
         $document->setObjectType(self::OBJECT_TYPE);
 
-        $document->setField(
-            $this->queryHelper
-                ->getFieldByAttributeCode('category_id', $product->getCategoryIds())
-        );
-        $product->unsetData('category_ids');
+        $this->handleCategoryId($product, $document);
+        
+        $this->addAttributes($product, $document);
 
-        foreach ($product->getData() as $field => $value) {
-            $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
+        $this->addMediaGallery($product, $document);
 
-            $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
-            if ($searchTermField) {
-                if ($field = $document->getField($searchTermField)) {
-                    $field->setValue($field->getValue() . $value);
-                } else {
-                    $document->createField(
-                        $searchTermField,
-                        $value,
-                        Document\Field::FIELD_TYPE_TEXT_SEARCH,
-                        true,
-                        false
-                    );
-                }
-            }
-
-            $document->setField(
-                $this->queryHelper->getFieldByAttribute($attribute, $product->getData($attribute->getAttributeCode()))
-            );
-
-            // force creating Fields that should be indexed but have not any value
-            foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
-                if (!$document->getField($attributeCode)) {
-                    $document->setField(
-                        $this->queryHelper
-                            ->getFieldByAttributeCode($attributeCode, null)
-                    );
-                }
-            }
-        }
-
-        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
-        $document->setField(
-            $this->queryHelper
-                ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
-        );
-
-        if ($requestPathField = $document->getField('request_path')) {
-            $requestPath = (string)$requestPathField->getValue();
-            $requestPath = '/' . ltrim($requestPath, '/');
-            $requestPathField->setValue($requestPath);
-        }
+        $this->handleRequestPath($document);
+        
+        $this->addCategoryPosition($product, $document);
 
         $eventData = [
             'product'  => $product,
@@ -261,5 +269,106 @@ class ProductPuller extends AbstractPuller
     public function getType(): string
     {
         return self::OBJECT_TYPE;
+    }
+
+    /**
+     * @param Product $product
+     * @param Document $document
+     */
+    protected function addCategoryPosition(Product $product, Document $document): void
+    {
+        if (isset(self::$productPositionInCategory[$product->getId()])) {
+            foreach (self::$productPositionInCategory[$product->getId()] as $categoryId => $position) {
+                $document->createField(
+                    "category_{$categoryId}_position",
+                    self::MAX_CATEGORY_PRODUCT_POSITION - $position,
+                    Document\Field::FIELD_TYPE_INT,
+                    true,
+                    false
+                );
+            }
+        }
+    }
+
+    /**
+     * @param Document $document
+     */
+    protected function handleRequestPath(Document $document): void
+    {
+        if ($requestPathField = $document->getField('request_path')) {
+            $requestPath = (string)$requestPathField->getValue();
+            $requestPath = '/' . ltrim($requestPath, '/');
+            $requestPathField->setValue($requestPath);
+        }
+    }
+
+    /**
+     * @param Product $product
+     * @param Document $document
+     * @throws LocalizedException
+     */
+    protected function addMediaGallery(Product $product, Document $document): void
+    {
+        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
+        $document->setField(
+            $this->queryHelper
+                ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
+        );
+    }
+
+    /**
+     * @param Product $product
+     * @param Document $document
+     * @throws LocalizedException
+     */
+    protected function handleCategoryId(Product $product, Document $document): void
+    {
+        $document->setField(
+            $this->queryHelper
+                ->getFieldByAttributeCode('category_id', $product->getCategoryIds())
+        );
+        $product->unsetData('category_ids');
+    }
+
+    /**
+     * @param Product $product
+     * @param Document $document
+     * @throws LocalizedException
+     * @throws InputException
+     */
+    protected function addAttributes(Product $product, Document $document): void
+    {
+        foreach ($product->getData() as $field => $value) {
+            $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
+
+            $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
+            if ($searchTermField) {
+                if ($field = $document->getField($searchTermField)) {
+                    $field->setValue($field->getValue() . $value);
+                } else {
+                    $document->createField(
+                        $searchTermField,
+                        $value,
+                        Document\Field::FIELD_TYPE_TEXT_SEARCH,
+                        true,
+                        false
+                    );
+                }
+            }
+
+            $document->setField(
+                $this->queryHelper->getFieldByAttribute($attribute, $product->getData($attribute->getAttributeCode()))
+            );
+
+            // force creating Fields that should be indexed but have not any value
+            foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
+                if (!$document->getField($attributeCode)) {
+                    $document->setField(
+                        $this->queryHelper
+                            ->getFieldByAttributeCode($attributeCode, null)
+                    );
+                }
+            }
+        }
     }
 }

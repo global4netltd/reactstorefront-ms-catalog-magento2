@@ -92,8 +92,7 @@ class CategoryPuller extends AbstractPuller
         QueryHelper $helperQuery,
         StoreManagerInterface $storeManager,
         EventManager $eventManager
-    )
-    {
+    ) {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -133,21 +132,6 @@ class CategoryPuller extends AbstractPuller
 
 
         return $categoryCollection;
-    }
-
-    /**
-     * @param $categoryId
-     * @return int|mixed
-     * @throws NoSuchEntityException
-     * @throws LocalizedException
-     */
-    public function getProductCount($categoryId)
-    {
-        if ($this->productsCount === null) {
-            $this->productsCount = $this->helperQuery->getCategoriesProductsCount($this->storeManager->getStore()->getId());
-        }
-
-        return $this->productsCount[$categoryId] ?? 0;
     }
 
     /**
@@ -262,6 +246,21 @@ class CategoryPuller extends AbstractPuller
         $attributeCodes = $connection->fetchCol($select);
 
         return $attributeCodes;
+    }
+
+    /**
+     * @param $categoryId
+     * @return int|mixed
+     * @throws NoSuchEntityException
+     * @throws LocalizedException
+     */
+    public function getProductCount($categoryId)
+    {
+        if ($this->productsCount === null) {
+            $this->productsCount = $this->helperQuery->getCategoriesProductsCount($this->storeManager->getStore()->getId());
+        }
+
+        return $this->productsCount[$categoryId] ?? 0;
     }
 
     /**
