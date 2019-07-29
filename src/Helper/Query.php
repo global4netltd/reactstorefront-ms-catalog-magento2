@@ -336,9 +336,9 @@ class Query extends AbstractHelper
             self::$attributes[$entityType][$attributeCode] = $attribute;
         }
 
-        $fieldType = $this->getAttributeFieldType($attribute);
-        $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
         $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
+        $fieldType = $isMultiValued ? Field::FIELD_TYPE_INT : $this->getAttributeFieldType($attribute);
+        $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
 
         $value = FieldHelper::shouldHandleValue($value, $fieldType) ? FieldHelper::handleValue($value) : $value;
 
