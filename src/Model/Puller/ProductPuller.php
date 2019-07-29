@@ -279,9 +279,11 @@ class ProductPuller extends AbstractPuller
     {
         if (isset(self::$productPositionInCategory[$product->getId()])) {
             foreach (self::$productPositionInCategory[$product->getId()] as $categoryId => $position) {
+                $finalPosition = self::MAX_CATEGORY_PRODUCT_POSITION - $position;
+                $finalPosition = ($finalPosition === self::MAX_CATEGORY_PRODUCT_POSITION) ? 0 : $finalPosition;
                 $document->createField(
                     "category_{$categoryId}_position",
-                    self::MAX_CATEGORY_PRODUCT_POSITION - $position,
+                    $finalPosition,
                     Document\Field::FIELD_TYPE_INT,
                     true,
                     false
