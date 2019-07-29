@@ -362,13 +362,13 @@ class ProductPuller extends AbstractPuller
                 $this->queryHelper->getFieldByAttribute($attribute, $product->getData($attribute->getAttributeCode()))
             );
 
-            // force creating Fields that should be indexed but have not any value
+            // force creating Fields that should be indexed but have not any value @ToDo: temprarily - and are not multivalued
             foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
                 if (!$document->getField($attributeCode)) {
-                    $document->setField(
-                        $this->queryHelper
-                            ->getFieldByAttributeCode($attributeCode, null)
-                    );
+                    $field = $this->queryHelper->getFieldByAttributeCode($attributeCode, null);
+                    if (!$field->getMultiValued()) {
+                        $document->setField($field);
+                    }
                 }
             }
         }
