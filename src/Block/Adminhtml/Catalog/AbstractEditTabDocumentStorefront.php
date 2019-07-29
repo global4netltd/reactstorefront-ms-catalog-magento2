@@ -80,6 +80,32 @@ abstract class AbstractEditTabDocumentStorefront extends Template
     }
 
     /**
+     * @return string
+     */
+    public function getAjaxUrl()
+    {
+        return $this->getUrl('g4n_react_magento2/catalog/reindexdocumentstorefrontdatabase');
+    }
+
+    /**
+     * @return string
+     * @throws \Magento\Framework\Exception\LocalizedException
+     */
+    public function getButtonHtml()
+    {
+        $button = $this->getLayout()->createBlock(
+            'Magento\Backend\Block\Widget\Button'
+        )->setData(
+            [
+                'id' => 'reindex_react_storefront_data',
+                'label' => __('Reindex ' . $this->getObjectType() . ' in Storefront database'),
+            ]
+        );
+
+        return $button->toHtml();
+    }
+    
+    /**
      * @return mixed
      */
     abstract public function getObjectType();

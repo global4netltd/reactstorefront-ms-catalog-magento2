@@ -1,8 +1,8 @@
 <?php
-/** @var $this \G4NReact\MsCatalogMagento2\Block\Adminhtml\Catalog\AbstractEditTabDocument*/
+/** @var $this \G4NReact\MsCatalogMagento2\Block\Adminhtml\Catalog\AbstractEditTabDocumentStorefront */
 
 foreach ($this->getDocument() as $documents) :
-$documentList = $documents->getData(); ?>
+    $documentList = $documents->getData(); ?>
     <?php if ($documentList && count($documentList)): ?>
     <table class="data-grid">
         <thead>
@@ -26,5 +26,36 @@ $documentList = $documents->getData(); ?>
         <?php endforeach; ?>
         </tbody>
     </table>
-    <?php endif; ?>
+<?php endif; ?>
 <?php endforeach; ?>
+
+<script>
+    require([
+        'jquery',
+        'prototype',
+    ], function (jQuery) {
+        function reindex() {
+            params = {
+                id: '<?= $this->getId()?>',
+                object_type: '<?= $this->getObjectType()?>',
+                isAjax: true
+            };
+
+            new Ajax.Request('<?php /* @escapeNotVerified */ echo $this->getAjaxUrl() ?>', {
+                loaderArea: false,
+                asynchronous: true,
+                parameters: params,
+                onSuccess: function (transport) {
+                    // temporary
+                    if (window && window.location && typeof window.location.reload === 'function') window.location.reload(true);
+                }
+            });
+        }
+
+        jQuery('#reindex_react_storefront_data').click(function () {
+            reindex();
+        });
+    });
+</script>
+
+<?php echo $this->getButtonHtml() ?>
