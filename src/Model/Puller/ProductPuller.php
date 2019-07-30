@@ -23,7 +23,6 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 
-
 /**
  * Class ProductPuller
  * @package G4NReact\MsCatalogMagento2\Model\Puller
@@ -219,13 +218,13 @@ class ProductPuller extends AbstractPuller
         $document->setObjectType(self::OBJECT_TYPE);
 
         $this->handleCategoryId($product, $document);
-        
+
         $this->addAttributes($product, $document);
 
         $this->addMediaGallery($product, $document);
 
         $this->handleRequestPath($document);
-        
+
         $this->addCategoryPosition($product, $document);
 
         $eventData = [

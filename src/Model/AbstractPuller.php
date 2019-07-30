@@ -76,7 +76,7 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         $this->position = 0;
         $this->curPage = 0;
 
-        $this->pageSize = $magento2ConfigHelper->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize') ?: self::PAGE_SIZE_DEFAULT;
+        $this->pageSize = $magento2ConfigHelper->getConfiguration()->getPullerPageSize() ?: self::PAGE_SIZE_DEFAULT;
     }
 
     /**
@@ -101,7 +101,7 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     /**
      * @return mixed
      */
-    public abstract function getCollection();
+    abstract public function getCollection();
 
     /**
      * @return array
@@ -137,7 +137,7 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     /**
      * @return string
      */
-    public abstract function getType(): string;
+    abstract public function getType(): string;
 
     /**
      * @inheritdoc
