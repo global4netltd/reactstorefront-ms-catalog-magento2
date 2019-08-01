@@ -20,5 +20,6 @@
         <plugin sortOrder="1" name="grodnoGrodnoPropertyMapper"
                 type="G4NReact\MsCatalogMagento2\Plugin\Model\ResourceModel\Setup\PropertyMapperPlugin"/>
     </type>
+    <preference for="Magento\Framework\Indexer\Config\SchemaLocator" type="G4NReact\MsCatalogMagento2\Config\Framework\Indexer\SchemaLocator" />
 </config>
 

@@ -12,6 +12,7 @@ use G4NReact\MsCatalogIndexer\Indexer;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Framework\App\State as AppState;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Indexer\ActionInterface;
 use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
@@ -20,7 +21,7 @@ use Magento\Store\Model\StoreManagerInterface;
  * Class AbstractIndexer
  * @package G4NReact\MsCatalogMagento2\Model\Indexer
  */
-abstract class AbstractIndexer
+abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mview\ActionInterface
 {
     /**
      * @var string
@@ -159,4 +160,36 @@ abstract class AbstractIndexer
      * @return null|PullerInterface
      */
     abstract public function getPuller();
+
+    /**
+     * @param int[] $ids
+     */
+    public function execute($ids)
+    {
+        $this->run($ids);
+    }
+
+    /**
+     * @param array $ids
+     */
+    public function executeList(array $ids)
+    {
+        $this->run($ids);
+    }
+
+    /**
+     * @param int $id
+     */
+    public function executeRow($id)
+    {
+        $this->run([$id]);
+    }
+
+    /**
+     * Reindex all
+     */
+    public function executeFull()
+    {
+        $this->run();
+    }
 }
