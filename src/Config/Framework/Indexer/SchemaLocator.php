@@ -44,7 +44,11 @@ class SchemaLocator extends IndexerSchemaLocator implements SchemaLocatorInterfa
      */
     public function getSchema()
     {
-        return $this->schema;
+        if ($this->schema) {
+            return $this->schema;
+        }
+
+        return parent::getSchema();
     }
 
     /**
@@ -52,6 +56,10 @@ class SchemaLocator extends IndexerSchemaLocator implements SchemaLocatorInterfa
      */
     public function getPerFileSchema()
     {
-        return $this->perFileSchema;
+        if ($this->perFileSchema) {
+            return $this->perFileSchema;
+        }
+
+        return parent::getPerFileSchema();
     }
 }

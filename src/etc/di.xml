@@ -21,5 +21,6 @@
                 type="G4NReact\MsCatalogMagento2\Plugin\Model\ResourceModel\Setup\PropertyMapperPlugin"/>
     </type>
     <preference for="Magento\Framework\Indexer\Config\SchemaLocator" type="G4NReact\MsCatalogMagento2\Config\Framework\Indexer\SchemaLocator" />
+    <preference for="Magento\Framework\Mview\Config\SchemaLocator" type="G4NReact\MsCatalogMagento2\Config\Mview\SchemaLocator" />
 </config>
 
