@@ -2,22 +2,17 @@
 
 namespace G4NReact\MsCatalogMagento2\Helper\Cms;
 
+use G4NReact\MsCatalogMagento2\Helper\AbstractFieldHelper;
 use Magento\Cms\Model\ResourceModel\Page;
 
 /**
  * Class Field
  * @package G4NReact\MsCatalogMagento2\Helper\Cms
  */
-class Field
+class Field extends AbstractFieldHelper
 {
     /** @var string object type cms */
     const OBJECT_TYPE = 'cms_page';
-
-    /** @var string column name */
-    const COLUMN_NAME = 'COLUMN_NAME';
-
-    /** @var string data type */
-    const DATA_TYPE = 'DATA_TYPE';
 
     /** @var string table name cms page */
     const TABLE_NAME_CMS_PAGE = 'cms_page';
@@ -44,14 +39,6 @@ class Field
         'is_active' => 'bool',
         'sort_order' => 'int',
         'store_id' => 'int',
-    ];
-
-    /**
-     * @var array
-     */
-    protected static $overrideFieldTypeMap = [
-        'store_id' => 'int',
-        'is_active' => 'bool',
     ];
 
     /**
@@ -90,7 +77,7 @@ class Field
         }
         if (!self::$columnsTypes) {
             $fields = $this->resourceModelPage->getConnection()->describeTable(self::TABLE_NAME_CMS_PAGE);
-            $this->prepareColumnTypes($fields);
+            self::$columnsTypes = $this->prepareColumnTypes($fields);
         }
 
         if (isset(self::$columnsTypes[$columnName])) {
@@ -101,31 +88,27 @@ class Field
     }
 
     /**
-     * @param array $fields
-     */
-    protected function prepareColumnTypes(array $fields)
-    {
-        $res = [];
-        foreach ($fields as $field) {
-            if (isset($field[self::COLUMN_NAME]) && isset($field[self::DATA_TYPE]))
-                $res[$field[self::COLUMN_NAME]] = $field[self::DATA_TYPE];
-        }
-
-        self::$columnsTypes = $res;
-    }
-
-    /**
      * @param string $fieldName
      * @param $value
      *
      * @return bool
      */
-    public static function getIsCmsMultivalued(string $fieldName, $value): bool
+    public static function getIsMultiValued(string $fieldName, $value): bool
     {
         if (in_array($fieldName, self::$fieldMultivaluedMap) || is_array($value)) {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * @param string $fieldName
+     *
+     * @return bool
+     */
+    public static function getIsIndexable(string $fieldName) : bool 
+    {
+        return true;
     }
 }

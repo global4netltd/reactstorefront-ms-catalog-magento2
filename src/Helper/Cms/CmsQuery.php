@@ -47,7 +47,7 @@ class CmsQuery
             $value,
             $type,
             false,
-            HelperCmsField::getIsCmsMultivalued($columnName, $value)
+            HelperCmsField::getIsMultiValued($columnName, $value)
         );
     }
 }

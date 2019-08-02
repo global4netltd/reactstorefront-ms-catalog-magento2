@@ -141,7 +141,7 @@ class CmsPagePuller extends AbstractPuller
                 $page->getData($field),
                 $this->helperCmsField->getFieldTypeByCmsColumnName($field) ?? Document\Field::FIELD_TYPE_STRING,
                 false,
-                Field::getIsCmsMultivalued($field, $value)
+                Field::getIsMultiValued($field, $value)
             );
         }
 
