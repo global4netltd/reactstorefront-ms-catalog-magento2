@@ -125,6 +125,7 @@ class ProductPuller extends AbstractPuller
         $this->eventManager = $eventManager;
         $this->productExtended = $productExtended;
         $this->resource = $resource;
+        $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
     }

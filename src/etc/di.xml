@@ -7,8 +7,8 @@
                 <item name="g4nreact_reindexall_product" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllProduct</item>
                 <item name="g4nreact_reindex_category" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexCategory</item>
                 <item name="g4nreact_reindexall_category" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllCategory</item>
-                <item name="g4nreact_reindex_cms" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexCms</item>
-                <item name="g4nreact_reindexall_cms" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllCms</item>
+                <item name="g4nreact_reindex_cms_page" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexCmsPage</item>
+                <item name="g4nreact_reindexall_cms_page" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllCmsPage</item>
             </argument>
         </arguments>
     </type>

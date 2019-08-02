@@ -11,7 +11,7 @@ use Magento\Cms\Model\ResourceModel\Page;
 class Field
 {
     /** @var string object type cms */
-    const OBJECT_TYPE = 'cms';
+    const OBJECT_TYPE = 'cms_page';
 
     /** @var string column name */
     const COLUMN_NAME = 'COLUMN_NAME';

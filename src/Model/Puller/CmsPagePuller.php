@@ -16,15 +16,15 @@ use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
- * Class CmsPuller
+ * Class CmsPagePuller
  * @package G4NReact\MsCatalogMagento2\Model\Puller
  */
-class CmsPuller extends AbstractPuller
+class CmsPagePuller extends AbstractPuller
 {
     /**
      * @var string Type of object
      */
-    const OBJECT_TYPE = 'cms';
+    const OBJECT_TYPE = 'cms_page';
 
     /**
      * @var CmsPageCollectionFactory

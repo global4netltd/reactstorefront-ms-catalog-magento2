@@ -19,6 +19,9 @@ abstract class AbstractPuller implements Iterator, PullerInterface
      */
     const PAGE_SIZE_DEFAULT = 100;
 
+    /** @var int default current page */
+    const CUR_PAGE_DEFAULT = 0;
+
     /**
      * @var int
      */
@@ -74,7 +77,7 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     ) {
         $this->magento2ConfigHelper = $magento2ConfigHelper;
         $this->position = 0;
-        $this->curPage = 0;
+        $this->curPage = self::CUR_PAGE_DEFAULT;
 
         $this->pageSize = $magento2ConfigHelper->getConfiguration()->getPullerPageSize() ?: self::PAGE_SIZE_DEFAULT;
     }
@@ -96,6 +99,26 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         $this->pageSize = $pageSize;
 
         return $this;
+    }
+
+    /**
+     * @param int $curPage
+     *
+     * @return PullerInterface
+     */
+    public function setCurPage(int $curPage): PullerInterface
+    {
+        $this->curPage = $curPage;
+
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCurPage() : int
+    {
+        return $this->curPage;
     }
 
     /**
