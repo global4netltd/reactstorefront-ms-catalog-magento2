@@ -1,43 +1,40 @@
 <?php
 
-namespace G4NReact\MsCatalogMagento2\Helper\Cms;
-
+namespace G4NReact\MsCatalogMagento2\Helper\SearchTerms;
 
 use G4NReact\MsCatalogMagento2\Helper\AbstractFieldHelper;
-use Magento\Cms\Model\ResourceModel\Block as ResourceCmsBlock;
+use Magento\Search\Model\ResourceModel\Query;
 
 /**
- * Class CmsBlockField
- * @package G4NReact\MsCatalogMagento2\Helper\Cms
+ * Class SearchTermsField
+ * @package G4NReact\MsCatalogMagento2\Helper\SearchTerms
  */
-class CmsBlockField extends AbstractFieldHelper
+class SearchTermsField extends AbstractFieldHelper
 {
-    /** @var string object type cms block */
-    const OBJECT_TYPE = 'cms_block';
+    /** @var columns types */
+    public static $columnsTypes;
     
-    /** @var string cms block table name */
-    const TABLE_NAME_CMS_BLOCK = 'cms_block';
+    /** @var string set object type */
+    const OBJECT_TYPE = 'search_term';
+    
+    /** @var string table name */
+    const TABLE_NAME_SEARCH_QUERY = 'search_query';
 
     /**
-     * @var array
+     * @var Query
      */
-    public static $columnsTypes = [];
-    
-    /**
-     * @var ResourceCmsBlock
-     */
-    protected $resourceCmsBlock;
+    protected $searchQueryResourceModel;
 
     /**
-     * CmsBlockField constructor.
+     * SearchTermsField constructor.
      *
-     * @param ResourceCmsBlock $resourceCmsBlock
+     * @param Query $searchQueryResourceModel
      */
     public function __construct(
-        ResourceCmsBlock $resourceCmsBlock
+        Query $searchQueryResourceModel
     )
     {
-        $this->resourceCmsBlock = $resourceCmsBlock;
+        $this->searchQueryResourceModel = $searchQueryResourceModel;
     }
 
     /**
@@ -51,7 +48,7 @@ class CmsBlockField extends AbstractFieldHelper
             return self::$overrideFieldTypeMap[$columnName];
         }
         if (!self::$columnsTypes) {
-            $fields = $this->resourceCmsBlock->getConnection()->describeTable(self::TABLE_NAME_CMS_BLOCK);
+            $fields = $this->searchQueryResourceModel->getConnection()->describeTable(self::TABLE_NAME_SEARCH_QUERY);
             self::$columnsTypes = $this->prepareColumnTypes($fields);
         }
 

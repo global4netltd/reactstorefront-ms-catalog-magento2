@@ -11,6 +11,8 @@
                 <item name="g4nreact_reindexall_cms_page" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllCmsPage</item>
                 <item name="g4nreact_reindex_cms_block" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexCmsBlock</item>
                 <item name="g4nreact_reindexall_cms_block" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllCmsBlock</item>
+                <item name="g4nreact_reindex_search_terms" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexSearchTerms</item>
+                <item name="g4nreact_reindexall_search_terms" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllSearchTerms</item>
             </argument>
         </arguments>
     </type>

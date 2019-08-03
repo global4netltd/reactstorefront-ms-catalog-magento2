@@ -10,6 +10,7 @@ use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use Magento\Cms\Model\ResourceModel\Block\CollectionFactory;
 use Magento\Framework\Event\Manager;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class CmsBlockPuller
@@ -35,8 +36,21 @@ class CmsBlockPuller extends AbstractPuller
      */
     protected $cmsBlockCollFactory;
 
+    /**
+     * @var CmsBlockField
+     */
     protected $cmsBlockField;
 
+    /**
+     * CmsBlockPuller constructor.
+     *
+     * @param ConfigHelper $magento2ConfigHelper
+     * @param Manager $eventManager
+     * @param CollectionFactory $cmsBlockCollFactory
+     * @param CmsBlockField $cmsBlockField
+     *
+     * @throws NoSuchEntityException
+     */
     public function __construct(
         ConfigHelper $magento2ConfigHelper,
         Manager $eventManager,
@@ -71,7 +85,7 @@ class CmsBlockPuller extends AbstractPuller
 
     /**
      * @return Document
-     * @throws \Magento\Framework\Exception\NoSuchEntityException
+     * @throws NoSuchEntityException
      */
     public function current(): Document
     {

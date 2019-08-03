@@ -6,8 +6,9 @@ namespace G4NReact\MsCatalogMagento2\Helper;
  * Class AbstractFieldHelper
  * @package G4NReact\MsCatalog\Helper
  */
-abstract class AbstractFieldHelper
+abstract class AbstractFieldHelper implements FieldHelperInterface
 {
+
     /** @var string column name */
     const COLUMN_NAME = 'COLUMN_NAME';
 
@@ -22,28 +23,6 @@ abstract class AbstractFieldHelper
         'is_active' => 'bool',
         '_first_store_id' => 'int'
     ];
-    
-    /**
-     * @param string $columnName
-     *
-     * @return string
-     */
-    abstract public function getFieldTypeByCmsColumnName(string $columnName) : string;
-
-    /**
-     * @param string $fieldName
-     *
-     * @return bool
-     */
-    abstract public static function getIsIndexable(string $fieldName) : bool;
-
-    /**
-     * @param string $fieldName
-     * @param $value
-     *
-     * @return bool
-     */
-    abstract public static function getIsMultiValued(string $fieldName, $value): bool;
 
     /**
      * @param array $fields
@@ -59,5 +38,20 @@ abstract class AbstractFieldHelper
         }
 
         return $res;
+    }
+
+    /**
+     * @param string $fieldName
+     * @param $value
+     *
+     * @return bool
+     */
+    public static function getIsMultiValued(string $fieldName, $value): bool
+    {
+        if (is_array($value)) {
+            return true;
+        }
+
+        return false;
     }
 }
