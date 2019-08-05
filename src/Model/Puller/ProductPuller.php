@@ -38,56 +38,46 @@ class ProductPuller extends AbstractPuller
      * @var int
      */
     const MAX_CATEGORY_PRODUCT_POSITION = 1000000;
-
-    /**
-     * @var ProductCollectionFactory
-     */
-    protected $productCollectionFactory;
-
-    /**
-     * @var Attribute
-     */
-    protected $eavAttribute;
-
-    /**
-     * @var EavConfig
-     */
-    protected $eavConfig;
-
-    /**
-     * @var JsonSerializer
-     */
-    protected $jsonSerializer;
-
-    /**
-     * @var SearchTerms
-     */
-    protected $searchTerms;
-
-    /**
-     * @var QueryHelper
-     */
-    protected $queryHelper;
-
-    /**
-     * @var EventManager
-     */
-    protected $eventManager;
-
-    /**
-     * @var ProductExtended
-     */
-    protected $productExtended;
-
-    /**
-     * @var ResourceConnection
-     */
-    protected $resource;
-
     /**
      * @var array
      */
     public static $productPositionInCategory = [];
+    /**
+     * @var ProductCollectionFactory
+     */
+    protected $productCollectionFactory;
+    /**
+     * @var Attribute
+     */
+    protected $eavAttribute;
+    /**
+     * @var EavConfig
+     */
+    protected $eavConfig;
+    /**
+     * @var JsonSerializer
+     */
+    protected $jsonSerializer;
+    /**
+     * @var SearchTerms
+     */
+    protected $searchTerms;
+    /**
+     * @var QueryHelper
+     */
+    protected $queryHelper;
+    /**
+     * @var EventManager
+     */
+    protected $eventManager;
+    /**
+     * @var ProductExtended
+     */
+    protected $productExtended;
+    /**
+     * @var ResourceConnection
+     */
+    protected $resource;
 
     /**
      * ProductPuller constructor
@@ -208,11 +198,17 @@ class ProductPuller extends AbstractPuller
         /** @var Document $document */
         $document = new Document();
 
-        $eventData = [
+        $eventData = new \stdClass([
             'product'  => $product,
             'document' => $document,
-        ];
+            'disable'  => false
+        ]);
+
         $this->eventManager->dispatch('prepare_document_from_product_before', ['eventData' => $eventData]);
+
+        if ($eventData->disable === true) {
+            return $document;
+        }
 
         $document->setUniqueId($product->getId() . '_' . self::OBJECT_TYPE . '_' . $product->getStoreId());
         $document->setObjectId($product->getId());
@@ -232,90 +228,10 @@ class ProductPuller extends AbstractPuller
             'product'  => $product,
             'document' => $document,
         ];
+
         $this->eventManager->dispatch('prepare_document_from_product_after', $eventData);
 
         return $document;
-    }
-
-    /**
-     * @param DataCollection $mediaGalleryImages
-     *
-     * @return bool|false|string
-     */
-    protected function getMediaGalleryJson(DataCollection $mediaGalleryImages)
-    {
-        $gallery = [];
-
-        foreach ($mediaGalleryImages as $image) {
-            $gallery[] = ['full' => $image->getUrl()];
-        }
-
-        return $this->jsonSerializer->serialize($gallery);
-    }
-
-    /**
-     * @param QueryInterface|null $query
-     *
-     * @return ResponseInterface
-     */
-    public function pull(QueryInterface $query = null): ResponseInterface
-    {
-        // TODO: Implement pull() method.
-    }
-
-    /**
-     * @return string
-     */
-    public function getType(): string
-    {
-        return self::OBJECT_TYPE;
-    }
-
-    /**
-     * @param Product $product
-     * @param Document $document
-     */
-    protected function addCategoryPosition(Product $product, Document $document): void
-    {
-        if (isset(self::$productPositionInCategory[$product->getId()])) {
-            foreach (self::$productPositionInCategory[$product->getId()] as $categoryId => $position) {
-                $finalPosition = self::MAX_CATEGORY_PRODUCT_POSITION - $position;
-                $finalPosition = ($finalPosition === self::MAX_CATEGORY_PRODUCT_POSITION) ? 0 : $finalPosition;
-                $document->createField(
-                    "category_{$categoryId}_position",
-                    $finalPosition,
-                    Document\Field::FIELD_TYPE_INT,
-                    true,
-                    false
-                );
-            }
-        }
-    }
-
-    /**
-     * @param Document $document
-     */
-    protected function handleRequestPath(Document $document): void
-    {
-        if ($requestPathField = $document->getField('request_path')) {
-            $requestPath = (string)$requestPathField->getValue();
-            $requestPath = '/' . ltrim($requestPath, '/');
-            $requestPathField->setValue($requestPath);
-        }
-    }
-
-    /**
-     * @param Product $product
-     * @param Document $document
-     * @throws LocalizedException
-     */
-    protected function addMediaGallery(Product $product, Document $document): void
-    {
-        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
-        $document->setField(
-            $this->queryHelper
-                ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
-        );
     }
 
     /**
@@ -372,5 +288,86 @@ class ProductPuller extends AbstractPuller
                 }
             }
         }
+    }
+
+    /**
+     * @param Product $product
+     * @param Document $document
+     * @throws LocalizedException
+     */
+    protected function addMediaGallery(Product $product, Document $document): void
+    {
+        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
+        $document->setField(
+            $this->queryHelper
+                ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
+        );
+    }
+
+    /**
+     * @param DataCollection $mediaGalleryImages
+     *
+     * @return bool|false|string
+     */
+    protected function getMediaGalleryJson(DataCollection $mediaGalleryImages)
+    {
+        $gallery = [];
+
+        foreach ($mediaGalleryImages as $image) {
+            $gallery[] = ['full' => $image->getUrl()];
+        }
+
+        return $this->jsonSerializer->serialize($gallery);
+    }
+
+    /**
+     * @param Document $document
+     */
+    protected function handleRequestPath(Document $document): void
+    {
+        if ($requestPathField = $document->getField('request_path')) {
+            $requestPath = (string)$requestPathField->getValue();
+            $requestPath = '/' . ltrim($requestPath, '/');
+            $requestPathField->setValue($requestPath);
+        }
+    }
+
+    /**
+     * @param Product $product
+     * @param Document $document
+     */
+    protected function addCategoryPosition(Product $product, Document $document): void
+    {
+        if (isset(self::$productPositionInCategory[$product->getId()])) {
+            foreach (self::$productPositionInCategory[$product->getId()] as $categoryId => $position) {
+                $finalPosition = self::MAX_CATEGORY_PRODUCT_POSITION - $position;
+                $finalPosition = ($finalPosition === self::MAX_CATEGORY_PRODUCT_POSITION) ? 0 : $finalPosition;
+                $document->createField(
+                    "category_{$categoryId}_position",
+                    $finalPosition,
+                    Document\Field::FIELD_TYPE_INT,
+                    true,
+                    false
+                );
+            }
+        }
+    }
+
+    /**
+     * @param QueryInterface|null $query
+     *
+     * @return ResponseInterface
+     */
+    public function pull(QueryInterface $query = null): ResponseInterface
+    {
+        // TODO: Implement pull() method.
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return self::OBJECT_TYPE;
     }
 }
