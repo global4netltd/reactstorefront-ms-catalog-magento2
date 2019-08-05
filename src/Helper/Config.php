@@ -9,6 +9,7 @@ use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Api\Data\StoreInterface;
+use Magento\Store\Api\Data\WebsiteInterface;
 use Magento\Store\Model\ScopeInterface;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -77,6 +78,15 @@ class Config extends AbstractHelper
     public function getStore(): StoreInterface
     {
         return $this->storeManager->getStore();
+    }
+
+    /**
+     * @return WebsiteInterface
+     * @throws LocalizedException
+     */
+    public function getWebiste(): WebsiteInterface
+    {
+        return $this->storeManager->getWebsite();
     }
 
     /**

@@ -21,7 +21,8 @@ abstract class AbstractFieldHelper implements FieldHelperInterface
     protected static $overrideFieldTypeMap = [
         'store_id' => 'int',
         'is_active' => 'bool',
-        '_first_store_id' => 'int'
+        '_first_store_id' => 'int',
+        'is_synonym' => 'bool'
     ];
 
     /**
