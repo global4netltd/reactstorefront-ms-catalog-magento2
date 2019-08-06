@@ -198,11 +198,10 @@ class ProductPuller extends AbstractPuller
         /** @var Document $document */
         $document = new Document();
 
-        $eventData = new \stdClass([
-            'product'  => $product,
-            'document' => $document,
-            'disable'  => false
-        ]);
+        $eventData = new \stdClass();
+        $eventData->product = $product;
+        $eventData->document = $document;
+        $eventData->disable = false;
 
         $this->eventManager->dispatch('prepare_document_from_product_before', ['eventData' => $eventData]);
 
