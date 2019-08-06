@@ -207,7 +207,7 @@ abstract class AbstractPuller implements Iterator, PullerInterface
 
         if (is_null($this->totalSize)) {
             $collection = $this->getCollection();
-            $this->totalSize = count($collection);
+            $this->totalSize = $collection->getSize();
         }
 
         if ($this->totalPosition == $this->totalSize) {
