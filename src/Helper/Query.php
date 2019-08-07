@@ -338,7 +338,7 @@ class Query extends AbstractHelper
 
         $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
         $fieldType = $isMultiValued ? Field::FIELD_TYPE_INT : $this->getAttributeFieldType($attribute);
-        $isFieldIndexable = $attribute->getIsFilterable() ? true : false;
+        $isFieldIndexable = $attribute->getIsFilterable() || $attribute->getUsedForSortBy();
 
         $value = FieldHelper::shouldHandleValue($value, $fieldType) ? FieldHelper::handleValue($value) : $value;
 
