@@ -94,6 +94,14 @@
                     <label>Pusher Pageisze</label>
                     <comment>The number of objects processed at once.</comment>
                 </field>
+                <field id="puller_timeout" translate="label comment" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Puller Timeout</label>
+                    <comment>Puller operation max timeout in seconds.</comment>
+                </field>
+                <field id="pusher_timeout" translate="label comment" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Pusher Timeout</label>
+                    <comment>Pusher operation max timeout in seconds.</comment>
+                </field>
                 <field id="pusher_delete_index" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Delete index before reindexing.</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>

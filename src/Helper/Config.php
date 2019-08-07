@@ -102,6 +102,8 @@ class Config extends AbstractHelper
             $isDebugEnabled = (bool)$this->getConfigByPath('ms_catalog_indexer/general_settings/logging');
             $pullerPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/puller_pagesize');
             $pusherPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_pagesize');
+            $pullerTimeout = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/puller_timeout');
+            $pusherTimeout = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_timeout');
             $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_delete_index');
 
             $engineConnectionParams = [];
@@ -119,6 +121,8 @@ class Config extends AbstractHelper
             $configParams['connection'] = $engineConnectionParams;
             $configParams['puller_page_size'] = $pullerPageSize;
             $configParams['pusher_page_size'] = $pusherPageSize;
+            $configParams['puller_timeout'] = $pullerTimeout;
+            $configParams['pusher_timeout'] = $pusherTimeout;
             $configParams['pusher_delete_index'] = $deleteIndexBeforeReindex;
             $configParams['debug_enabled'] = $isDebugEnabled;
 
