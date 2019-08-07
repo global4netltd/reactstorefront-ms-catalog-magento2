@@ -5,6 +5,7 @@ namespace G4NReact\MsCatalogMagento2\Helper\Cms;
 use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalogMagento2\Helper\Query;
 use G4NReact\MsCatalogMagento2\Helper\Cms\Field as HelperCmsField;
+use G4NReact\MsCatalogMagento2\Helper\QueryHelperInterface;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\App\Helper\Context;
 
@@ -12,7 +13,7 @@ use Magento\Framework\App\Helper\Context;
  * Class CmsQuery
  * @package G4NReact\MsCatalogMagento2\Helper\Cms
  */
-class CmsQuery
+class CmsQuery implements QueryHelperInterface
 {
 
     /**

@@ -6,6 +6,7 @@ use G4NReact\MsCatalog\Client\ClientFactory;
 use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalog\FieldHelper;
 use G4NReact\MsCatalog\Helper;
+use G4NReact\MsCatalogMagento2\Helper\Cms\CmsBlockQuery;
 use G4NReact\MsCatalogMagento2\Helper\Cms\CmsQuery;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
@@ -202,26 +203,34 @@ class Query extends AbstractHelper
     protected $configHelper;
 
     /**
-     * Query constructor
+     * @var CmsBlockQuery
+     */
+    protected $helperCmsBlockQuery;
+
+    /**
+     * Query constructor.
      *
      * @param EavConfig $eavConfig
      * @param Context $context
      * @param CmsQuery $cmsQuery
      * @param AttributeResource $attributeResource
      * @param Config $configHelper
+     * @param CmsBlockQuery $helperCmsBlockQuery
      */
     public function __construct(
         EavConfig $eavConfig,
         Context $context,
         CmsQuery $cmsQuery,
         AttributeResource $attributeResource,
-        ConfigHelper $configHelper
+        ConfigHelper $configHelper,
+        CmsBlockQuery $helperCmsBlockQuery
     ) {
         $this->configHelper = $configHelper;
         $this->eavConfig = $eavConfig;
         $this->cmsQuery = $cmsQuery;
         $this->attributeResource = $attributeResource;
         $this->configHelper = $configHelper;
+        $this->helperCmsBlockQuery = $helperCmsBlockQuery;
 
         parent::__construct($context);
     }
@@ -294,6 +303,21 @@ class Query extends AbstractHelper
         }
 
         return $this->cmsQuery->getFieldByCmsColumnName($columnName, $value);
+    }
+
+    /**
+     * @param string $columnName
+     * @param null $value
+     *
+     * @return Field
+     */
+    public function getFieldByCmsBlockColumnName(string $columnName, $value = null) : Field
+    {
+        if ($coreField = $this->getCoreField($columnName, $value)) {
+            return $coreField;
+        }
+
+        return $this->helperCmsBlockQuery->getFieldByCmsColumnName($columnName, $value);
     }
 
     /**
