@@ -8,7 +8,7 @@ use G4NReact\MsCatalog\Document\Field;
 use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalog\Response;
 use G4NReact\MsCatalog\ResponseInterface;
-use G4NReact\MsCatalogIndexer\Indexer;
+use G4NReact\MsCatalog\Indexer;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Framework\App\State as AppState;
 use Magento\Framework\Exception\NoSuchEntityException;
