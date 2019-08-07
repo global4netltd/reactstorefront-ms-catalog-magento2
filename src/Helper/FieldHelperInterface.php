@@ -13,7 +13,7 @@ interface FieldHelperInterface
      *
      * @return string
      */
-    public function getFieldTypeByCmsColumnName(string $columnName) : string;
+    public function getFieldTypeByColumnName(string $columnName) : string;
 
     /**
      * @param string $fieldName

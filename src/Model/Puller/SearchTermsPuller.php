@@ -167,7 +167,7 @@ class SearchTermsPuller extends AbstractPuller
             $document->createField(
                 $field,
                 $searchTerm->getData($field),
-                $this->searchTermsField->getFieldTypeByCmsColumnName($field),
+                $this->searchTermsField->getFieldTypeByColumnName($field),
                 SearchTermsField::getIsIndexable($field),
                 SearchTermsField::getIsMultiValued($field, $value)
             );

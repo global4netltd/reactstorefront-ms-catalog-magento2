@@ -108,7 +108,7 @@ class CmsBlockPuller extends AbstractPuller
             $document->createField(
                 $field,
                 $cmsBlock->getData($field),
-                $this->cmsBlockField->getFieldTypeByCmsColumnName($field),
+                $this->cmsBlockField->getFieldTypeByColumnName($field),
                 CmsBlockField::getIsIndexable($field),
                 CmsBlockField::getIsMultiValued($field, $value)
             );

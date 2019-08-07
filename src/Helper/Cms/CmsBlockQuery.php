@@ -34,12 +34,12 @@ class CmsBlockQuery implements QueryHelperInterface
      *
      * @return Field
      */
-    public function getFieldByCmsColumnName(string $columnName, $value = null): Field
+    public function getFieldByColumnName(string $columnName, $value = null): Field
     {
         return new Field(
             $columnName,
             $value,
-            $this->helperCmsBlockField->getFieldTypeByCmsColumnName($columnName),
+            $this->helperCmsBlockField->getFieldTypeByColumnName($columnName),
             HelperCmsBlockField::getIsIndexable($columnName),
             HelperCmsBlockField::getIsMultiValued($columnName, $value)
         );

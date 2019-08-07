@@ -39,9 +39,9 @@ class CmsQuery implements QueryHelperInterface
      *
      * @return Field
      */
-    public function getFieldByCmsColumnName(string $columnName, $value = null) : Field
+    public function getFieldByColumnName(string $columnName, $value = null) : Field
     {
-        $type = $this->helperCmsField->getFieldTypeByCmsColumnName($columnName);
+        $type = $this->helperCmsField->getFieldTypeByColumnName($columnName);
 
         return new Field(
             $columnName,

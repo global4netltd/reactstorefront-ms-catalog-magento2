@@ -17,5 +17,5 @@ interface QueryHelperInterface
      *
      * @return Field
      */
-    public function getFieldByCmsColumnName(string $columnName, $value = null) : Field;
+    public function getFieldByColumnName(string $columnName, $value = null) : Field;
 }

@@ -70,7 +70,7 @@ class Field extends AbstractFieldHelper
      *
      * @return string
      */
-    public function getFieldTypeByCmsColumnName(string $columnName): string
+    public function getFieldTypeByColumnName(string $columnName): string
     {
         if (isset(self::$overrideFieldTypeMap[$columnName])) {
             return self::$overrideFieldTypeMap[$columnName];

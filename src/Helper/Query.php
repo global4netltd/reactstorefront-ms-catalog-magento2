@@ -302,7 +302,7 @@ class Query extends AbstractHelper
             return $coreField;
         }
 
-        return $this->cmsQuery->getFieldByCmsColumnName($columnName, $value);
+        return $this->cmsQuery->getFieldByColumnName($columnName, $value);
     }
 
     /**
@@ -317,7 +317,7 @@ class Query extends AbstractHelper
             return $coreField;
         }
 
-        return $this->helperCmsBlockQuery->getFieldByCmsColumnName($columnName, $value);
+        return $this->helperCmsBlockQuery->getFieldByColumnName($columnName, $value);
     }
 
     /**
