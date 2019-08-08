@@ -216,6 +216,8 @@ class CategoryPuller extends AbstractPuller
             }
         }
 
+        $this->addUrl($document);
+
         $eventData = [
             'category' => $category,
             'document' => $document,
@@ -246,6 +248,26 @@ class CategoryPuller extends AbstractPuller
         $attributeCodes = $connection->fetchCol($select);
 
         return $attributeCodes;
+    }
+
+    /**
+     * @param Document $document
+     *
+     * @throws NoSuchEntityException
+     */
+    protected function addUrl(Document $document) : void
+    {
+        if ($requestPathField = $document->getField('request_path')) {
+            $document->setField(
+                new Document\Field(
+                    'url',
+                    rtrim($this->storeManager->getStore()->getBaseUrl(), '/') . $requestPathField->getValue(),
+                    'string',
+                    true,
+                    false
+                )
+            );
+        }
     }
 
     /**

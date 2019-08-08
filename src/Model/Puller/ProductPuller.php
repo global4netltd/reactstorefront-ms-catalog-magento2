@@ -22,6 +22,7 @@ use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class ProductPuller
@@ -80,7 +81,12 @@ class ProductPuller extends AbstractPuller
     protected $resource;
 
     /**
-     * ProductPuller constructor
+     * @var StoreManagerInterface
+     */
+    protected $storeManager;
+
+    /**
+     * ProductPuller constructor.
      *
      * @param ProductCollectionFactory $productCollectionFactory
      * @param EavConfig $eavConfig
@@ -92,6 +98,8 @@ class ProductPuller extends AbstractPuller
      * @param EventManager $eventManager
      * @param ProductExtended $productExtended
      * @param ResourceConnection $resource
+     * @param StoreManagerInterface $storeManager
+     *
      * @throws NoSuchEntityException
      */
     public function __construct(
@@ -104,7 +112,8 @@ class ProductPuller extends AbstractPuller
         QueryHelper $queryHelper,
         EventManager $eventManager,
         ProductExtended $productExtended,
-        ResourceConnection $resource
+        ResourceConnection $resource,
+        StoreManagerInterface $storeManager
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
@@ -115,6 +124,7 @@ class ProductPuller extends AbstractPuller
         $this->eventManager = $eventManager;
         $this->productExtended = $productExtended;
         $this->resource = $resource;
+        $this->storeManager = $storeManager;
         $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
@@ -220,6 +230,8 @@ class ProductPuller extends AbstractPuller
         $this->addMediaGallery($product, $document);
 
         $this->handleRequestPath($document);
+
+        $this->addUrl($document);
 
         $this->addCategoryPosition($product, $document);
 
@@ -328,6 +340,26 @@ class ProductPuller extends AbstractPuller
             $requestPath = (string)$requestPathField->getValue();
             $requestPath = '/' . ltrim($requestPath, '/');
             $requestPathField->setValue($requestPath);
+        }
+    }
+
+    /**
+     * @param Document $document
+     *
+     * @throws NoSuchEntityException
+     */
+    protected function addUrl(Document $document) : void
+    {
+        if ($requestPathField = $document->getField('request_path')) {
+            $document->setField(
+                new Document\Field(
+                    'url',
+                    rtrim($this->storeManager->getStore()->getBaseUrl(), '/') . $requestPathField->getValue(),
+                    'string',
+                    true,
+                    false
+                )
+            );
         }
     }
 
