@@ -136,6 +136,11 @@ class Query extends AbstractHelper
                 'indexable'   => true,
                 'multivalued' => false,
             ],
+            'url' =>[
+                'type' => Field::FIELD_TYPE_STRING,
+                'indexable' => true,
+                'multivalued' => false
+            ],
             'visibility'    => [
                 'type' => Field::FIELD_TYPE_INT,
                 'indexable' => true,
@@ -167,6 +172,11 @@ class Query extends AbstractHelper
                 'type'        => Field::FIELD_TYPE_STRING,
                 'indexable'   => true,
                 'multivalued' => false,
+            ],
+            'url' =>[
+              'type' => Field::FIELD_TYPE_STRING,
+              'indexable' => true,
+              'multivalued' => false
             ],
             'product_count'   => [
                 'type'        => Field::FIELD_TYPE_INT,
