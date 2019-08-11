@@ -54,8 +54,7 @@ class SearchTermsPuller extends AbstractPuller
         Manager $eventManager,
         SearchTermsField $searchTermsField,
         SynonymGroupCollFactory $synonymGroupCollFactory
-    )
-    {
+    ) {
         $this->searchQueryCollFactory = $searchQueryCollFactory;
         $this->eventManager = $eventManager;
         $this->searchTermsField = $searchTermsField;
@@ -74,13 +73,12 @@ class SearchTermsPuller extends AbstractPuller
             ->setPageSize($this->getPageSize())
             ->setCurPage($this->getCurPage());
 
-        $this->addSynonymsToSearchTermsCollection($collection);
+//        $this->addSynonymsToSearchTermsCollection($collection);
 
         $this->eventManager->dispatch('ms_catalog_get_search_terms_collection', ['collection' => $collection]);
 
         return $collection;
     }
-
 
     /**
      * @return \Magento\Search\Model\ResourceModel\SynonymGroup\Collection
@@ -99,7 +97,7 @@ class SearchTermsPuller extends AbstractPuller
      *
      * @throws NoSuchEntityException
      */
-    protected function addSynonymsToSearchTermsCollection(Collection &$collection)
+    protected function addSynonymsToSearchTermsCollection(Collection $collection)
     {
         $queryTextArr = [];
         foreach ($collection as $item) {
@@ -109,7 +107,7 @@ class SearchTermsPuller extends AbstractPuller
             $queryTextArr[] =
                 [
                     'query_text' => $item->getQueryText(),
-                    'item' => $item
+                    'item'       => $item
                 ];
         }
 
@@ -125,7 +123,7 @@ class SearchTermsPuller extends AbstractPuller
                     unset($synonymsText[$synonymKey]);
                     foreach ($synonymsText as $key => $synonymText) {
                         $newSynonym = clone $queryText['item'];
-                        /** @var int $newSynonymId - set custom id to prevent from exception if synonym has the same id than search term*/
+                        /** @var int $newSynonymId - set custom id to prevent from exception if synonym has the same id than search term */
                         $newSynonymId = $searchTermIdMax + $synonyms->getId() + $key + $queryTextIterator;
                         $newSynonym
                             ->setData(SearchTermsField::REACT_STORE_FRONT_ID, SearchTermsField::REACT_STORE_FRONT_ID_SYNONYM)
@@ -155,11 +153,12 @@ class SearchTermsPuller extends AbstractPuller
 
         $eventData = [
             'search_term' => $searchTerm,
-            'document' => $document,
+            'document'    => $document,
         ];
         $this->eventManager->dispatch('prepare_document_from_search_term_before', ['eventData' => $eventData]);
 
-        $document->setUniqueId($searchTerm->getId() . '_' . SearchTermsField::OBJECT_TYPE . '_' . $storeId . '_' . $searchTerm->getReactStoreFrontId());
+//        $document->setUniqueId($searchTerm->getId() . '_' . SearchTermsField::OBJECT_TYPE . '_' . $storeId . '_' . $searchTerm->getReactStoreFrontId());
+        $document->setUniqueId($searchTerm->getId() . '_' . SearchTermsField::OBJECT_TYPE . '_' . $storeId);
         $document->setObjectId($searchTerm->getId());
         $document->setObjectType(SearchTermsField::OBJECT_TYPE);
 
@@ -175,7 +174,7 @@ class SearchTermsPuller extends AbstractPuller
 
         $eventData = [
             'search_term' => $searchTerm,
-            'document' => $document,
+            'document'    => $document,
         ];
         $this->eventManager->dispatch('prepare_document_from_search_term_after', $eventData);
 

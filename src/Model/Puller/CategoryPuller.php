@@ -35,6 +35,7 @@ class CategoryPuller extends AbstractPuller
      * @var array fully loaded count of products from facets
      */
     public $productsCount;
+
     /**
      * @var CategoryCollectionFactory
      */
