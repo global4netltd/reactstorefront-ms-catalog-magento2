@@ -490,7 +490,7 @@ class Query extends AbstractHelper
                 'category_id',
                 null,
                 'catalog_product'
-            )
+            )->setLimit(10000) // @todo change it to better value like maybe category count or sth
         );
 
         $query->setPageSize(0);
