@@ -385,6 +385,21 @@ class Query extends AbstractHelper
     }
 
     /**
+     * @param array $attributeCodes
+     * @return array
+     * @throws LocalizedException
+     */
+    public function getFieldsByAttributeCodes(array $attributeCodes)
+    {
+        $fields = [];
+        foreach ($attributeCodes as $attributeCode) {
+            $fields[] = $this->getFieldByProductAttributeCode($attributeCode);
+        }
+
+        return $fields;
+    }
+
+    /**
      * @param AbstractAttribute $attribute
      * @param mixed $value
      * @return Field
