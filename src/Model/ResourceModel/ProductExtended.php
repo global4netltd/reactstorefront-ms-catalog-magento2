@@ -80,7 +80,7 @@ class ProductExtended extends MagentoProduct
     }
 
     /**
-     * Retrieve category ids where product is available
+     * Retrieve category ids and positions where product is available
      *
      * @param $entityIds
      * @param ProductCollection $productCollection
@@ -100,11 +100,20 @@ class ProductExtended extends MagentoProduct
 
         $preparedCategories = [];
         foreach ($this->getConnection()->fetchAll($unionSelect) as $data) {
-            $preparedCategories[$data['product_id']][] = $data['category_id'];
+            $preparedCategories[$data['product_id']][$data['category_id']] = $data['position'];
         }
 
         foreach ($productCollection as $product) {
-            $product->setCategoryIds($preparedCategories[$product->getId()] ?? []);
+            $categoryIds = [];
+            $categoryPositions = [];
+            if (isset($preparedCategories[$product->getId()])
+                && is_array($preparedCategories[$product->getId()])
+            ) {
+                $categoryIds = array_keys($preparedCategories[$product->getId()]);
+                $categoryPositions = $preparedCategories[$product->getId()];
+            }
+            $product->setCategoryIds($categoryIds);
+            $product->setCategoryPositions($categoryPositions);
         }
     }
 
@@ -119,7 +128,7 @@ class ProductExtended extends MagentoProduct
     {
         return $this->getConnection()->select()->distinct()->from(
             $tableName,
-            ['category_id', 'product_id']
+            ['category_id', 'product_id', 'position']
         )->where(
             'product_id IN (?)',
             $entityIds

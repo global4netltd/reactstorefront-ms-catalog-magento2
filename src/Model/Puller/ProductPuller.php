@@ -39,10 +39,7 @@ class ProductPuller extends AbstractPuller
      * @var int
      */
     const MAX_CATEGORY_PRODUCT_POSITION = 1000000;
-    /**
-     * @var array
-     */
-    public static $productPositionInCategory = [];
+
     /**
      * @var ProductCollectionFactory
      */
@@ -154,36 +151,9 @@ class ProductPuller extends AbstractPuller
 
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
 
-        $this->getPositionInCategory($productCollection);
-
         $this->loadCategoryIds($productCollection);
 
         return $productCollection;
-    }
-
-    /**
-     * @param ProductCollection $productCollection
-     * @return void
-     */
-    public function getPositionInCategory(ProductCollection $productCollection): void
-    {
-        $ids = $productCollection->getLoadedIds();
-
-        $connection = $this->resource->getConnection();
-        $select = $connection->select()
-            ->from(
-                ['ccp' => $connection->getTableName('catalog_category_product')],
-                ['product_id', 'category_id', 'position']
-            )
-            ->where('ccp.product_id IN(?)', $ids);
-        $positions = $connection->fetchAll($select);
-
-        $productPositionInCategory = [];
-        foreach ($positions as $position) {
-            $productPositionInCategory[$position['product_id']][$position['category_id']] = $position['position'];
-        }
-
-        self::$productPositionInCategory = $productPositionInCategory;
     }
 
     /**
@@ -348,7 +318,7 @@ class ProductPuller extends AbstractPuller
      *
      * @throws NoSuchEntityException
      */
-    protected function addUrl(Document $document) : void
+    protected function addUrl(Document $document): void
     {
         if ($requestPathField = $document->getField('request_path')) {
             $document->setField(
@@ -369,18 +339,21 @@ class ProductPuller extends AbstractPuller
      */
     protected function addCategoryPosition(Product $product, Document $document): void
     {
-        if (isset(self::$productPositionInCategory[$product->getId()])) {
-            foreach (self::$productPositionInCategory[$product->getId()] as $categoryId => $position) {
+        if ($categoryPositions = $document->getFieldValue('category_positions')) {
+            foreach ($categoryPositions as $categoryId => $position) {
                 $finalPosition = self::MAX_CATEGORY_PRODUCT_POSITION - $position;
                 $finalPosition = ($finalPosition === self::MAX_CATEGORY_PRODUCT_POSITION) ? 0 : $finalPosition;
-                $document->createField(
-                    "category_{$categoryId}_position",
-                    $finalPosition,
-                    Document\Field::FIELD_TYPE_INT,
-                    true,
-                    false
-                );
+                if ($finalPosition) {
+                    $document->createField(
+                        "category_{$categoryId}_position",
+                        $finalPosition,
+                        Document\Field::FIELD_TYPE_INT,
+                        true,
+                        false
+                    );
+                }
             }
+            $document->unsetField('category_positions');
         }
     }
 
