@@ -325,7 +325,7 @@ class ProductPuller extends AbstractPuller
                 new Document\Field(
                     'url',
                     rtrim($this->storeManager->getStore()->getBaseUrl(), '/') . $requestPathField->getValue(),
-                    'string',
+                    Document\Field::FIELD_TYPE_STRING,
                     true,
                     false
                 )
