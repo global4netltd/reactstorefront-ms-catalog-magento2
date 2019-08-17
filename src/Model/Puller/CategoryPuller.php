@@ -146,11 +146,18 @@ class CategoryPuller extends AbstractPuller
 
         $document = new Document();
 
-        $eventData = [
-            'category' => $category,
-            'document' => $document,
-        ];
+        $productsCount = $this->getProductCount($category->getId());
+
+        $eventData = new \stdClass();
+        $eventData->category = $category;
+        $eventData->document = $document;
+        $eventData->skip = !$productsCount;
+
         $this->eventManager->dispatch('prepare_document_from_category_before', ['eventData' => $eventData]);
+
+        if ($eventData->skip) {
+            return $document; // returning document without uniqueId results in skipping pushing data to engine
+        }
 
         $document->setUniqueId($category->getId() . '_' . self::OBJECT_TYPE . '_' . $category->getStoreId());
         $document->setObjectId($category->getId());
@@ -282,6 +289,7 @@ class CategoryPuller extends AbstractPuller
         if ($this->productsCount === null) {
             $this->productsCount = $this->helperQuery->getCategoriesProductsCount($this->storeManager->getStore()->getId());
         }
+
 
         return $this->productsCount[$categoryId] ?? 0;
     }
