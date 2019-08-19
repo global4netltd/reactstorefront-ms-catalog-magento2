@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Cron:etc/crontab.xsd">
     <group id="ms_catalog_indexer">
-        <job name="custom_cronjob" instance="G4NReact\MsCatalogMagento2\Cron\ReindexAll" method="execute">
-            <schedule>* * * * *</schedule>
+        <job name="g4nreact_reindexall" instance="G4NReact\MsCatalogMagento2\Cron\ReindexAll" method="execute">
+            <schedule>0 4 * * *</schedule>
         </job>
     </group>
 </config>

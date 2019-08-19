@@ -69,6 +69,14 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
     }
 
     /**
+     * @param int[] $ids
+     */
+    public function execute($ids)
+    {
+        $this->run($ids);
+    }
+
+    /**
      * @param array $ids
      * @param StoreInterface|null $store
      * @return string
@@ -83,6 +91,7 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
                     $this->reindex($store, $ids);
                 });
             }
+
             return (round(microtime(true) - $start, 4)) . 's';
         } catch (Exception $exception) {
             return "Caught exception: " . $exception->getMessage();
@@ -104,8 +113,14 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
             $config = $this->configHelper->getConfiguration();
 
             if ($ids) {
-                $this->prepareIds($ids);
-                $puller->setIds($ids);
+                if ($ids = $this->prepareIds($ids)) {
+                    $puller->setIds($ids);
+                } else {
+                    // if ids were forwarded but prepare ids returns empty array we should stop indexer
+                    $this->emulation->stopEnvironmentEmulation();
+
+                    return;
+                }
             }
 
             $indexer = new Indexer($puller, $config);
@@ -121,17 +136,24 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
     }
 
     /**
+     * @return null|PullerInterface
+     */
+    abstract public function getPuller();
+
+    /**
      * @param array $ids
      * @return void
      */
-    public function prepareIds(array &$ids): void
+    public function prepareIds($ids): array
     {
-        $ids = explode(',', reset($ids));
+        $ids = is_array($ids) ? $ids : explode(',', $ids);
         foreach ($ids as $key => $id) {
             if (!is_numeric($id)) {
                 unset($ids[$key]);
             }
         }
+
+        return $ids;
     }
 
     /**
@@ -154,19 +176,6 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
         }
 
         return new Response();
-    }
-
-    /**
-     * @return null|PullerInterface
-     */
-    abstract public function getPuller();
-
-    /**
-     * @param int[] $ids
-     */
-    public function execute($ids)
-    {
-        $this->run($ids);
     }
 
     /**
