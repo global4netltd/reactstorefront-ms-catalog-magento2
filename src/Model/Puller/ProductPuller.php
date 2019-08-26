@@ -111,7 +111,8 @@ class ProductPuller extends AbstractPuller
         ProductExtended $productExtended,
         ResourceConnection $resource,
         StoreManagerInterface $storeManager
-    ) {
+    )
+    {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -149,8 +150,8 @@ class ProductPuller extends AbstractPuller
             ->addCategoryIds()
             ->addMediaGalleryData();
 
+        $productCollection = $this->prepareReviewsOnProduct($productCollection, $this->prepareReviewsData($productCollection));
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
-
         $this->loadCategoryIds($productCollection);
 
         return $productCollection;
@@ -158,6 +159,71 @@ class ProductPuller extends AbstractPuller
 
     /**
      * @param ProductCollection $productCollection
+     * @param array $reviews
+     *
+     * @return ProductCollection
+     */
+    protected function prepareReviewsOnProduct(ProductCollection $productCollection, array $reviews): ProductCollection
+    {
+        foreach ($productCollection as $product) {
+            if (
+                isset($reviews[$product->getId()])
+                && isset($reviews[$product->getId()]['reviews_count'])
+                && isset($reviews[$product->getId()]['rating_summary'])
+            ) {
+                $review = $reviews[$product->getId()];
+                $product
+                    ->setReviewsCount((int)$review['reviews_count'])
+                    ->setReviewsAverageRating($this->prepareAverageRating($review['rating_summary']));
+            } else {
+                $product
+                    ->setReviewsCount(0)
+                    ->setReviewsAverageRating(0);
+            }
+        }
+        return $productCollection;
+    }
+
+
+    /**
+     * @param ProductCollection $productCollection
+     *
+     * @return array
+     * @throws NoSuchEntityException
+     */
+    protected function prepareReviewsData(ProductCollection $productCollection): array
+    {
+        $select = $productCollection->getSelect()->join(
+            ['rating' => $productCollection->getTable('review_entity_summary')],
+            'rating.entity_pk_value = e.entity_id AND store_id = ' . (int)$this->storeManager->getStore()->getId(),
+            ['reviews_count', 'rating_summary']
+        );
+
+        $reviews = $productCollection->getConnection()->fetchAll($select);
+
+        $preparedReviews = [];
+        foreach ($reviews as $review) {
+            if (isset($review['entity_id'])) {
+                $preparedReviews[$review['entity_id']] = $review;
+            }
+        }
+
+        return $preparedReviews;
+    }
+
+    /**
+     * @param int $ratingSummary
+     *
+     * @return float
+     */
+    protected function prepareAverageRating(int $ratingSummary): float
+    {
+        return $ratingSummary / 20;
+    }
+
+    /**
+     * @param ProductCollection $productCollection
+     *
      * @throws NoSuchEntityException
      */
     public function loadCategoryIds($productCollection)
@@ -206,7 +272,7 @@ class ProductPuller extends AbstractPuller
         $this->addCategoryPosition($product, $document);
 
         $eventData = [
-            'product'  => $product,
+            'product' => $product,
             'document' => $document,
         ];
 
@@ -218,6 +284,7 @@ class ProductPuller extends AbstractPuller
     /**
      * @param Product $product
      * @param Document $document
+     *
      * @throws LocalizedException
      */
     protected function handleCategoryId(Product $product, Document $document): void
@@ -232,6 +299,7 @@ class ProductPuller extends AbstractPuller
     /**
      * @param Product $product
      * @param Document $document
+     *
      * @throws LocalizedException
      * @throws InputException
      */
@@ -274,6 +342,7 @@ class ProductPuller extends AbstractPuller
     /**
      * @param Product $product
      * @param Document $document
+     *
      * @throws LocalizedException
      */
     protected function addMediaGallery(Product $product, Document $document): void

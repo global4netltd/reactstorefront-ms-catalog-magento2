@@ -150,6 +150,16 @@ class Query extends AbstractHelper
                 'type' => Field::FIELD_TYPE_INT,
                 'indexable' => true,
                 'multivalued' => false
+            ],
+            'reviews_count' => [
+                'type' => Field::FIELD_TYPE_INT,
+                'indexable' => true,
+                'multivalued' => false
+            ],
+            'reviews_average_rating' => [
+                'type' => Field::FIELD_TYPE_FLOAT,
+                'indexable' => true,
+                'multivalued' => false
             ]
         ],
         CategoryAttributeInterface::ENTITY_TYPE_CODE => [
