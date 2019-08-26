@@ -1,0 +1,21 @@
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="document_in_react_storefront_database">
+        <argument name="data" xsi:type="array">
+            <item name="config" xsi:type="array">
+                <item name="label" xsi:type="string" translate="true">Document in React Storefront Database</item>
+                <item name="collapsible" xsi:type="boolean">true</item>
+                <item name="sortOrder" xsi:type="number">100</item>
+            </item>
+        </argument>
+        <container name="document" >
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="sortOrder" xsi:type="number">300</item>
+                </item>
+            </argument>
+            <htmlContent name="html_content_document">
+                <argument name="block" xsi:type="object">G4NReact\MsCatalogMagento2\Block\Adminhtml\Catalog\Product\Edit\Tab\Document</argument>
+            </htmlContent>
+        </container>
+    </fieldset>
+</form>

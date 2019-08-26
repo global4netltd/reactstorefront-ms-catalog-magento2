@@ -19,14 +19,14 @@ class ReindexAll
      * ReindexAll constructor
      * @param IndexerInterface $indexer
      */
-    public function __construct(IndexerInterface $indexer) {
-        $this->indexer = $indexer;
-    }
+//    public function __construct(IndexerInterface $indexer) {
+//        $this->indexer = $indexer;
+//    }
 
     /**
      * @return void
      */
     public function execute() {
-        $this->indexer->reindexAll();
+//        $this->indexer->reindexAll();
     }
 }

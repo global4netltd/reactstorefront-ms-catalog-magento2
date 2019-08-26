@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="product_attribute_form_build_front_tab">
+        <observer name="react_store_front_attributes" instance="G4NReact\MsCatalogMagento2\Model\Observer\Edit\Tab\Front\ProductAttributeFormFront" />
+    </event>
+    <event name="catalog_category_prepare_save">
+        <observer name="react_store_front_save_attributes_filters" instance="G4NReact\MsCatalogMagento2\Model\Observer\Controller\Adminhtml\Category\SaveReactStoreFrontFilters" />
+    </event>
+    <event name="controller_action_postdispatch_catalog_product_save">
+        <observer name="react_store_front_reindex_saved_product" instance="G4NReact\MsCatalogMagento2\Model\Observer\Controller\Adminhtml\Product\SavePostdispatch" />
+    </event>
+    <event name="controller_action_postdispatch_catalog_category_save">
+        <observer name="react_store_front_reindex_saved_category" instance="G4NReact\MsCatalogMagento2\Model\Observer\Controller\Adminhtml\Category\SavePostdispatch" />
+    </event>
+</config>

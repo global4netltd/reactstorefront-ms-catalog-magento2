@@ -2,63 +2,55 @@
 
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
-use Exception;
-use G4NReact\MsCatalogIndexer\Indexer;
-use G4NReact\MsCatalogMagento2\Model\Puller\CategoryPuller;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use G4NReact\MsCatalogMagento2\Model\Indexer\AbstractIndexer;
+use G4NReact\MsCatalogMagento2\Model\Indexer\CategoryIndexer;
 
 /**
  * Class ReindexCategory
  * @package G4NReact\MsCatalogMagento2\Console\Command
  */
-class ReindexCategory extends Command
+class ReindexCategory extends AbstractReindex
 {
     /**
-     * @var CategoryPuller
+     * @var CategoryIndexer
      */
-    protected $categoryPuller;
+    protected $categoryIndexer;
 
     /**
-     * ReindexCategory constructor.
-     * @param CategoryPuller $categoryPuller
-     * @param null $name
+     * ReindexCategory constructor
+     *
+     * @param CategoryIndexer $categoryIndexer
+     * @param string|null $name
      */
     public function __construct(
-        CategoryPuller $categoryPuller,
-        $name = null
+        CategoryIndexer $categoryIndexer,
+        string $name = null
     ) {
-        $this->categoryPuller = $categoryPuller;
         parent::__construct($name);
+        $this->categoryIndexer = $categoryIndexer;
     }
 
     /**
-     * Configure command metadata.
+     * @return string
      */
-    protected function configure()
+    public function getCommandName(): string
     {
-        $this->setName('g4nreact:reindex:category')
-            ->setDescription('Pull categories from Magento 2 database and push it to database search engine');
+        return 'g4nreact:reindex:category';
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return void
+     * @return string
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    public function getCommandDescription(): string
     {
-        try {
-            $puller = $this->categoryPuller;
-            $config = $puller->getConfiguration();
+        return 'Reindexes categories';
+    }
 
-            $indexer = new Indexer($puller, $config);
-            $indexer->reindex();
-
-            echo "Successfully reindex data" . PHP_EOL;
-        } catch (Exception $exception) {
-            echo "Caught exception: " . $exception->getMessage() . PHP_EOL;
-        }
+    /**
+     * @return AbstractIndexer
+     */
+    public function getIndexer()
+    {
+        return $this->categoryIndexer;
     }
 }

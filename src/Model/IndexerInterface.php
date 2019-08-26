@@ -8,5 +8,8 @@ namespace G4NReact\MsCatalogMagento2\Model;
  */
 interface IndexerInterface
 {
+    /**
+     * @return mixed
+     */
     public function reindexAll();
 }

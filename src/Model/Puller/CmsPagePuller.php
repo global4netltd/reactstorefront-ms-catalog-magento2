@@ -3,37 +3,28 @@
 namespace G4NReact\MsCatalogMagento2\Model\Puller;
 
 use G4NReact\MsCatalog\Document;
+use G4NReact\MsCatalog\QueryInterface;
+use G4NReact\MsCatalog\ResponseInterface;
+use G4NReact\MsCatalogMagento2\Helper\Cms\Field;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
-use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Magento\Cms\Model\ResourceModel\Page\Collection as CmsPageCollection;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionFactory;
-use Magento\Eav\Model\ResourceModel\Config as EavConfig;
+use Magento\Eav\Model\Config as EavConfig;
+use Magento\Framework\Event\Manager as EventManager;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
- * Class CmsPuller
+ * Class CmsPagePuller
  * @package G4NReact\MsCatalogMagento2\Model\Puller
  */
-class CmsPuller extends AbstractPuller
+class CmsPagePuller extends AbstractPuller
 {
     /**
-     * @var array
+     * @var string Type of object
      */
-    public static $fieldTypeMap = [
-        'page_id' => 'int',
-        'title' => 'string',
-        'page_layout' => 'string',
-        'meta_keywords' => 'string',
-        'meta_description' => 'string',
-        'identifier' => 'string',
-        'content_heading' => 'string',
-        'content' => 'string',
-        'creation_time' => 'datetime',
-        'update_time' => 'datetime',
-        'is_active' => 'bool',
-        'sort_order' => 'int',
-        'store_id' => 'int',
-    ];
+    const OBJECT_TYPE = 'cms_page';
 
     /**
      * @var CmsPageCollectionFactory
@@ -51,28 +42,46 @@ class CmsPuller extends AbstractPuller
     protected $eavConfig;
 
     /**
+     * @var EventManager
+     */
+    protected $eventManager;
+
+    /**
+     * @var Field
+     */
+    protected $helperCmsField;
+
+    /**
      * CmsPuller constructor
      *
      * @param CmsPageCollectionFactory $cmsPageCollectionFactory
      * @param EavConfig $eavConfig
      * @param Attribute $eavAttribute
-     * @param MsCatalogHelper $msCatalogHelper
+     * @param ConfigHelper $magento2ConfigHelper
+     * @param EventManager $eventManager
+     * @param Field $helperCmsField
      */
     public function __construct(
         CmsPageCollectionFactory $cmsPageCollectionFactory,
         EavConfig $eavConfig,
         Attribute $eavAttribute,
-        MsCatalogHelper $msCatalogHelper
+        ConfigHelper $magento2ConfigHelper,
+        EventManager $eventManager,
+        Field $helperCmsField
     ) {
         $this->cmsPageCollectionFactory = $cmsPageCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
+        $this->eventManager = $eventManager;
+        $this->helperCmsField = $helperCmsField;
+        $this->setType(self::OBJECT_TYPE);
 
-        parent::__construct($msCatalogHelper);
+        parent::__construct($magento2ConfigHelper);
     }
 
     /**
      * @return CmsPageCollection
+     * @throws NoSuchEntityException
      */
     public function getCollection(): CmsPageCollection
     {
@@ -82,6 +91,7 @@ class CmsPuller extends AbstractPuller
             $cmsPageCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
         }
 
+        /** @var CmsPageCollection $cmsPageCollection */
         $cmsPageCollection
             ->addFieldToSelect('page_id')
             ->addFieldToSelect('title')
@@ -95,34 +105,69 @@ class CmsPuller extends AbstractPuller
             ->addFieldToSelect('update_time')
             ->addFieldToSelect('is_active')
             ->addFieldToSelect('sort_order')
+            ->addStoreFilter($this->magento2ConfigHelper->getStore()->getId())
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
+
+        $this->eventManager->dispatch('ms_catalog_get_cms_page_collection', ['collection' => $cmsPageCollection]);
 
         return $cmsPageCollection;
     }
 
     /**
      * @return Document
+     * @throws NoSuchEntityException
      */
     public function current(): Document
     {
         $page = $this->pageArray[$this->position];
+        $storeId = $this->magento2ConfigHelper->getStore()->getId();
 
         $document = new Document();
 
-        $document->setUniqueId($page->getId() . '_' . 'cms' . '_' . $page->getStoreId()[0]);
+        $eventData = [
+            'cms_page' => $page,
+            'document' => $document,
+        ];
+        $this->eventManager->dispatch('prepare_document_from_cms_page_before', ['eventData' => $eventData]);
+
+        $document->setUniqueId($page->getId() . '_' . self::OBJECT_TYPE . '_' . $storeId);
         $document->setObjectId($page->getId());
-        $document->setObjectType('cms'); // @ToDo: move it to const
+        $document->setObjectType(self::OBJECT_TYPE);
 
         foreach ($page->getData() as $field => $value) {
-            $document->setField(
+            $document->createField(
                 $field,
                 $page->getData($field),
-                self::$fieldTypeMap[$field] ?? 'string',
-                false
+                $this->helperCmsField->getFieldTypeByColumnName($field) ?? Document\Field::FIELD_TYPE_STRING,
+                false,
+                Field::getIsMultiValued($field, $value)
             );
         }
 
+        $eventData = [
+            'cms_page' => $page,
+            'document' => $document,
+        ];
+        $this->eventManager->dispatch('prepare_document_from_cms_page_after', $eventData);
+
         return $document;
+    }
+
+    /**
+     * @param QueryInterface|null $query
+     * @return ResponseInterface
+     */
+    public function pull(QueryInterface $query = null): ResponseInterface
+    {
+        // TODO: Implement pull() method.
+    }
+
+    /**
+     * @return string
+     */
+    public function getType(): string
+    {
+        return self::OBJECT_TYPE;
     }
 }

@@ -4,8 +4,27 @@
         <arguments>
             <argument name="commands" xsi:type="array">
                 <item name="g4nreact_reindex_product" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexProduct</item>
+                <item name="g4nreact_reindexall_product" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllProduct</item>
                 <item name="g4nreact_reindex_category" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexCategory</item>
+                <item name="g4nreact_reindexall_category" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllCategory</item>
+                <item name="g4nreact_reindex_cms_page" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexCmsPage</item>
+                <item name="g4nreact_reindexall_cms_page" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllCmsPage</item>
+                <item name="g4nreact_reindex_cms_block" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexCmsBlock</item>
+                <item name="g4nreact_reindexall_cms_block" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllCmsBlock</item>
+                <item name="g4nreact_reindex_search_terms" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexSearchTerms</item>
+                <item name="g4nreact_reindexall_search_terms" xsi:type="object">G4NReact\MsCatalogMagento2\Console\Command\ReindexAllSearchTerms</item>
             </argument>
         </arguments>
     </type>
+    <type name="Magento\Catalog\Model\Category\DataProvider">
+        <plugin sortOrder="1" name="g4nReeactMsCatalogMagento2DataProvider"
+                type="G4NReact\MsCatalogMagento2\Plugin\Model\Category\DataProviderPlugin"/>
+    </type>
+    <type name="Magento\Catalog\Model\ResourceModel\Setup\PropertyMapper">
+        <plugin sortOrder="1" name="grodnoGrodnoPropertyMapper"
+                type="G4NReact\MsCatalogMagento2\Plugin\Model\ResourceModel\Setup\PropertyMapperPlugin"/>
+    </type>
+    <preference for="Magento\Framework\Indexer\Config\SchemaLocator" type="G4NReact\MsCatalogMagento2\Config\Framework\Indexer\SchemaLocator" />
+    <preference for="Magento\Framework\Mview\Config\SchemaLocator" type="G4NReact\MsCatalogMagento2\Config\Mview\SchemaLocator" />
 </config>
+

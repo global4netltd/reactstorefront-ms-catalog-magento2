@@ -2,63 +2,55 @@
 
 namespace G4NReact\MsCatalogMagento2\Console\Command;
 
-use Exception;
-use G4NReact\MsCatalogIndexer\Indexer;
-use G4NReact\MsCatalogMagento2\Model\Puller\ProductPuller;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
+use G4NReact\MsCatalogMagento2\Model\Indexer\AbstractIndexer;
+use G4NReact\MsCatalogMagento2\Model\Indexer\ProductIndexer;
 
 /**
  * Class ReindexProduct
  * @package G4NReact\MsCatalogMagento2\Console\Command
  */
-class ReindexProduct extends Command
+class ReindexProduct extends AbstractReindex
 {
     /**
-     * @var ProductPuller
+     * @var ProductIndexer
      */
-    protected $productPuller;
+    protected $productIndexer;
 
     /**
-     * ReindexProduct constructor.
-     * @param ProductPuller $productPuller
-     * @param null $name
+     * ReindexAllProduct constructor
+     *
+     * @param ProductIndexer $productIndexer
+     * @param string|null $name
      */
     public function __construct(
-        ProductPuller $productPuller,
-        $name = null
+        ProductIndexer $productIndexer,
+        string $name = null
     ) {
-        $this->productPuller = $productPuller;
+        $this->productIndexer = $productIndexer;
         parent::__construct($name);
     }
 
     /**
-     * Configure command metadata.
+     * @return string
      */
-    protected function configure()
+    public function getCommandName(): string
     {
-        $this->setName('g4nreact:reindex:product')
-            ->setDescription('Pull products from Magento 2 database and push it to database search engine');
+        return 'g4nreact:reindex:product';
     }
 
     /**
-     * @param InputInterface $input
-     * @param OutputInterface $output
-     * @return int|void|null
+     * @return string
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    public function getCommandDescription(): string
     {
-        try {
-            $puller = $this->productPuller;
-            $config = $puller->getConfiguration();
+        return 'Reindexes products';
+    }
 
-            $indexer = new Indexer($puller, $config);
-            $indexer->reindex();
-
-            echo "Successfully reindex data" . PHP_EOL;
-        } catch (Exception $exception) {
-            echo "Caught exception: " . $exception->getMessage();
-        }
+    /**
+     * @return AbstractIndexer
+     */
+    public function getIndexer()
+    {
+        return $this->productIndexer;
     }
 }

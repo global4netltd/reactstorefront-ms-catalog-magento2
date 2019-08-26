@@ -2,20 +2,32 @@
 
 namespace G4NReact\MsCatalogMagento2\Model\Config\Source;
 
+use G4NReact\MsCatalog\Helper;
+use Magento\Framework\Option\ArrayInterface;
+
 /**
- * Class LogFormat
+ * Class Engine
  * @package G4NReact\MsCatalogMagento2\Model\Config\Source
  */
-class Engine implements \Magento\Framework\Option\ArrayInterface
+class Engine implements ArrayInterface
 {
     /**
      * Options getter
      *
      * @return array
      */
-    public function toOptionArray()
+    public function toOptionArray(): array
     {
-        return [['value' => \G4NReact\MsCatalogIndexer\Indexer::ENGINE_SOLR, 'label' => __('Solr')]];
+        $enginesOptionArray = [];
+
+        foreach (Helper::$engines as $engineValue => $engine) {
+            $enginesOptionArray[] = [
+                'value' => $engineValue,
+                'label' => __($engine['label']),
+            ];
+        }
+
+        return $enginesOptionArray;
     }
 
     /**
@@ -23,8 +35,14 @@ class Engine implements \Magento\Framework\Option\ArrayInterface
      *
      * @return array
      */
-    public function toArray()
+    public function toArray(): array
     {
-        return [\G4NReact\MsCatalogIndexer\Indexer::ENGINE_SOLR => __('SOLR')];
+        $enginesOptionArray = [];
+
+        foreach (Helper::$engines as $engineValue => $engine) {
+            $enginesOptionArray[$engineValue] = __($engine['label']);
+        }
+
+        return $enginesOptionArray;
     }
 }

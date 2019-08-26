@@ -1,0 +1,8 @@
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="catalog_eav_attribute">
+        <column xsi:type="boolean" name="use_in_react_storefront" nullable="false" comment="Use in React Storefront" default="0"/>
+        <column xsi:type="smallint" name="weight_react_store_front" nullable="false" comment="Attribute weight in react store front" default="0"/>
+        <column xsi:type="boolean" name="force_indexing_in_react_storefront" nullable="false" comment="Force indexing in React Storefront" default="0"/>
+    </table>
+</schema>

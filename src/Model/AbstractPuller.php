@@ -3,8 +3,10 @@
 namespace G4NReact\MsCatalogMagento2\Model;
 
 use G4NReact\MsCatalog\Document;
-use G4NReact\MsCatalogMagento2\Helper\MsCatalog as MsCatalogHelper;
+use G4NReact\MsCatalog\PullerInterface;
+use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use Iterator;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class AbstractPuller
@@ -15,12 +17,15 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     /**
      * @var int
      */
-    const PAGE_SIZE_DEFAULT = 10;
+    const PAGE_SIZE_DEFAULT = 100;
+
+    /** @var int default current page */
+    const CUR_PAGE_DEFAULT = 0;
 
     /**
      * @var int
      */
-    public $totalSize = 1000;
+    public $totalSize = null;
 
     /**
      * @var int
@@ -53,23 +58,28 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     public $ids;
 
     /**
-     * @var MsCatalogHelper
+     * @var string
      */
-    protected $msCatalogHelper;
+    public $type;
+
+    /**
+     * @var ConfigHelper
+     */
+    protected $magento2ConfigHelper;
 
     /**
      * Puller constructor
-     * @param MsCatalogHelper $msCatalogHelper
+     * @param ConfigHelper $magento2ConfigHelper
+     * @throws NoSuchEntityException
      */
     public function __construct(
-        MsCatalogHelper $msCatalogHelper
+        ConfigHelper $magento2ConfigHelper
     ) {
-        $this->msCatalogHelper = $msCatalogHelper;
+        $this->magento2ConfigHelper = $magento2ConfigHelper;
         $this->position = 0;
-        $this->totalSize = $this->getCollection()->getSize();
-        $this->curPage = 0;
+        $this->curPage = self::CUR_PAGE_DEFAULT;
 
-        $this->pageSize = $msCatalogHelper->getConfigByPath('ms_catalog_indexer/indexer_settings/pagesize') ?: self::PAGE_SIZE_DEFAULT;
+        $this->pageSize = $magento2ConfigHelper->getConfiguration()->getPullerPageSize() ?: self::PAGE_SIZE_DEFAULT;
     }
 
     /**
@@ -90,17 +100,38 @@ abstract class AbstractPuller implements Iterator, PullerInterface
 
         return $this;
     }
-    
-    public function getCollection()
+
+    /**
+     * @param int $curPage
+     *
+     * @return PullerInterface
+     */
+    public function setCurPage(int $curPage): PullerInterface
     {
+        $this->curPage = $curPage;
+
+        return $this;
     }
+
+    /**
+     * @return int
+     */
+    public function getCurPage() : int
+    {
+        return $this->curPage;
+    }
+
+    /**
+     * @return mixed
+     */
+    abstract public function getCollection();
 
     /**
      * @return array
      */
     public function getIds(): array
     {
-        return $this->ids;
+        return is_array($this->ids) ? $this->ids : [];
     }
 
     /**
@@ -113,6 +144,23 @@ abstract class AbstractPuller implements Iterator, PullerInterface
 
         return $this;
     }
+
+    /**
+     * @param string $type
+     *
+     * @return $this
+     */
+    public function setType(string $type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    abstract public function getType(): string;
 
     /**
      * @inheritdoc
@@ -155,6 +203,13 @@ abstract class AbstractPuller implements Iterator, PullerInterface
      */
     public function valid()
     {
+        $collection = null;
+
+        if (is_null($this->totalSize)) {
+            $collection = $this->getCollection();
+            $this->totalSize = $collection->getSize();
+        }
+
         if ($this->totalPosition == $this->totalSize) {
             return false;
         }
@@ -164,15 +219,14 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         }
 
         if ($this->position == 0) {
-            $collection = $this->getCollection();
             $this->curPage++;
+            $collection = is_null($collection) ? $this->getCollection() : $collection;
 
-            $this->pageArray = array();
+            $this->pageArray = [];
             foreach ($collection as $item) {
                 $this->pageArray[] = $item;
             }
         }
-
         return isset($this->pageArray[$this->position]);
     }
 }
