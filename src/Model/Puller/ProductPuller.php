@@ -38,7 +38,7 @@ class ProductPuller extends AbstractPuller
     /**
      * @var int
      */
-    const MAX_CATEGORY_PRODUCT_POSITION = 1000000;
+    const MAX_CATEGORY_PRODUCT_POSITION = 10000;
 
     /**
      * @var ProductCollectionFactory
@@ -342,7 +342,9 @@ class ProductPuller extends AbstractPuller
         if ($categoryPositions = $document->getFieldValue('category_positions')) {
             foreach ($categoryPositions as $categoryId => $position) {
                 $finalPosition = self::MAX_CATEGORY_PRODUCT_POSITION - $position;
-                $finalPosition = ($finalPosition === self::MAX_CATEGORY_PRODUCT_POSITION) ? 0 : $finalPosition;
+                $finalPosition = (($finalPosition === self::MAX_CATEGORY_PRODUCT_POSITION) || ($finalPosition < 0))
+                    ? 0
+                    : $finalPosition;
                 if ($finalPosition) {
                     $document->createField(
                         "category_{$categoryId}_position",
