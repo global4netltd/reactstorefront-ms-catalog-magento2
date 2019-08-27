@@ -128,7 +128,6 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
                 $this->clearIndexByObjectType($puller->getType(), $config, $store->getId());
             }
             $indexer->reindex();
-            echo self::SUCCESS_INFORMATION . PHP_EOL;
         }
 
         // end store emulation
