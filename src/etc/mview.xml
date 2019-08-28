@@ -17,4 +17,17 @@
             <table name="catalog_category_product" entity_column="product_id" />
         </subscriptions>
     </view>
+    <view id="g4nreact_magento_indexer_category" class="G4NReact\MsCatalogMagento2\Model\Indexer\CategoryIndexer" group="indexer">
+        <subscriptions>
+            <table name="catalog_category_entity" entity_column="entity_id" />
+            <table name="catalog_category_entity_datetime" entity_column="entity_id" />
+            <table name="catalog_category_entity_decimal" entity_column="entity_id" />
+            <table name="catalog_category_entity_int" entity_column="entity_id" />
+            <table name="catalog_category_entity_text" entity_column="entity_id" />
+            <table name="catalog_category_entity_varchar" entity_column="entity_id" />
+            <table name="catalog_category_product" entity_column="entity_id" />
+            <table name="catalog_category_product_index" entity_column="category_id" />
+            <table name="catalog_url_rewrite_product_category" entity_column="category_id" />
+        </subscriptions>
+    </view>
 </config>
