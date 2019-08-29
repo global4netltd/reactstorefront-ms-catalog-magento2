@@ -24,10 +24,14 @@ class SearchTerms
      */
     const WEIGHT_REACT_STORE_FRONT = 'weight_react_store_front';
     
-    /** @var string force indexing in react storefront */
+    /**
+     * @var string force indexing in react storefront
+     */
     const FORCE_INDEXING_IN_REACT_STORE_FRONT = 'force_indexing_in_react_storefront';
 
-    /** @var string search terms field name */
+    /**
+     * @var string search terms field name
+     */
     const SEARCH_TERMS_FIELD_NAME = 'search_terms';
 
     /**
@@ -41,14 +45,14 @@ class SearchTerms
     protected $searchCriteriaBuilder;
 
     /**
-     * @var array
+     * @var array|null
      */
-    public static $searchTerms = [];
+    public static $searchTerms = null;
 
     /**
-     * @var array
+     * @var array|null
      */
-    public static $forceIndexingAttributes = [];
+    public static $forceIndexingAttributes = null;
 
     /**
      * SearchTerms constructor
@@ -70,6 +74,14 @@ class SearchTerms
      */
     public function getAttributeSearchTerms()
     {
+        // set to array -> we try to get search terms and force indexing flag only once
+        if (self::$searchTerms === null) {
+            self::$searchTerms = [];
+        }
+        if (self::$forceIndexingAttributes === null) {
+            self::$forceIndexingAttributes = [];
+        }
+
         $getAttributeListStart = microtime(true);
         $attributes = $this->attributeRepository->getList(
             ProductAttributeInterface::ENTITY_TYPE_CODE,
@@ -103,7 +115,7 @@ class SearchTerms
      */
     public function prepareSearchTermField($attributeCode)
     {
-        if (!self::$searchTerms) {
+        if (self::$searchTerms === null) {
             $this->getAttributeSearchTerms();
         }
 
@@ -123,10 +135,10 @@ class SearchTerms
      */
     public function getForceIndexingAttributes(): array
     {
-        if (!self::$forceIndexingAttributes) {
+        if (self::$forceIndexingAttributes === null) {
             $this->getAttributeSearchTerms();
         }
 
-        return self::$forceIndexingAttributes;
+        return self::$forceIndexingAttributes ?: [];
     }
 }
