@@ -146,13 +146,8 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
     public function prepareIds($ids): array
     {
         $ids = is_array($ids) ? $ids : explode(',', $ids);
-        foreach ($ids as $key => $id) {
-            if (!is_numeric($id)) {
-                unset($ids[$key]);
-            }
-        }
 
-        return $ids;
+        return array_map('intval', $ids);
     }
 
     /**
