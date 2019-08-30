@@ -155,6 +155,11 @@ class Query extends AbstractHelper
                 'type' => Field::FIELD_TYPE_TEXT,
                 'indexable' => true,
                 'multivalued' => true
+            ],
+            'stock_total_qty' => [
+                'type' => Field::FIELD_TYPE_INT,
+                'indexable' => true,
+                'multivalued' => false
             ]
         ],
         CategoryAttributeInterface::ENTITY_TYPE_CODE => [
@@ -188,7 +193,6 @@ class Query extends AbstractHelper
                 'indexable'   => true,
                 'multivalued' => false,
             ],
-
         ]
     ];
 
