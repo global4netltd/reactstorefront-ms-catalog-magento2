@@ -16,6 +16,7 @@ use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductColl
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Data\Collection as DataCollection;
 use Magento\Framework\Event\Manager as EventManager;
@@ -23,7 +24,10 @@ use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Inventory\Model\SourceItemRepository;
+use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use G4NReact\MsCatalogMagento2\Helper\ProductPuller as HelperProductPuller;
 
 /**
  * Class ProductPuller
@@ -83,6 +87,10 @@ class ProductPuller extends AbstractPuller
      */
     protected $storeManager;
 
+    protected $searchCriteriaBuilder;
+
+    protected $sourceItemRepository;
+
     /**
      * ProductPuller constructor.
      *
@@ -111,7 +119,9 @@ class ProductPuller extends AbstractPuller
         EventManager $eventManager,
         ProductExtended $productExtended,
         ResourceConnection $resource,
-        StoreManagerInterface $storeManager
+        StoreManagerInterface $storeManager,
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        SourceItemRepository $sourceItemRepository
     )
     {
         $this->productCollectionFactory = $productCollectionFactory;
@@ -124,6 +134,8 @@ class ProductPuller extends AbstractPuller
         $this->productExtended = $productExtended;
         $this->resource = $resource;
         $this->storeManager = $storeManager;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->sourceItemRepository = $sourceItemRepository;
         $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
@@ -152,6 +164,7 @@ class ProductPuller extends AbstractPuller
             ->addMediaGalleryData();
 
         $productCollection = $this->prepareReviewsOnProduct($productCollection, $this->prepareReviewsData($productCollection));
+        $productCollection = $this->assingStockToProductsCollection($productCollection);
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
         $this->loadCategoryIds($productCollection);
         return $productCollection;
@@ -219,6 +232,50 @@ class ProductPuller extends AbstractPuller
     protected function prepareAverageRating(int $ratingSummary): float
     {
         return $ratingSummary / 20;
+    }
+
+    /**
+     * @param ProductCollection $collection
+     *
+     * @return ProductCollection
+     */
+    protected function assingStockToProductsCollection(ProductCollection $collection)
+    {
+        $skus = [];
+        foreach ($collection as $product) {
+            $skus[] = $product->getSku();
+        }
+
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter(SourceItemInterface::SKU, $skus, 'in')
+            ->create();
+
+        $stocks = $this->sourceItemRepository->getList($searchCriteria)->getItems();
+
+        $stockData = [];
+        foreach ($stocks as $stock) {
+            if (isset($stock['sku']) && isset($stock['quantity']) && isset($stock['source_code'])) {
+                $stockTotalQty = isset($stockData[$stock['sku']]) ? $stockData[$stock['sku']]['total_qty'] + $stock['quantity'] : $stock['quantity'];
+                $stockData[$stock['sku']]['total_qty'] = $stockTotalQty;
+                $stockData[$stock['sku']][$stock['source_code']] = $stock['quantity'];
+            }
+        }
+
+        foreach ($collection as $product) {
+            if (isset($stockData[$product->getSku()])) {
+                foreach ($stockData[$product->getSku()] as $key => $productStock) {
+                    if ($key != 'total_qty') {
+                        $product->setData(HelperProductPuller::prepareFieldNameBySourceCode($key), $productStock);
+                    } else {
+                        $product->setStockTotalQty((int)$productStock);
+                    }
+                }
+            } else {
+                $product->setStockTotalQty(0);
+            }
+        }
+
+        return $collection;
     }
 
     /**
@@ -336,7 +393,7 @@ class ProductPuller extends AbstractPuller
                     }
                 }
             }
-            
+
             $document = $this->setFieldIsVisibleOnFront($attribute, $document);
         }
     }
