@@ -87,8 +87,14 @@ class ProductPuller extends AbstractPuller
      */
     protected $storeManager;
 
+    /**
+     * @var SearchCriteriaBuilder
+     */
     protected $searchCriteriaBuilder;
 
+    /**
+     * @var SourceItemRepository
+     */
     protected $sourceItemRepository;
 
     /**
@@ -105,6 +111,8 @@ class ProductPuller extends AbstractPuller
      * @param ProductExtended $productExtended
      * @param ResourceConnection $resource
      * @param StoreManagerInterface $storeManager
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param SourceItemRepository $sourceItemRepository
      *
      * @throws NoSuchEntityException
      */
