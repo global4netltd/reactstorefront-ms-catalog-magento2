@@ -14,6 +14,7 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
+use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\Data\Collection as DataCollection;
@@ -111,7 +112,8 @@ class ProductPuller extends AbstractPuller
         ProductExtended $productExtended,
         ResourceConnection $resource,
         StoreManagerInterface $storeManager
-    ) {
+    )
+    {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -148,16 +150,15 @@ class ProductPuller extends AbstractPuller
             ->addFinalPrice()
             ->addCategoryIds()
             ->addMediaGalleryData();
-
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
 
         $this->loadCategoryIds($productCollection);
-
         return $productCollection;
     }
 
     /**
      * @param ProductCollection $productCollection
+     *
      * @throws NoSuchEntityException
      */
     public function loadCategoryIds($productCollection)
@@ -206,7 +207,7 @@ class ProductPuller extends AbstractPuller
         $this->addCategoryPosition($product, $document);
 
         $eventData = [
-            'product'  => $product,
+            'product' => $product,
             'document' => $document,
         ];
 
@@ -218,6 +219,7 @@ class ProductPuller extends AbstractPuller
     /**
      * @param Product $product
      * @param Document $document
+     *
      * @throws LocalizedException
      */
     protected function handleCategoryId(Product $product, Document $document): void
@@ -232,6 +234,7 @@ class ProductPuller extends AbstractPuller
     /**
      * @param Product $product
      * @param Document $document
+     *
      * @throws LocalizedException
      * @throws InputException
      */
@@ -239,7 +242,6 @@ class ProductPuller extends AbstractPuller
     {
         foreach ($product->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
-
             $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
             if ($searchTermField) {
                 if ($field = $document->getField($searchTermField)) {
@@ -268,12 +270,46 @@ class ProductPuller extends AbstractPuller
                     }
                 }
             }
+            
+            $document = $this->setFieldIsVisibleOnFront($attribute, $document);
         }
+    }
+
+    /**
+     * @param AbstractAttribute $attribute
+     * @param Document $document
+     *
+     * @return Document
+     */
+    protected function setFieldIsVisibleOnFront(AbstractAttribute $attribute, Document $document)
+    {
+        if ($attribute->getIsVisibleOnFront()) {
+            if (!$document->getField('attribute_codes_is_visible_on_front')) {
+                $document->setField(
+                    new Document\Field(
+                        'attribute_codes_is_visible_on_front',
+                        [$attribute->getAttributeCode()],
+                        Document\Field::FIELD_TYPE_TEXT,
+                        true,
+                        true
+                    )
+                );
+            } else {
+                $attributeCodesField = $document->getField('attribute_codes_is_visible_on_front');
+                $data = $attributeCodesField->getValue();
+                array_push($data, $attribute->getAttributeCode());
+
+                $attributeCodesField->setValue($data);
+            }
+        }
+
+        return $document;
     }
 
     /**
      * @param Product $product
      * @param Document $document
+     *
      * @throws LocalizedException
      */
     protected function addMediaGallery(Product $product, Document $document): void
