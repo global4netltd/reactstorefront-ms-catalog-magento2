@@ -160,6 +160,11 @@ class Query extends AbstractHelper
                 'type' => Field::FIELD_TYPE_FLOAT,
                 'indexable' => true,
                 'multivalued' => false
+            ],
+            'attribute_codes_is_visible_on_front' => [
+                'type' => Field::FIELD_TYPE_TEXT,
+                'indexable' => true,
+                'multivalued' => true
             ]
         ],
         CategoryAttributeInterface::ENTITY_TYPE_CODE => [
