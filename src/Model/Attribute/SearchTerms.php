@@ -121,7 +121,7 @@ class SearchTerms
 
         if (isset(self::$searchTerms[$attributeCode])) {
             return (self::$searchTerms[$attributeCode] !== false)
-                ? (self::SEARCH_TERMS_FIELD_NAME . '_' .self::$searchTerms[$attributeCode])
+                ? (self::SEARCH_TERMS_FIELD_NAME . '_' . self::$searchTerms[$attributeCode])
                 : null;
         }
 

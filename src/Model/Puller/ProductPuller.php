@@ -18,7 +18,6 @@ use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\Data\Collection as DataCollection;
 use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
@@ -28,6 +27,7 @@ use Magento\Inventory\Model\SourceItemRepository;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use G4NReact\MsCatalogMagento2\Helper\ProductPuller as HelperProductPuller;
+use Magento\Swatches\Helper\Data as SwatchHelper;
 
 /**
  * Class ProductPuller
@@ -49,34 +49,42 @@ class ProductPuller extends AbstractPuller
      * @var ProductCollectionFactory
      */
     protected $productCollectionFactory;
+
     /**
      * @var Attribute
      */
     protected $eavAttribute;
+
     /**
      * @var EavConfig
      */
     protected $eavConfig;
+
     /**
      * @var JsonSerializer
      */
     protected $jsonSerializer;
+
     /**
      * @var SearchTerms
      */
     protected $searchTerms;
+
     /**
      * @var QueryHelper
      */
     protected $queryHelper;
+
     /**
      * @var EventManager
      */
     protected $eventManager;
+
     /**
      * @var ProductExtended
      */
     protected $productExtended;
+
     /**
      * @var ResourceConnection
      */
@@ -98,6 +106,11 @@ class ProductPuller extends AbstractPuller
     protected $sourceItemRepository;
 
     /**
+     * @var SwatchHelper
+     */
+    protected $swatchHelper;
+
+    /**
      * ProductPuller constructor.
      *
      * @param ProductCollectionFactory $productCollectionFactory
@@ -113,7 +126,7 @@ class ProductPuller extends AbstractPuller
      * @param StoreManagerInterface $storeManager
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param SourceItemRepository $sourceItemRepository
-     *
+     * @param SwatchHelper $swatchHelper
      * @throws NoSuchEntityException
      */
     public function __construct(
@@ -129,9 +142,9 @@ class ProductPuller extends AbstractPuller
         ResourceConnection $resource,
         StoreManagerInterface $storeManager,
         SearchCriteriaBuilder $searchCriteriaBuilder,
-        SourceItemRepository $sourceItemRepository
-    )
-    {
+        SourceItemRepository $sourceItemRepository,
+        SwatchHelper $swatchHelper
+    ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -144,6 +157,7 @@ class ProductPuller extends AbstractPuller
         $this->storeManager = $storeManager;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->sourceItemRepository = $sourceItemRepository;
+        $this->swatchHelper = $swatchHelper;
         $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
@@ -175,6 +189,7 @@ class ProductPuller extends AbstractPuller
         $productCollection = $this->assingStockToProductsCollection($productCollection);
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
         $this->loadCategoryIds($productCollection);
+
         return $productCollection;
     }
 
@@ -202,6 +217,7 @@ class ProductPuller extends AbstractPuller
                     ->setReviewsAverageRating(0);
             }
         }
+
         return $productCollection;
     }
 
@@ -329,7 +345,7 @@ class ProductPuller extends AbstractPuller
 
         $this->addAttributes($product, $document);
 
-        $this->addMediaGallery($product, $document);
+        $this->handleImages($product, $document);
 
         $this->handleRequestPath($document);
 
@@ -338,7 +354,7 @@ class ProductPuller extends AbstractPuller
         $this->addCategoryPosition($product, $document);
 
         $eventData = [
-            'product' => $product,
+            'product'  => $product,
             'document' => $document,
         ];
 
@@ -443,29 +459,28 @@ class ProductPuller extends AbstractPuller
      *
      * @throws LocalizedException
      */
-    protected function addMediaGallery(Product $product, Document $document): void
+    protected function handleImages(Product $product, Document $document): void
     {
-        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
+        $mediaGallery = $this->swatchHelper->getProductMediaGallery($product);
+        $mediaGalleryJson = $this->jsonSerializer->serialize($mediaGallery);
+
+        if ($document->getField('image') && isset($mediaGallery['large'])) {
+            $document->setFieldValue('image', $mediaGallery['large']);
+        }
+        if ($document->getField('small_image') && isset($mediaGallery['medium'])) {
+            $document->setFieldValue('small_image', $mediaGallery['medium']);
+        }
+        if ($document->getField('thumbnail') && isset($mediaGallery['small'])) {
+            $document->setFieldValue('thumbnail', $mediaGallery['small']);
+        }
+        if ($document->getField('swatch_image') && isset($mediaGallery['small'])) {
+            $document->setFieldValue('swatch_image', $mediaGallery['small']);
+        }
+
         $document->setField(
             $this->queryHelper
                 ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
         );
-    }
-
-    /**
-     * @param DataCollection $mediaGalleryImages
-     *
-     * @return bool|false|string
-     */
-    protected function getMediaGalleryJson(DataCollection $mediaGalleryImages)
-    {
-        $gallery = [];
-
-        foreach ($mediaGalleryImages as $image) {
-            $gallery[] = ['full' => $image->getUrl()];
-        }
-
-        return $this->jsonSerializer->serialize($gallery);
     }
 
     /**
