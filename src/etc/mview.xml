@@ -20,7 +20,6 @@
     <view id="g4nreact_magento_indexer_search_term" class="G4NReact\MsCatalogMagento2\Model\Indexer\SearchTermsIndexer" group="indexer">
         <subscriptions>
             <table name="search_query" entity_column="query_id" />
-            <table name="search_query_synonym" entity_column="query_id" />
         </subscriptions>
     </view>
 </config>
