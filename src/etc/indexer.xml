@@ -4,4 +4,8 @@
         <title translate="true">React Storefront Reindex Products</title>
         <description translate="true">Reindex product documents in storefront database</description>
     </indexer>
+    <indexer id="g4nreact_magento_indexer_search_term_indexer" view_id="g4nreact_magento_indexer_search_term" class="G4NReact\MsCatalogMagento2\Model\Indexer\SearchTermsIndexer">
+        <title translate="true">React Storefront Reindex Products</title>
+        <description translate="true">Reindex search term documents in storefront database</description>
+    </indexer>
 </config>
