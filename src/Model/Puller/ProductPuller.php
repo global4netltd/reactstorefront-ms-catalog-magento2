@@ -10,6 +10,7 @@ use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use G4NReact\MsCatalogMagento2\Model\ResourceModel\ProductExtended;
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
@@ -27,7 +28,7 @@ use Magento\Inventory\Model\SourceItemRepository;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use G4NReact\MsCatalogMagento2\Helper\ProductPuller as HelperProductPuller;
-use Magento\Swatches\Helper\Data as SwatchHelper;
+use Magento\Catalog\Model\Product\Image\UrlBuilder as ImageUrlBuilder;
 
 /**
  * Class ProductPuller
@@ -106,9 +107,9 @@ class ProductPuller extends AbstractPuller
     protected $sourceItemRepository;
 
     /**
-     * @var SwatchHelper
+     * @var ImageUrlBuilder
      */
-    protected $swatchHelper;
+    protected $imageUrlBuilder;
 
     /**
      * ProductPuller constructor.
@@ -126,7 +127,7 @@ class ProductPuller extends AbstractPuller
      * @param StoreManagerInterface $storeManager
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param SourceItemRepository $sourceItemRepository
-     * @param SwatchHelper $swatchHelper
+     * @param ImageUrlBuilder $imageUrlBuilder
      *
      * @throws NoSuchEntityException
      */
@@ -144,7 +145,7 @@ class ProductPuller extends AbstractPuller
         StoreManagerInterface $storeManager,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         SourceItemRepository $sourceItemRepository,
-        SwatchHelper $swatchHelper
+        ImageUrlBuilder $imageUrlBuilder
     )
     {
         $this->productCollectionFactory = $productCollectionFactory;
@@ -159,7 +160,7 @@ class ProductPuller extends AbstractPuller
         $this->storeManager = $storeManager;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->sourceItemRepository = $sourceItemRepository;
-        $this->swatchHelper = $swatchHelper;
+        $this->imageUrlBuilder = $imageUrlBuilder;
         $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
@@ -459,31 +460,63 @@ class ProductPuller extends AbstractPuller
     /**
      * @param Product $product
      * @param Document $document
-     *
      * @throws LocalizedException
      */
     protected function handleImages(Product $product, Document $document): void
     {
-        $mediaGallery = $this->swatchHelper->getProductMediaGallery($product);
+        $mediaGallery = $this->getGalleryImages($product);
         $mediaGalleryJson = $this->jsonSerializer->serialize($mediaGallery);
 
-        if ($document->getField('image') && isset($mediaGallery['large'])) {
-            $document->setFieldValue('image', $mediaGallery['large']);
+        if ($document->getField('image') && isset($mediaGallery[0]['large_image_url'])) {
+            $document->setFieldValue('image', $mediaGallery[0]['large_image_url']);
         }
-        if ($document->getField('small_image') && isset($mediaGallery['medium'])) {
-            $document->setFieldValue('small_image', $mediaGallery['medium']);
+        if ($document->getField('small_image') && isset($mediaGallery[0]['medium_image_url'])) {
+            $document->setFieldValue('small_image', $mediaGallery[0]['medium_image_url']);
         }
-        if ($document->getField('thumbnail') && isset($mediaGallery['small'])) {
-            $document->setFieldValue('thumbnail', $mediaGallery['small']);
+        if ($document->getField('thumbnail') && isset($mediaGallery[0]['small_image_url'])) {
+            $document->setFieldValue('thumbnail', $mediaGallery[0]['small_image_url']);
         }
-        if ($document->getField('swatch_image') && isset($mediaGallery['small'])) {
-            $document->setFieldValue('swatch_image', $mediaGallery['small']);
+        if ($document->getField('swatch_image') && isset($mediaGallery[0]['small_image_url'])) {
+            $document->setFieldValue('swatch_image', $mediaGallery[0]['small_image_url']);
         }
 
         $document->setField(
             $this->queryHelper
                 ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
         );
+    }
+
+    /**
+     * @param ProductInterface $product
+     * @return array
+     */
+    public function getGalleryImages(ProductInterface $product): array
+    {
+        $gallery = [];
+        $images = $product->getMediaGalleryImages();
+        if ($images instanceof \Magento\Framework\Data\Collection) {
+            /** @var $image \Magento\Framework\DataObject */
+            foreach ($images as $image) {
+                $smallImageUrl = $this->imageUrlBuilder
+                    ->getUrl($image->getFile(), 'product_page_image_small');
+                $mediumImageUrl = $this->imageUrlBuilder
+                    ->getUrl($image->getFile(), 'product_page_image_medium');
+                $largeImageUrl = $this->imageUrlBuilder
+                    ->getUrl($image->getFile(), 'product_page_image_large');
+
+                $gallery[] = [
+                    'small_image_url' => $smallImageUrl,
+                    'medium_image_url' => $mediumImageUrl,
+                    'large_image_url' => $largeImageUrl,
+                    'position' => $image->getPosition(),
+                    'label' => $image->getLabel(),
+                    'media_type' => $image->getMediaType(),
+                    'disabled' => !!$image->getDisabled(),
+                ];
+            }
+        }
+
+        return $gallery;
     }
 
     /**
