@@ -127,6 +127,7 @@ class ProductPuller extends AbstractPuller
      * @param SearchCriteriaBuilder $searchCriteriaBuilder
      * @param SourceItemRepository $sourceItemRepository
      * @param SwatchHelper $swatchHelper
+     *
      * @throws NoSuchEntityException
      */
     public function __construct(
@@ -144,7 +145,8 @@ class ProductPuller extends AbstractPuller
         SearchCriteriaBuilder $searchCriteriaBuilder,
         SourceItemRepository $sourceItemRepository,
         SwatchHelper $swatchHelper
-    ) {
+    )
+    {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -354,7 +356,7 @@ class ProductPuller extends AbstractPuller
         $this->addCategoryPosition($product, $document);
 
         $eventData = [
-            'product'  => $product,
+            'product' => $product,
             'document' => $document,
         ];
 
@@ -418,35 +420,36 @@ class ProductPuller extends AbstractPuller
                 }
             }
 
-            $document = $this->setFieldIsVisibleOnFront($attribute, $document);
+            $document = $this->setFieldIsVisibleOnFront($attribute, $document, $value);
         }
     }
 
     /**
      * @param AbstractAttribute $attribute
      * @param Document $document
+     * @param $value
      *
      * @return Document
      */
-    protected function setFieldIsVisibleOnFront(AbstractAttribute $attribute, Document $document)
+    protected function setFieldIsVisibleOnFront(AbstractAttribute $attribute, Document $document, $value)
     {
         if ($attribute->getIsVisibleOnFront()) {
             if (!$document->getField('attribute_codes_is_visible_on_front')) {
                 $document->setField(
                     new Document\Field(
                         'attribute_codes_is_visible_on_front',
-                        [$attribute->getAttributeCode()],
+                        $this->jsonSerializer->serialize([$attribute->getAttributeCode() => $value]),
                         Document\Field::FIELD_TYPE_TEXT,
-                        true,
-                        true
+                        false,
+                        false
                     )
                 );
             } else {
                 $attributeCodesField = $document->getField('attribute_codes_is_visible_on_front');
-                $data = $attributeCodesField->getValue();
-                array_push($data, $attribute->getAttributeCode());
+                $data = $this->jsonSerializer->unserialize($attributeCodesField->getValue());
+                $data[$attribute->getAttributeCode()] = $value;
 
-                $attributeCodesField->setValue($data);
+                $attributeCodesField->setValue($this->jsonSerializer->serialize($data));
             }
         }
 

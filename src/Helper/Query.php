@@ -163,8 +163,8 @@ class Query extends AbstractHelper
             ],
             'attribute_codes_is_visible_on_front' => [
                 'type' => Field::FIELD_TYPE_TEXT,
-                'indexable' => true,
-                'multivalued' => true
+                'indexable' => false,
+                'multivalued' => false
             ],
             'stock_total_qty' => [
                 'type' => Field::FIELD_TYPE_INT,
