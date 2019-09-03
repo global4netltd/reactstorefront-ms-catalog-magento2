@@ -15,6 +15,7 @@
             <table name="catalog_product_super_link" entity_column="product_id" />
             <table name="catalog_product_link" entity_column="product_id" />
             <table name="catalog_category_product" entity_column="product_id" />
+            <table name="catalog_product_index_price" entity_column="entity_id" />
         </subscriptions>
     </view>
     <view id="g4nreact_magento_indexer_search_term" class="G4NReact\MsCatalogMagento2\Model\Indexer\SearchTermsIndexer" group="indexer">
