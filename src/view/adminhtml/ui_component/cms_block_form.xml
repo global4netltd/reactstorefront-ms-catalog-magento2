@@ -1,10 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
-    <fieldset name="general">
-        <field name="css" formElement="textarea" >
+    <fieldset name="PWA" sortOrder="100">
+        <settings>
+            <collapsible>true</collapsible>
+            <opened>true</opened>
+            <label translate="true">PWA</label>
+        </settings>
+        <field name="front_title" sortOrder="10" formElement="input" >
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
-                    <item name="sortOrder" xsi:type="number">10000</item>
+                    <item name="source" xsi:type="string">block</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>string</dataType>
+                <label translate="true">Front title</label>
+                <dataScope>front_title</dataScope>
+            </settings>
+        </field>
+        <field name="css" sortOrder="20" formElement="textarea" >
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
                     <item name="source" xsi:type="string">block</item>
                 </item>
             </argument>
@@ -14,10 +30,9 @@
                 <dataScope>css</dataScope>
             </settings>
         </field>
-        <field name="js" formElement="textarea" >
+        <field name="js" sortOrder="30" formElement="textarea" >
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
-                    <item name="sortOrder" xsi:type="number">10010</item>
                     <item name="source" xsi:type="string">block</item>
                 </item>
             </argument>
@@ -27,10 +42,9 @@
                 <dataScope>js</dataScope>
             </settings>
         </field>
-        <field name="cms_json" formElement="textarea" >
+        <field name="cms_json" sortOrder="40" formElement="textarea" >
             <argument name="data" xsi:type="array">
                 <item name="config" xsi:type="array">
-                    <item name="sortOrder" xsi:type="number">10020</item>
                     <item name="source" xsi:type="string">block</item>
                 </item>
             </argument>
@@ -38,19 +52,6 @@
                 <dataType>text</dataType>
                 <label translate="true">CMS JSON</label>
                 <dataScope>cms_json</dataScope>
-            </settings>
-        </field>
-        <field name="front_title" formElement="input" >
-            <argument name="data" xsi:type="array">
-                <item name="config" xsi:type="array">
-                    <item name="sortOrder" xsi:type="number">10030</item>
-                    <item name="source" xsi:type="string">block</item>
-                </item>
-            </argument>
-            <settings>
-                <dataType>string</dataType>
-                <label translate="true">Front title</label>
-                <dataScope>front_title</dataScope>
             </settings>
         </field>
     </fieldset>
