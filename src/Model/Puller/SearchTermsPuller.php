@@ -68,7 +68,13 @@ class SearchTermsPuller extends AbstractPuller
      */
     public function getCollection()
     {
-        $collection = $this->searchQueryCollFactory->create()
+        $collection = $this->searchQueryCollFactory->create();
+
+        if ($this->getIds()) {
+            $collection->addFieldToFilter('query_id', ['in' => $this->getIds()]);
+        }
+
+        $collection
             ->addStoreFilter($this->magento2ConfigHelper->getStore()->getId())
             ->setPageSize($this->getPageSize())
             ->setCurPage($this->getCurPage());
