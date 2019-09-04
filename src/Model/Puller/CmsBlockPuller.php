@@ -74,8 +74,13 @@ class CmsBlockPuller extends AbstractPuller
      */
     public function getCollection()
     {
-        $collection = $this->cmsBlockCollFactory->create()
-            ->addStoreFilter($this->magento2ConfigHelper->getStore()->getId())
+        $collection = $this->cmsBlockCollFactory->create();
+
+        if ($this->ids !== null) {
+            $collection->addFieldToFilter('block_id', array('in' => $this->ids));
+        }
+
+        $collection->addStoreFilter($this->magento2ConfigHelper->getStore()->getId())
             ->setPageSize($this->getPageSize())
             ->setCurPage($this->getCurPage());
 
