@@ -93,18 +93,6 @@ class CmsPagePuller extends AbstractPuller
 
         /** @var CmsPageCollection $cmsPageCollection */
         $cmsPageCollection
-            ->addFieldToSelect('page_id')
-            ->addFieldToSelect('title')
-            ->addFieldToSelect('page_layout')
-            ->addFieldToSelect('meta_keywords')
-            ->addFieldToSelect('meta_description')
-            ->addFieldToSelect('identifier')
-            ->addFieldToSelect('content_heading')
-            ->addFieldToSelect('content')
-            ->addFieldToSelect('creation_time')
-            ->addFieldToSelect('update_time')
-            ->addFieldToSelect('is_active')
-            ->addFieldToSelect('sort_order')
             ->addStoreFilter($this->magento2ConfigHelper->getStore()->getId())
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
