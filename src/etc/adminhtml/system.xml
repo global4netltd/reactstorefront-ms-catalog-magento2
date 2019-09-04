@@ -142,6 +142,13 @@
                     <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\CategoryAttributes</source_model>
                 </field>
             </group>
+            <group id="search_settings" translate="label" type="text" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Search Settings</label>
+                <field id="search_query_boost" translate="label comment" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Search Query Prepend</label>
+                    <comment><![CDATA[Prepends solr query, usualy used for query boost.]]></comment>
+                </field>
+            </group>
         </section>
     </system>
 </config>
