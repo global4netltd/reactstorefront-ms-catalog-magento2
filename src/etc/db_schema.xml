@@ -5,4 +5,15 @@
         <column xsi:type="smallint" name="weight_react_store_front" nullable="false" comment="Attribute weight in react store front" default="0"/>
         <column xsi:type="boolean" name="force_indexing_in_react_storefront" nullable="false" comment="Force indexing in React Storefront" default="0"/>
     </table>
+    <table name="cms_page" resource="default" engine="innodb" comment="CMS Page Table">
+        <column xsi:type="text" name="css" nullable="true" comment="CMS Page CSS styles"/>
+        <column xsi:type="text" name="js" nullable="true" comment="CMS Page JS scripts"/>
+        <column xsi:type="varchar" name="pwa_special_content" nullable="true" length="255" comment="CMS Page special content code"/>
+    </table>
+    <table name="cms_block" resource="default" engine="innodb" comment="CMS Block Table">
+        <column xsi:type="text" name="css" nullable="true" comment="CMS Block CSS styles"/>
+        <column xsi:type="text" name="js" nullable="true" comment="CMS Page JS scripts"/>
+        <column xsi:type="text" name="cms_json" nullable="true" comment="CMS Block json data"/>
+        <column xsi:type="varchar" name="front_title" nullable="true" length="255" comment="CMS Block front title"/>
+    </table>
 </schema>

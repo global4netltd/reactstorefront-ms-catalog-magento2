@@ -4,6 +4,7 @@
     <module name="G4NReact_MsCatalogMagento2" setup_version="1.0.1">
         <sequence>
             <module name="Magento_Catalog"/>
+            <module name="Magento_Cms"/>
         </sequence>
     </module>
 </config>

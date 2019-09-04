@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <fieldset name="general">
+        <field name="pwa_special_content" sortOrder="30" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">page</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">PWA Special Content</label>
+                <dataScope>pwa_special_content</dataScope>
+            </settings>
+        </field>
+    </fieldset>
+    <fieldset name="css_styles" sortOrder="100">
+        <settings>
+            <collapsible>true</collapsible>
+            <label translate="true">CSS Styles</label>
+        </settings>
+        <field name="css" formElement="textarea">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">page</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">CSS</label>
+                <dataScope>css</dataScope>
+            </settings>
+        </field>
+    </fieldset>
+    <fieldset name="js_scripts" sortOrder="110">
+        <settings>
+            <collapsible>true</collapsible>
+            <label translate="true">JS Scripts</label>
+        </settings>
+        <field name="js" formElement="textarea">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="source" xsi:type="string">page</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">JS</label>
+                <dataScope>js</dataScope>
+            </settings>
+        </field>
+    </fieldset>
+</form>
