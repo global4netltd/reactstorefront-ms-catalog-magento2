@@ -127,9 +127,17 @@ class CategoryPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
+        $start = microtime(true);
         $this->eventManager->dispatch('ms_catalog_m2_category_puller_before_load', ['collection' => $categoryCollection]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => ms_catalog_m2_category_puller_before_load', (microtime(true) - $start));
+
+        $start = microtime(true);
         $categoryCollection->load();
+        \G4NReact\MsCatalog\Profiler::increaseTimer('getCollection > load', (microtime(true) - $start));
+
+        $start = microtime(true);
         $this->eventManager->dispatch('ms_catalog_m2_category_puller_after_load', ['collection' => $categoryCollection]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => ms_catalog_m2_category_puller_after_load', (microtime(true) - $start));
 
 
         return $categoryCollection;
@@ -153,7 +161,9 @@ class CategoryPuller extends AbstractPuller
         $eventData->document = $document;
         $eventData->skip = !$productsCount;
 
+        $start = microtime(true);
         $this->eventManager->dispatch('prepare_document_from_category_before', ['eventData' => $eventData]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => prepare_document_from_category_before', (microtime(true) - $start));
 
         if ($eventData->skip) {
             return $document; // returning document without uniqueId results in skipping pushing data to engine
@@ -163,6 +173,47 @@ class CategoryPuller extends AbstractPuller
         $document->setObjectId($category->getId());
         $document->setObjectType(self::OBJECT_TYPE);
 
+        $start = microtime(true);
+        $this->addCategoryFacets($category, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addCategoryFacets', (microtime(true) - $start));
+
+        $start = microtime(true);
+        $this->addStoreId($category, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addStoreId', (microtime(true) - $start));
+
+        $start = microtime(true);
+        $this->addAttributes($category, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addAttributes', (microtime(true) - $start));
+
+        $start = microtime(true);
+        $this->addProductCount($category, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addProductCount', (microtime(true) - $start));
+
+        $start = microtime(true);
+        $this->handleRequestPath($document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('handleRequestPath', (microtime(true) - $start));
+
+        $start = microtime(true);
+        $this->addUrl($document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addUrl', (microtime(true) - $start));
+
+        $eventData = [
+            'category' => $category,
+            'document' => $document,
+        ];
+        $start = microtime(true);
+        $this->eventManager->dispatch('prepare_document_from_category_after', $eventData);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => prepare_document_from_category_after', (microtime(true) - $start));
+
+        return $document;
+    }
+
+    /**
+     * @param Category $category
+     * @param Document $document
+     */
+    public function addCategoryFacets(Category $category, Document $document)
+    {
         $filterableAttributesCodes = $this->getFilterableAttributesCodes($category->getId());
         $filterableAttributesCodesList = '';
         $glue = '';
@@ -178,7 +229,15 @@ class CategoryPuller extends AbstractPuller
             Document\Field::FIELD_TYPE_STRING,
             false
         );
+    }
 
+    /**
+     * @param Category $category
+     * @param Document $document
+     * @throws LocalizedException
+     */
+    public function addStoreId(Category $category, Document $document)
+    {
         if (!$document->getData('store_id')) {
             $document->createField(
                 'store_id',
@@ -188,7 +247,15 @@ class CategoryPuller extends AbstractPuller
                 true
             );
         }
+    }
 
+    /**
+     * @param Category $category
+     * @param Document $document
+     * @throws LocalizedException
+     */
+    public function addAttributes(Category $category, Document $document)
+    {
         foreach ($category->getData() as $field => $value) {
             $attribute = $this->eavConfig->getAttribute('catalog_category', $field);
 
@@ -196,7 +263,16 @@ class CategoryPuller extends AbstractPuller
                 $this->helperQuery->getFieldByAttribute($attribute, $value)
             );
         }
+    }
 
+    /**
+     * @param Category $category
+     * @param Document $document
+     * @throws LocalizedException
+     * @throws NoSuchEntityException
+     */
+    public function addProductCount(Category $category, Document $document)
+    {
         $document->setField(
             $this->helperQuery->getFieldByAttributeCode(
                 'product_count',
@@ -204,7 +280,13 @@ class CategoryPuller extends AbstractPuller
                 CategoryAttributeInterface::ENTITY_TYPE_CODE
             )
         );
+    }
 
+    /**
+     * @param Document $document
+     */
+    public function handleRequestPath(Document $document)
+    {
         if ($requestPathField = $document->getField('request_path')) {
             $requestPath = (string)$requestPathField->getValue();
             $requestPath = '/' . ltrim($requestPath, '/');
@@ -223,16 +305,6 @@ class CategoryPuller extends AbstractPuller
                 );
             }
         }
-
-        $this->addUrl($document);
-
-        $eventData = [
-            'category' => $category,
-            'document' => $document,
-        ];
-        $this->eventManager->dispatch('prepare_document_from_category_after', $eventData);
-
-        return $document;
     }
 
     /**

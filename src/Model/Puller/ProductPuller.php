@@ -44,34 +44,42 @@ class ProductPuller extends AbstractPuller
      * @var ProductCollectionFactory
      */
     protected $productCollectionFactory;
+
     /**
      * @var Attribute
      */
     protected $eavAttribute;
+
     /**
      * @var EavConfig
      */
     protected $eavConfig;
+
     /**
      * @var JsonSerializer
      */
     protected $jsonSerializer;
+
     /**
      * @var SearchTerms
      */
     protected $searchTerms;
+
     /**
      * @var QueryHelper
      */
     protected $queryHelper;
+
     /**
      * @var EventManager
      */
     protected $eventManager;
+
     /**
      * @var ProductExtended
      */
     protected $productExtended;
+
     /**
      * @var ResourceConnection
      */
@@ -83,7 +91,7 @@ class ProductPuller extends AbstractPuller
     protected $storeManager;
 
     /**
-     * ProductPuller constructor.
+     * ProductPuller constructor
      *
      * @param ProductCollectionFactory $productCollectionFactory
      * @param EavConfig $eavConfig
@@ -96,7 +104,6 @@ class ProductPuller extends AbstractPuller
      * @param ProductExtended $productExtended
      * @param ResourceConnection $resource
      * @param StoreManagerInterface $storeManager
-     *
      * @throws NoSuchEntityException
      */
     public function __construct(
@@ -149,9 +156,19 @@ class ProductPuller extends AbstractPuller
             ->addCategoryIds()
             ->addMediaGalleryData();
 
+        $start = microtime(true);
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer(
+            'observer => ms_catalog_get_product_collection',
+            (microtime(true) - $start)
+        );
 
+        $start = microtime(true);
         $this->loadCategoryIds($productCollection);
+        \G4NReact\MsCatalog\Profiler::increaseTimer(
+            'getCollection > loadCategoryIds',
+            (microtime(true) - $start)
+        );
 
         return $productCollection;
     }
@@ -183,7 +200,9 @@ class ProductPuller extends AbstractPuller
         $eventData->document = $document;
         $eventData->disable = false;
 
+        $start = microtime(true);
         $this->eventManager->dispatch('prepare_document_from_product_before', ['eventData' => $eventData]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => prepare_document_from_product_before', (microtime(true) - $start));
 
         if ($eventData->disable === true) {
             return $document;
@@ -193,24 +212,38 @@ class ProductPuller extends AbstractPuller
         $document->setObjectId($product->getId());
         $document->setObjectType(self::OBJECT_TYPE);
 
+        $start = microtime(true);
         $this->handleCategoryId($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('handleCategoryId', (microtime(true) - $start));
 
+        $start = microtime(true);
         $this->addAttributes($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addAttributes', (microtime(true) - $start));
 
+        $start = microtime(true);
         $this->addMediaGallery($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addMediaGallery', (microtime(true) - $start));
 
+        $start = microtime(true);
         $this->handleRequestPath($document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('handleRequestPath', (microtime(true) - $start));
 
+        $start = microtime(true);
         $this->addUrl($document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addUrl', (microtime(true) - $start));
 
+        $start = microtime(true);
         $this->addCategoryPosition($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addCategoryPosition', (microtime(true) - $start));
 
         $eventData = [
             'product'  => $product,
             'document' => $document,
         ];
 
+        $start = microtime(true);
         $this->eventManager->dispatch('prepare_document_from_product_after', $eventData);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => prepare_document_from_product_after', (microtime(true) - $start));
 
         return $document;
     }
@@ -238,8 +271,13 @@ class ProductPuller extends AbstractPuller
     protected function addAttributes(Product $product, Document $document): void
     {
         foreach ($product->getData() as $field => $value) {
+            if (is_object($value)) {
+                continue;
+            }
+
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
 
+            $start = microtime(true);
             $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
             if ($searchTermField) {
                 if ($field = $document->getField($searchTermField)) {
@@ -254,12 +292,16 @@ class ProductPuller extends AbstractPuller
                     );
                 }
             }
+            \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add searchTermField', (microtime(true) - $start));
 
+            $start = microtime(true);
             $document->setField(
                 $this->queryHelper->getFieldByAttribute($attribute, $product->getData($attribute->getAttributeCode()))
             );
+            \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add all attributes', (microtime(true) - $start));
 
-            // force creating Fields that should be indexed but have not any value @ToDo: temprarily - and are not multivalued
+            $start = microtime(true);
+            // force creating Fields that should be indexed but have not any value @ToDo: temporarily - and are not multivalued
             foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
                 if (!$document->getField($attributeCode)) {
                     $field = $this->queryHelper->getFieldByAttributeCode($attributeCode, null);
@@ -268,6 +310,7 @@ class ProductPuller extends AbstractPuller
                     }
                 }
             }
+            \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add force indexing attributes', (microtime(true) - $start));
         }
     }
 

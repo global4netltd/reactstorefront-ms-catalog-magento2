@@ -61,6 +61,17 @@ abstract class AbstractReindex extends Command implements ReindexInterface
 
         $result = $this->getIndexer()->run($ids);
 
+        $output->writeln(PHP_EOL);
+        $collectionTotalSize = \G4NReact\MsCatalog\Profiler::getDebugInfoEntry('collection_total_size');
+        $output->writeln('collection size: ' . (int)$collectionTotalSize);
+        $timers = \G4NReact\MsCatalog\Profiler::getTimers();
+        if ($timers && is_array($timers)) {
+            foreach ($timers as $timer => $time) {
+                $roundedTime = round($time, 4);
+                $output->writeln("{$timer}: {$roundedTime}s");
+            }
+        }
+
         $output->writeln($result);
     }
 
