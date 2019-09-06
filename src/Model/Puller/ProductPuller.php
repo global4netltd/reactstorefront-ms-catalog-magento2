@@ -281,7 +281,7 @@ class ProductPuller extends AbstractPuller
             $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
             if ($searchTermField) {
                 if ($field = $document->getField($searchTermField)) {
-                    $field->setValue($field->getValue() . $value);
+                    $field->setValue($field->getValue() . ' ' . $value);
                 } else {
                     $document->createField(
                         $searchTermField,
