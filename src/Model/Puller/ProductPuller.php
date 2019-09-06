@@ -434,7 +434,7 @@ class ProductPuller extends AbstractPuller
      */
     protected function setFieldIsVisibleOnFront(AbstractAttribute $attribute, Document $document, $value)
     {
-        if ($attribute->getIsVisibleOnFront()) {
+        if ($attribute->getIsVisibleOnFront() && $value) {
             if (!$document->getField('attribute_codes_is_visible_on_front')) {
                 $document->setField(
                     new Document\Field(
