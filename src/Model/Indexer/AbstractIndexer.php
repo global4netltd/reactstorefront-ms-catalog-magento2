@@ -140,12 +140,12 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
     abstract public function getPuller();
 
     /**
-     * @param array $ids
-     * @return void
+     * @param array|string $ids
+     * @return array
      */
     public function prepareIds($ids): array
     {
-        $ids = is_array($ids) ? $ids : explode(',', $ids);
+        $ids = is_array($ids) ? $ids : explode(',', (string)$ids);
 
         return array_map('intval', $ids);
     }

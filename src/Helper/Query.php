@@ -361,6 +361,7 @@ class Query extends AbstractHelper
         $value = null,
         $entityType = ProductAttributeInterface::ENTITY_TYPE_CODE
     ): Field {
+        $start = microtime(true);
         if ($field = $this->getCoreField($attributeCode, $value)) {
             return $field;
         }
@@ -399,6 +400,7 @@ class Query extends AbstractHelper
         if ($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT)) {
             $field->setIndexable(true);
         }
+        \G4NReact\MsCatalog\Profiler::increaseTimer(' ========> getFieldByAttributeCode', (microtime(true) - $start));
 
         return $field;
     }

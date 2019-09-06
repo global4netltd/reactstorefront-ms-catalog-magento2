@@ -19,7 +19,9 @@ abstract class AbstractPuller implements Iterator, PullerInterface
      */
     const PAGE_SIZE_DEFAULT = 100;
 
-    /** @var int default current page */
+    /**
+     * @var int default current page
+     */
     const CUR_PAGE_DEFAULT = 0;
 
     /**
@@ -208,6 +210,7 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         if (is_null($this->totalSize)) {
             $collection = $this->getCollection();
             $this->totalSize = $collection->getSize();
+            \G4NReact\MsCatalog\Profiler::addDebugInfoEntry('collection_total_size', $this->totalSize);
         }
 
         if ($this->totalPosition == $this->totalSize) {
