@@ -8,4 +8,12 @@
         <title translate="true">React Storefront Reindex Search Terms</title>
         <description translate="true">Reindex search term documents in storefront database</description>
     </indexer>
+    <indexer id="g4nreact_magento_indexer_cms_page_indexer" view_id="g4nreact_magento_indexer_cms_page" class="G4NReact\MsCatalogMagento2\Model\Indexer\CmsPageIndexer">
+        <title translate="true">React Storefront Reindex CMS Page</title>
+        <description translate="true">Reindex CMS Page documents in storefront database</description>
+    </indexer>
+    <indexer id="g4nreact_magento_indexer_cms_block_indexer" view_id="g4nreact_magento_indexer_cms_block" class="G4NReact\MsCatalogMagento2\Model\Indexer\CmsBlockIndexer">
+        <title translate="true">React Storefront Reindex CMS Block</title>
+        <description translate="true">Reindex CMS Block documents in storefront database</description>
+    </indexer>
 </config>

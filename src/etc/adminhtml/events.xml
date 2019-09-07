@@ -12,10 +12,10 @@
     <event name="controller_action_postdispatch_catalog_category_save">
         <observer name="react_store_front_reindex_saved_category" instance="G4NReact\MsCatalogMagento2\Model\Observer\Controller\Adminhtml\Category\SavePostdispatch" />
     </event>
-    <event name="controller_action_postdispatch_cms_page_save">
+    <event name="cms_page_save_after">
         <observer name="react_store_front_reindex_saved_cms_page" instance="G4NReact\MsCatalogMagento2\Model\Observer\Controller\Adminhtml\Cms\Page\SavePostdispatch" />
     </event>
-    <event name="controller_action_postdispatch_cms_block_save">
+    <event name="cms_block_save_after">
         <observer name="react_store_front_reindex_saved_cms_block" instance="G4NReact\MsCatalogMagento2\Model\Observer\Controller\Adminhtml\Cms\Block\SavePostdispatch" />
     </event>
 </config>

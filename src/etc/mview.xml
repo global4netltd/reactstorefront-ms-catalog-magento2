@@ -23,4 +23,16 @@
             <table name="search_query" entity_column="query_id" />
         </subscriptions>
     </view>
+    <view id="g4nreact_magento_indexer_cms_page" class="G4NReact\MsCatalogMagento2\Model\Indexer\CmsPageIndexer" group="indexer">
+        <subscriptions>
+            <table name="cms_page" entity_column="page_id" />
+            <table name="cms_page_store" entity_column="page_id" />
+        </subscriptions>
+    </view>
+    <view id="g4nreact_magento_indexer_cms_block" class="G4NReact\MsCatalogMagento2\Model\Indexer\CmsBlockIndexer" group="indexer">
+        <subscriptions>
+            <table name="cms_block" entity_column="block_id" />
+            <table name="cms_block_store" entity_column="block_id" />
+        </subscriptions>
+    </view>
 </config>

@@ -34,13 +34,12 @@ class SavePostdispatch implements ObserverInterface
      */
     public function execute(Observer $observer)
     {
-        /** @var RequestInterface $request */
-        $request = $observer->getEvent()->getRequest();
+        $cmsBlockModel = $observer->getDataObject();
 
-        $cmsBlockId = $request->getParam('block_id', 0);
-
-        if ($cmsBlockId) {
-            $this->cmsBlockIndexer->run([$cmsBlockId]);
+        if (!$cmsBlockModel || !$cmsBlockId = $cmsBlockModel->getData('block_id')) {
+            return;
         }
+
+        $this->cmsBlockIndexer->run([$cmsBlockId]);
     }
 }
