@@ -544,7 +544,7 @@ class ProductPuller extends AbstractPuller
                     'medium_image_url' => $mediumImageUrl,
                     'large_image_url' => $largeImageUrl,
                     'position' => $image->getPosition(),
-                    'label' => $image->getLabel(),
+                    'label' => $image->getLabel() ?: $product->getName(),
                     'media_type' => $image->getMediaType(),
                     'disabled' => !!$image->getDisabled(),
                 ];
