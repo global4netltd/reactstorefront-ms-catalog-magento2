@@ -8,12 +8,14 @@ use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Helper\Cms\Field;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
+use Magento\Cms\Api\Data\PageInterface;
 use Magento\Cms\Model\ResourceModel\Page\Collection as CmsPageCollection;
 use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\Event\Manager as EventManager;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Widget\Model\Template\FilterEmulate;
 
 /**
  * Class CmsPagePuller
@@ -52,6 +54,11 @@ class CmsPagePuller extends AbstractPuller
     protected $helperCmsField;
 
     /**
+     * @var FilterEmulate
+     */
+    protected $widgetFilter;
+
+    /**
      * CmsPuller constructor
      *
      * @param CmsPageCollectionFactory $cmsPageCollectionFactory
@@ -67,13 +74,15 @@ class CmsPagePuller extends AbstractPuller
         Attribute $eavAttribute,
         ConfigHelper $magento2ConfigHelper,
         EventManager $eventManager,
-        Field $helperCmsField
+        Field $helperCmsField,
+        FilterEmulate $widgetFilter
     ) {
         $this->cmsPageCollectionFactory = $cmsPageCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->eventManager = $eventManager;
         $this->helperCmsField = $helperCmsField;
+        $this->widgetFilter = $widgetFilter;
         $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
@@ -124,9 +133,13 @@ class CmsPagePuller extends AbstractPuller
         $document->setObjectType(self::OBJECT_TYPE);
 
         foreach ($page->getData() as $field => $value) {
+            $fieldValue = ($field == PageInterface::CONTENT)
+                ? $this->widgetFilter->filter($page->getData($field))
+                : $page->getData($field);
+
             $document->createField(
                 $field,
-                $page->getData($field),
+                $fieldValue,
                 $this->helperCmsField->getFieldTypeByColumnName($field) ?? Document\Field::FIELD_TYPE_STRING,
                 false,
                 Field::getIsMultiValued($field, $value)
