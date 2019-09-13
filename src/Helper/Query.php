@@ -266,10 +266,11 @@ class Query extends AbstractHelper
 
     /**
      * @param AbstractAttribute $attribute
-     * @return string
+     * @param string $defaultType
+     * @return mixed|null|string
      * @throws LocalizedException
      */
-    public function getAttributeFieldType(AbstractAttribute $attribute)
+    public function getAttributeFieldType(AbstractAttribute $attribute, $defaultType = Field::FIELD_TYPE_STRING)
     {
         $attributeType = self::$mapBackendTypeToFieldType[$attribute->getBackendType()] ?? $attribute->getBackendType();
 
@@ -287,7 +288,7 @@ class Query extends AbstractHelper
 
         $attributeType = self::$normalizeFieldType[$attributeType] ?? $attributeType;
 
-        return $attributeType === Field::FIELD_TYPE_STATIC ? Field::FIELD_TYPE_STRING : $attributeType;
+        return $attributeType === Field::FIELD_TYPE_STATIC ? $defaultType : $attributeType;
     }
 
     /**
@@ -390,8 +391,12 @@ class Query extends AbstractHelper
             self::$attributes[$entityType][$attributeCode] = $attribute;
         }
 
-        $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
-        $fieldType = $isMultiValued ? Field::FIELD_TYPE_INT : $this->getAttributeFieldType($attribute);
+        $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput)
+            || is_array($value);
+
+        $fieldType = $isMultiValued
+            ? $this->getAttributeFieldType($attribute, Field::FIELD_TYPE_INT)
+            : $this->getAttributeFieldType($attribute);
         $isFieldIndexable = $attribute->getIsFilterable() || $attribute->getUsedForSortBy();
 
         $value = FieldHelper::shouldHandleValue($value, $fieldType) ? FieldHelper::handleValue($value) : $value;

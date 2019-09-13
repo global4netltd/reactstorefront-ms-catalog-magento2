@@ -189,6 +189,7 @@ class ProductPuller extends AbstractPuller
 
         $productCollection = $this->prepareReviewsOnProduct($productCollection, $this->prepareReviewsData($productCollection));
         $productCollection = $this->assingStockToProductsCollection($productCollection);
+
         $start = microtime(true);
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
         \G4NReact\MsCatalog\Profiler::increaseTimer(
