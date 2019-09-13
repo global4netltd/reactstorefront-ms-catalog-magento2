@@ -204,6 +204,10 @@ class ProductPuller extends AbstractPuller
             (microtime(true) - $start)
         );
 
+        $start = microtime(true);
+        $this->eventManager->dispatch('ms_catalog_m2_product_puller_after_load', ['collection' => $productCollection]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => ms_catalog_m2_product_puller_after_load', (microtime(true) - $start));
+
         return $productCollection;
     }
 
