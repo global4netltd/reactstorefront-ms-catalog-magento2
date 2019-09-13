@@ -505,14 +505,25 @@ class ProductPuller extends AbstractPuller
         if ($document->getField('image') && isset($mediaGallery[0]['large_image_url'])) {
             $document->setFieldValue('image', $mediaGallery[0]['large_image_url']);
         }
-        if ($document->getField('small_image') && isset($mediaGallery[0]['medium_image_url'])) {
-            $document->setFieldValue('small_image', $mediaGallery[0]['medium_image_url']);
+        if ($document->getField('medium_image') && isset($mediaGallery[0]['medium_image_url'])) {
+            $document->setFieldValue('medium_image', $mediaGallery[0]['medium_image_url']);
+        } elseif (isset($mediaGallery[0]['medium_image_url'])) {
+            $document->createField(
+                'medium_image',
+                $mediaGallery[0]['medium_image_url'],
+                Document\Field::FIELD_TYPE_STRING,
+                false,
+                false
+            );
+        }
+        if ($document->getField('small_image') && isset($mediaGallery[0]['small_image_url'])) {
+            $document->setFieldValue('small_image', $mediaGallery[0]['small_image_url']);
         }
         if ($document->getField('thumbnail') && isset($mediaGallery[0]['small_image_url'])) {
             $document->setFieldValue('thumbnail', $mediaGallery[0]['small_image_url']);
         }
-        if ($document->getField('swatch_image') && isset($mediaGallery[0]['small_image_url'])) {
-            $document->setFieldValue('swatch_image', $mediaGallery[0]['small_image_url']);
+        if ($document->getField('swatch_image') && isset($mediaGallery[0]['swatch_image_url'])) {
+            $document->setFieldValue('swatch_image', $mediaGallery[0]['swatch_image_url']);
         }
 
         $document->setField(
@@ -532,6 +543,8 @@ class ProductPuller extends AbstractPuller
         if ($images instanceof \Magento\Framework\Data\Collection) {
             /** @var $image \Magento\Framework\DataObject */
             foreach ($images as $image) {
+                $swatchSmallImageUrl = $this->imageUrlBuilder
+                    ->getUrl($image->getFile(), 'product_swatch_image_small');
                 $smallImageUrl = $this->imageUrlBuilder
                     ->getUrl($image->getFile(), 'product_page_image_small');
                 $mediumImageUrl = $this->imageUrlBuilder
@@ -540,6 +553,7 @@ class ProductPuller extends AbstractPuller
                     ->getUrl($image->getFile(), 'product_page_image_large');
 
                 $gallery[] = [
+                    'swatch_image_url' => $swatchSmallImageUrl,
                     'small_image_url' => $smallImageUrl,
                     'medium_image_url' => $mediumImageUrl,
                     'large_image_url' => $largeImageUrl,
