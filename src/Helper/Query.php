@@ -391,8 +391,8 @@ class Query extends AbstractHelper
             self::$attributes[$entityType][$attributeCode] = $attribute;
         }
 
-        $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput)
-            || is_array($value);
+        // @ToDo: handle isMultiValued in better way
+        $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
 
         $fieldType = $isMultiValued
             ? $this->getAttributeFieldType($attribute, Field::FIELD_TYPE_INT)
