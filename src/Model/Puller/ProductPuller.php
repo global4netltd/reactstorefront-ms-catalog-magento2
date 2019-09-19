@@ -429,12 +429,16 @@ class ProductPuller extends AbstractPuller
             $start = microtime(true);
             $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
             if ($searchTermField) {
+                $textValue = $value;
+                if ($attribute->getFrontend()) {
+                    $textValue = $attribute->getFrontend()->getValue($product);
+                }
                 if ($field = $document->getField($searchTermField)) {
-                    $field->setValue($field->getValue() . ' ' . $value);
+                    $field->setValue($field->getValue() . ' ' . $textValue);
                 } else {
                     $document->createField(
                         $searchTermField,
-                        $value,
+                        $textValue,
                         Document\Field::FIELD_TYPE_TEXT_SEARCH,
                         true,
                         false
