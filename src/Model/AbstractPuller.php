@@ -65,6 +65,11 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     public $type;
 
     /**
+     * @var int
+     */
+    public $storeId;
+
+    /**
      * @var ConfigHelper
      */
     protected $magento2ConfigHelper;
@@ -231,5 +236,33 @@ abstract class AbstractPuller implements Iterator, PullerInterface
             }
         }
         return isset($this->pageArray[$this->position]);
+    }
+
+    /**
+     * @return int
+     */
+    public function getStoreId(): int
+    {
+        return $this->storeId;
+    }
+
+    /**
+     * @param int $storeId
+     * @return PullerInterface
+     */
+    public function setStoreId(int $storeId): PullerInterface
+    {
+        $this->storeId = $storeId;
+
+        return $this;
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    public function createUniqueId($id)
+    {
+        return $id . '_' . $this->getType() . '_' . $this->getStoreId();
     }
 }

@@ -17,6 +17,10 @@ use Magento\Search\Model\ResourceModel\SynonymGroup\CollectionFactory as Synonym
 
 class SearchTermsPuller extends AbstractPuller
 {
+    /**
+     * @var string Type of object
+     */
+    const OBJECT_TYPE = SearchTermsField::OBJECT_TYPE;
 
     /**
      * @var CollectionFactory
