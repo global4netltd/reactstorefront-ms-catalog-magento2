@@ -17,6 +17,10 @@ use Magento\Search\Model\ResourceModel\SynonymGroup\CollectionFactory as Synonym
 
 class SearchTermsPuller extends AbstractPuller
 {
+    /**
+     * @var string Type of object
+     */
+    const OBJECT_TYPE = SearchTermsField::OBJECT_TYPE;
 
     /**
      * @var CollectionFactory
@@ -71,7 +75,7 @@ class SearchTermsPuller extends AbstractPuller
         $collection = $this->searchQueryCollFactory->create();
 
         if ($this->getIds()) {
-            $collection->addFieldToFilter('query_id', ['in' => $this->getIds()]);
+            $collection->addFieldToFilter('main_table.query_id', ['in' => $this->getIds()]);
         }
 
         $collection

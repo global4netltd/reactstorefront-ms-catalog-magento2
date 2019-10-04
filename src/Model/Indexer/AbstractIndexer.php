@@ -110,6 +110,7 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
         $this->emulation->startEnvironmentEmulation($store->getId(), 'frontend', true);
         if ($this->configHelper->isIndexerEnabled()) {
             $puller = $this->getPuller();
+            $puller->setStoreId($store->getId());
             $config = $this->configHelper->getConfiguration();
 
             if ($ids) {
@@ -145,6 +146,9 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
      */
     public function prepareIds($ids): array
     {
+        if (isset($ids[0]) && strpos($ids[0], ',') !== false) {
+            $ids = explode(',', (string)$ids[0]);
+        }
         $ids = is_array($ids) ? $ids : explode(',', (string)$ids);
 
         return array_map('intval', $ids);
