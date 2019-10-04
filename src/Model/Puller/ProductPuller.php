@@ -178,6 +178,13 @@ class ProductPuller extends AbstractPuller
             $productCollection->addAttributeToFilter('entity_id', ['in' => $this->getIds()]);
         }
 
+        if ($this->magento2ConfigHelper->getShouldRemoveDisabledProducts()) {
+            $productCollection->addAttributeToFilter(
+                'status',
+                \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED
+            );
+        }
+
         $productCollection->addAttributeToSelect('*')
             ->addUrlRewrite()
             ->addStoreFilter()
@@ -250,7 +257,7 @@ class ProductPuller extends AbstractPuller
     {
         $select = $productCollection->getSelect()->join(
             ['rating' => $productCollection->getTable('review_entity_summary')],
-            'rating.entity_pk_value = e.entity_id AND store_id = ' . (int)$this->storeManager->getStore()->getId(),
+            'rating.entity_pk_value = e.entity_id AND rating.store_id = ' . (int)$this->storeManager->getStore()->getId(),
             ['reviews_count', 'rating_summary']
         );
 

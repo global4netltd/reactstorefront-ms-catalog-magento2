@@ -39,6 +39,9 @@ class Config extends AbstractHelper
     /** @var string show out of stock */
     const SHOW_OUT_OF_STOCK_XML = 'cataloginventory/options/show_out_of_stock';
 
+    /** @var string remove disbled products */
+    const REMOVE_DISABLED_PRODUCTS = 'ms_catalog_indexer/indexer_settings/remove_disabled_products';
+
     /**
      * @var MsCatalogConfig[]
      */
@@ -225,5 +228,14 @@ class Config extends AbstractHelper
             ScopeInterface::SCOPE_STORE,
             $this->getStore()->getId()
         );
+    }
+
+    /**
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    public function getShouldRemoveDisabledProducts()
+    {
+        return (bool)$this->getConfigByPath(self::REMOVE_DISABLED_PRODUCTS);
     }
 }
