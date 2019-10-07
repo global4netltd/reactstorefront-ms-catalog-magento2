@@ -97,14 +97,14 @@
                     <comment>Pusher operation max timeout in seconds.</comment>
                 </field>
                 <field id="pusher_delete_index" translate="label comment" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Delete index before reindexing.</label>
+                    <label>Delete index before reindexing</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Delete all records before running reindex.</comment>
                 </field>
                 <field id="remove_missing_objects" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Remove missing object ids from engine.</label>
+                    <label>Partial reindex remove missing object ids</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
-                    <comment>Remove ids that was pass to input/collection and are not present in documents that we push to engine.</comment>
+                    <comment>Remove ids that was pass to input/collection and are not present in documents that we push to engine during partial reindex.</comment>
                 </field>
                 <field id="image_size_image" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Set image size</label>
