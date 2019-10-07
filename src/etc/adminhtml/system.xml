@@ -101,36 +101,41 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Delete all records before running reindex.</comment>
                 </field>
-                <field id="image_size_image" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="remove_missing_objects" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Remove missing object ids from engine.</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Remove ids that was pass to input/collection and are not present in documents that we push to engine.</comment>
+                </field>
+                <field id="image_size_image" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Set image size</label>
                 </field>
-                <field id="image_size_small_image" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="image_size_small_image" translate="label comment" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Set small image size</label>
                 </field>
-                <field id="image_size_thumbnail" translate="label comment" type="text" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="image_size_thumbnail" translate="label comment" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Set thumbnail size</label>
                 </field>
-                <field id="image_size_swatch_image" translate="label comment" type="text" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="image_size_swatch_image" translate="label comment" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Set swatch image size</label>
                 </field>
-                <field id="automatic_detection_of_filters_in_category" translate="label" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                <field id="automatic_detection_of_filters_in_category" translate="label" type="select" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Automatic detection of filters in category</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                 </field>
-                <field id="product_attributes_base_stats" translate="label" type="multiselect" sortOrder="110" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                <field id="product_attributes_base_stats" translate="label" type="multiselect" sortOrder="120" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
                     <label>Attribute base stats</label>
                     <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\ProductAttributes</source_model>
                 </field>
-                <field id="product_attributes_base_facets" translate="label" type="multiselect" sortOrder="120" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                <field id="product_attributes_base_facets" translate="label" type="multiselect" sortOrder="130" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
                     <label>Attribute base facets</label>
                     <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\ProductAttributes</source_model>
                 </field>
-                <field id="category_attributes_use_in_react_storefront" translate="label" type="multiselect" sortOrder="130" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                <field id="category_attributes_use_in_react_storefront" translate="label" type="multiselect" sortOrder="140" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
                     <label>Category attributes use in react storefront</label>
                     <comment>Attributes from this list will be always used in filters</comment>
                     <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\CategoryAttributes</source_model>
                 </field>
-                <field id="category_attributes_force_indexing_in_react_storefront" translate="label" type="multiselect" sortOrder="140" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
+                <field id="category_attributes_force_indexing_in_react_storefront" translate="label" type="multiselect" sortOrder="150" showInDefault="1" showInStore="1" showInWebsite="1" canRestore="1">
                     <label>Category attributes force indexing in react storefront</label>
                     <comment>Attributes from this list will be force indexing in search engine</comment>
                     <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\CategoryAttributes</source_model>
