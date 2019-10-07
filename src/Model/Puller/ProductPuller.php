@@ -178,7 +178,7 @@ class ProductPuller extends AbstractPuller
             $productCollection->addAttributeToFilter('entity_id', ['in' => $this->getIds()]);
         }
 
-        if ($this->magento2ConfigHelper->getShouldRemoveDisabledProducts()) {
+        if ($this->magento2ConfigHelper->getShouldSkipDisabledProducts()) {
             $productCollection->addAttributeToFilter(
                 'status',
                 \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED

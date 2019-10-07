@@ -101,9 +101,15 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Delete all records before running reindex.</comment>
                 </field>
-                <field id="remove_disabled_products" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
-                    <label>Remove disabled products from index.</label>
+                <field id="skip_disabled_products" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Skip disabled products</label>
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Remove disabled products from Magento products collection.</comment>
+                </field>
+                <field id="remove_missing_objects" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Remove missing object ids from engine.</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Remove ids that was pass to input/collection and are not present in documents that we push to engine.</comment>
                 </field>
                 <field id="image_size_image" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Set image size</label>
