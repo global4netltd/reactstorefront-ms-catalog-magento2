@@ -110,6 +110,7 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
         $this->emulation->startEnvironmentEmulation($store->getId(), 'frontend', true);
         if ($this->configHelper->isIndexerEnabled()) {
             $puller = $this->getPuller();
+            $puller->init();
             $puller->setStoreId($store->getId());
             $config = $this->configHelper->getConfiguration();
 

@@ -83,10 +83,20 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         ConfigHelper $magento2ConfigHelper
     ) {
         $this->magento2ConfigHelper = $magento2ConfigHelper;
+        $this->init();
+    }
+
+    /**
+     * Init puller
+     */
+    public function init()
+    {
+        $this->totalSize = null;
+        $this->totalPosition = 0;
+
         $this->position = 0;
         $this->curPage = self::CUR_PAGE_DEFAULT;
-
-        $this->pageSize = $magento2ConfigHelper->getConfiguration()->getPullerPageSize() ?: self::PAGE_SIZE_DEFAULT;
+        $this->pageSize = $this->magento2ConfigHelper->getConfiguration()->getPullerPageSize() ?: self::PAGE_SIZE_DEFAULT;
     }
 
     /**
