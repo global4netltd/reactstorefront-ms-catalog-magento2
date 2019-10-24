@@ -411,6 +411,9 @@ class Query extends AbstractHelper
     {
         $attributeCode = $attribute->getAttributeCode();
         $entityType = $attribute->getEntityType()->getEntityTypeCode();
+        if($attribute->getFrontendInput() === 'multiselect'){
+            $value = explode(',', $value);
+        }
 
         return $this->getFieldByAttributeCode($attributeCode, $value, $entityType);
     }
