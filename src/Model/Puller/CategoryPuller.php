@@ -127,6 +127,7 @@ class CategoryPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage);
 
+        $size = $categoryCollection->getSize();
         $start = microtime(true);
         $this->eventManager->dispatch('ms_catalog_m2_category_puller_before_load', ['collection' => $categoryCollection]);
         \G4NReact\MsCatalog\Profiler::increaseTimer('observer => ms_catalog_m2_category_puller_before_load', (microtime(true) - $start));
