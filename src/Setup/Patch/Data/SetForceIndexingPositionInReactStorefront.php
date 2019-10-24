@@ -32,11 +32,10 @@ class SetForceIndexingPositionInReactStorefront implements DataPatchInterface
     public function __construct(
         ModuleDataSetupInterface $moduleDataSetup,
         EavSetupFactory $eavSetupFactory
-    )
-    {
+    ) {
         $this->moduleDataSetup = $moduleDataSetup;
         $this->eavSetupFactory = $eavSetupFactory;
-    }​
+    }
 
     /**
      * @return DataPatchInterface|void
@@ -51,7 +50,7 @@ class SetForceIndexingPositionInReactStorefront implements DataPatchInterface
             'force_indexing_in_react_storefront',
             true
         );
-    }​
+    }
 
     /**
      * @return array|string[]
@@ -59,7 +58,7 @@ class SetForceIndexingPositionInReactStorefront implements DataPatchInterface
     public static function getDependencies()
     {
         return [];
-    }​
+    }
 
     /**
      * @return array|string[]
