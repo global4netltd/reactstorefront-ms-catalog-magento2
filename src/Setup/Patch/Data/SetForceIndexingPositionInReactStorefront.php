@@ -16,12 +16,12 @@ class SetForceIndexingPositionInReactStorefront implements DataPatchInterface
     /**
      * @var ModuleDataSetupInterface
      */
-    protected $moduleDataSetup;​
+    protected $moduleDataSetup;
 
     /**
      * @var EavSetupFactory
      */
-    protected $eavSetupFactory;​
+    protected $eavSetupFactory;
 
     /**
      * SetForceIndexingInReactStorefront constructor
@@ -32,7 +32,8 @@ class SetForceIndexingPositionInReactStorefront implements DataPatchInterface
     public function __construct(
         ModuleDataSetupInterface $moduleDataSetup,
         EavSetupFactory $eavSetupFactory
-    ) {
+    )
+    {
         $this->moduleDataSetup = $moduleDataSetup;
         $this->eavSetupFactory = $eavSetupFactory;
     }​
