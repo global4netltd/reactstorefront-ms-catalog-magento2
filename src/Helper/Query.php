@@ -12,6 +12,7 @@ use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Api\Data\CategoryAttributeInterface;
 use Magento\Catalog\Api\Data\ProductAttributeInterface;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute as AttributeResource;
@@ -502,6 +503,10 @@ class Query extends AbstractHelper
             [$this->getFieldByAttributeCode(
                 'object_type',
                 'product'
+            )],
+            [$this->getFieldByAttributeCode(
+                'visibility',
+                Visibility::VISIBILITY_BOTH
             )],
         ]);
 
