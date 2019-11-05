@@ -7,6 +7,7 @@ use Magento\Catalog\Model\Category;
 use Magento\Catalog\Model\CategoryRepository;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class Facets
@@ -46,7 +47,7 @@ class Facets extends AbstractHelper
      * @param $categoryId
      * @return array
      */
-    public function getFacetFieldsByCategory($categoryId)
+    public function getFacetFieldsByCategory(int $categoryId)
     {
         $facetFields = [];
 
@@ -63,6 +64,13 @@ class Facets extends AbstractHelper
                 }
             }
 
+        } catch (NoSuchEntityException $noSuchEntityException){
+            $this->_logger->error(
+                'g4n-react-ms-catalog-magento-helper-facets',
+                [
+                    'exception' => 'Category with id: ' . $categoryId . ' doesnt exist!'
+                ]
+            );
         } catch (Exception $exception) {
             $this->_logger->error(
                 'g4n-react-ms-catalog-magento2',
@@ -79,7 +87,7 @@ class Facets extends AbstractHelper
      * @param $categoryId
      * @return array
      */
-    public function getStatsFieldsByCategory($categoryId)
+    public function getStatsFieldsByCategory(int $categoryId)
     {
         $facetFields = [];
 
@@ -96,7 +104,16 @@ class Facets extends AbstractHelper
                 }
             }
 
-        } catch (Exception $exception) {
+        }
+        catch (NoSuchEntityException $noSuchEntityException){
+            $this->_logger->error(
+                'g4n-react-ms-catalog-magento-helper-facets',
+                [
+                    'exception' => 'Category with id: ' . $categoryId . ' doesnt exist!'
+                ]
+            );
+        }
+        catch (Exception $exception) {
             $this->_logger->error(
                 'g4n-react-ms-catalog-magento2',
                 [
