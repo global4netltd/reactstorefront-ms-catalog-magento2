@@ -25,6 +25,8 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Inventory\Model\SourceItemRepository;
+use Magento\Inventory\Model\ResourceModel\SourceItem\CollectionFactory as SourceItemCollectionFactory;
+use Magento\Inventory\Model\ResourceModel\SourceItem\Collection as SourceItemCollection;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use G4NReact\MsCatalogMagento2\Helper\ProductPuller as HelperProductPuller;
@@ -102,6 +104,11 @@ class ProductPuller extends AbstractPuller
     protected $searchCriteriaBuilder;
 
     /**
+     * @var SourceItemCollectionFactory
+     */
+    protected $sourceItemCollectionFactory;
+
+    /**
      * @var SourceItemRepository
      */
     protected $sourceItemRepository;
@@ -145,6 +152,7 @@ class ProductPuller extends AbstractPuller
         StoreManagerInterface $storeManager,
         SearchCriteriaBuilder $searchCriteriaBuilder,
         SourceItemRepository $sourceItemRepository,
+        SourceItemCollectionFactory $sourceItemCollectionFactory,
         ImageUrlBuilder $imageUrlBuilder
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
@@ -159,6 +167,7 @@ class ProductPuller extends AbstractPuller
         $this->storeManager = $storeManager;
         $this->searchCriteriaBuilder = $searchCriteriaBuilder;
         $this->sourceItemRepository = $sourceItemRepository;
+        $this->sourceItemCollectionFactory = $sourceItemCollectionFactory;
         $this->imageUrlBuilder = $imageUrlBuilder;
         $this->setType(self::OBJECT_TYPE);
 
@@ -194,8 +203,13 @@ class ProductPuller extends AbstractPuller
             ->addCategoryIds()
             ->addMediaGalleryData();
 
+        $start = microtime(true);
         $productCollection = $this->prepareReviewsOnProduct($productCollection, $this->prepareReviewsData($productCollection));
+        \G4NReact\MsCatalog\Profiler::increaseTimer('prepareReviewsOnProduct', (microtime(true) - $start));
+
+        $start = microtime(true);
         $productCollection = $this->assingStockToProductsCollection($productCollection);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('assingStockToProductsCollection', (microtime(true) - $start));
 
         $start = microtime(true);
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
@@ -284,47 +298,55 @@ class ProductPuller extends AbstractPuller
     }
 
     /**
-     * @param ProductCollection $collection
+     * @param ProductCollection $productCollection
      *
      * @return ProductCollection
      */
-    protected function assingStockToProductsCollection(ProductCollection $collection)
+    protected function assingStockToProductsCollection(ProductCollection $productCollection)
     {
-        $skus = [];
-        foreach ($collection as $product) {
-            $skus[] = $product->getSku();
+        $skus = $productCollection->getColumnValues('sku');
+
+        if (!$skus) {
+            return $productCollection;
         }
 
-        $searchCriteria = $this->searchCriteriaBuilder
-            ->addFilter(SourceItemInterface::SKU, $skus, 'in')
-            ->create();
+        /** @var SourceItemCollection $sourceItemCollection */
+        $sourceItemCollection = $this->sourceItemCollectionFactory->create();
+        $sourceItemCollection
+            ->addFieldToSelect('sku')
+            ->addFieldToSelect('source_code')
+            ->addFieldToSelect('quantity')
+            ->addFieldToSelect('status')
+            ->addFieldToFilter('sku', ['in' => $skus]);
 
-        $stocks = $this->sourceItemRepository->getList($searchCriteria)->getItems();
+        $sources = [];
+        /** @var SourceItemInterface $sourceItem */
+        foreach ($sourceItemCollection as $sourceItem) {
+            $sku = $sourceItem->getSku();
+            $sourceCode = $sourceItem->getSourceCode();
+            $quantity = (int)$sourceItem->getQuantity();
+            $status = (int)$sourceItem->getStatus();
+            $totalQty = isset($sources[$sku]['total_qty']) ? ($sources[$sku]['total_qty'] + $quantity) : $quantity;
 
-        $stockData = [];
-        foreach ($stocks as $stock) {
-            if (isset($stock['sku']) && isset($stock['quantity']) && isset($stock['source_code'])) {
-                $stockTotalQty = isset($stockData[$stock['sku']]) ? $stockData[$stock['sku']]['total_qty'] + $stock['quantity'] : $stock['quantity'];
-                $stockData[$stock['sku']]['total_qty'] = $stockTotalQty;
-                $stockData[$stock['sku']][$stock['source_code']] = $stock['quantity'];
-            }
+            $sources[$sku]['total_qty'] = $totalQty;
+            $sources[$sku]['sources'][] = [
+                'source_code' => $sourceCode,
+                'quantity' => $quantity,
+                'status' => $status
+            ];
         }
 
-        foreach ($collection as $product) {
-            if (isset($stockData[$product->getSku()])) {
-                foreach ($stockData[$product->getSku()] as $key => $productStock) {
-                    if ($key != 'total_qty') {
-                        $product->setData(HelperProductPuller::prepareFieldNameBySourceCode($key), $productStock);
-                    } else {
-                        $product->setStockTotalQty((int)$productStock);
-                    }
-                }
-            } else {
-                $product->setStockTotalQty(0);
-            }
+        if (!$sources) {
+            return $productCollection;
         }
 
-        return $collection;
+        foreach ($productCollection as $product) {
+            $sku = $product->getSku();
+            $product->setData('inventory_sources', isset($sources[$sku]['sources']) ? json_encode($sources[$sku]['sources']) : '[]');
+            $product->setStockTotalQty($sources[$sku]['total_qty'] ?? 0);
+        }
+
+        return $productCollection;
     }
 
     /**
