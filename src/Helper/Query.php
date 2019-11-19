@@ -170,7 +170,12 @@ class Query extends AbstractHelper
                 'type' => Field::FIELD_TYPE_INT,
                 'indexable' => true,
                 'multivalued' => false
-            ]
+            ],
+            'inventory_sources' => [
+                'type' => Field::FIELD_TYPE_TEXT,
+                'indexable' => false,
+                'multivalued' => false
+            ],
         ],
         CategoryAttributeInterface::ENTITY_TYPE_CODE => [
             'entity_id' => [
@@ -194,9 +199,9 @@ class Query extends AbstractHelper
                 'multivalued' => false,
             ],
             'url' =>[
-              'type' => Field::FIELD_TYPE_STRING,
-              'indexable' => true,
-              'multivalued' => false
+                'type' => Field::FIELD_TYPE_STRING,
+                'indexable' => true,
+                'multivalued' => false
             ],
             'product_count'   => [
                 'type'        => Field::FIELD_TYPE_INT,
