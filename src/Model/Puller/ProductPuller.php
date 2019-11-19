@@ -212,6 +212,10 @@ class ProductPuller extends AbstractPuller
         \G4NReact\MsCatalog\Profiler::increaseTimer('assingStockToProductsCollection', (microtime(true) - $start));
 
         $start = microtime(true);
+        $productCollection = $this->assingStockToProductsCollectionLegacy($productCollection);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('assingStockToProductsCollectionLegacy', (microtime(true) - $start));
+
+        $start = microtime(true);
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
         \G4NReact\MsCatalog\Profiler::increaseTimer(
             'observer => ms_catalog_get_product_collection',
@@ -347,6 +351,45 @@ class ProductPuller extends AbstractPuller
         }
 
         return $productCollection;
+    }
+
+    /**
+     * @param ProductCollection $collection
+     *
+     * @return ProductCollection
+     */
+    protected function assingStockToProductsCollectionLegacy(ProductCollection $collection)
+    {
+        $skus = [];
+        foreach ($collection as $product) {
+            $skus[] = $product->getSku();
+        }
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter(SourceItemInterface::SKU, $skus, 'in')
+            ->create();
+        $stocks = $this->sourceItemRepository->getList($searchCriteria)->getItems();
+        $stockData = [];
+        foreach ($stocks as $stock) {
+            if (isset($stock['sku']) && isset($stock['quantity']) && isset($stock['source_code'])) {
+                $stockTotalQty = isset($stockData[$stock['sku']]) ? $stockData[$stock['sku']]['total_qty'] + $stock['quantity'] : $stock['quantity'];
+                $stockData[$stock['sku']]['total_qty'] = $stockTotalQty;
+                $stockData[$stock['sku']][$stock['source_code']] = $stock['quantity'];
+            }
+        }
+        foreach ($collection as $product) {
+            if (isset($stockData[$product->getSku()])) {
+                foreach ($stockData[$product->getSku()] as $key => $productStock) {
+                    if ($key != 'total_qty') {
+                        $product->setData(HelperProductPuller::prepareFieldNameBySourceCode($key), $productStock);
+                    } else {
+                        $product->setStockTotalQty((int)$productStock);
+                    }
+                }
+            } else {
+                $product->setStockTotalQty(0);
+            }
+        }
+        return $collection;
     }
 
     /**
