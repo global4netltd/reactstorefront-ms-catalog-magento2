@@ -159,6 +159,10 @@ class SearchTermsPuller extends AbstractPuller
         $searchTerm = $this->pageArray[$this->position];
         $storeId = $this->magento2ConfigHelper->getStore()->getId();
 
+        if($queryText = $searchTerm->getQueryText()){
+            $searchTerm->setQueryText(mb_strtolower($queryText));
+        }
+
         $document = new Document();
 
         $eventData = [
