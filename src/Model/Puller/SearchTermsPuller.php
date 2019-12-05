@@ -8,6 +8,7 @@ use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Helper\SearchTerms\SearchTermsField;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
+use G4NReact\MsCatalogMagento2GraphQl\Helper\Parser;
 use Magento\Framework\Event\Manager;
 use Magento\Search\Model\Query;
 use Magento\Search\Model\ResourceModel\Query\CollectionFactory;
@@ -159,8 +160,8 @@ class SearchTermsPuller extends AbstractPuller
         $searchTerm = $this->pageArray[$this->position];
         $storeId = $this->magento2ConfigHelper->getStore()->getId();
 
-        if($queryText = $searchTerm->getQueryText()){
-            $searchTerm->setQueryText(mb_strtolower($queryText));
+        if ($queryText = $searchTerm->getQueryText()){
+            $searchTerm->setQueryText(Parser::parseSearchText($queryText));
         }
 
         $document = new Document();
