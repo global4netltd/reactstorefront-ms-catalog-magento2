@@ -6,6 +6,7 @@ use G4NReact\MsCatalog\PullerInterface;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Model\Puller\ProductPuller;
 use Magento\Framework\App\State as AppState;
+use Magento\Framework\Event\Manager as EventManager;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
 
@@ -21,9 +22,15 @@ class ProductIndexer extends AbstractIndexer
     protected $productPuller;
 
     /**
+     * @var EventManager
+     */
+    protected $eventManager;
+
+    /**
      * ProductIndexer constructor
      *
      * @param ProductPuller $productPuller
+     * @param EventManager $eventManager
      * @param StoreManagerInterface $storeManager
      * @param Emulation $emulation
      * @param AppState $appState
@@ -31,12 +38,14 @@ class ProductIndexer extends AbstractIndexer
      */
     public function __construct(
         ProductPuller $productPuller,
+        EventManager $eventManager,
         StoreManagerInterface $storeManager,
         Emulation $emulation,
         AppState $appState,
         ConfigHelper $configHelper
     ) {
         $this->productPuller = $productPuller;
+        $this->eventManager = $eventManager;
         parent::__construct($storeManager, $emulation, $appState, $configHelper);
     }
 
@@ -46,5 +55,13 @@ class ProductIndexer extends AbstractIndexer
     public function getPuller()
     {
         return $this->productPuller;
+    }
+
+    /**
+     * After reindex
+     */
+    public function afterReindex()
+    {
+        $this->eventManager->dispatch('product_indexer_reindex_after', ['ids' => $this->getPuller()->getToDeleteIds()]);
     }
 }

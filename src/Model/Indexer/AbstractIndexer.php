@@ -89,6 +89,7 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
             foreach ($stores as $store) {
                 $this->appState->emulateAreaCode('frontend', function () use ($store, $ids) {
                     $this->reindex($store, $ids);
+                    $this->afterReindex();
                 });
             }
 
@@ -96,6 +97,14 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
         } catch (Exception $exception) {
             return "Caught exception: " . $exception->getMessage();
         }
+    }
+
+    /**
+     * Do it after run indexer
+     * @return void
+     */
+    public function afterReindex()
+    {
     }
 
     /**
