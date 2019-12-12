@@ -19,6 +19,7 @@ use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Widget\Model\Template\FilterEmulate;
 
 /**
  * Class CategoryPuller
@@ -72,6 +73,11 @@ class CategoryPuller extends AbstractPuller
     protected $eventManager;
 
     /**
+     * @var FilterEmulate
+     */
+    protected $widgetFilter;
+
+    /**
      * CategoryPuller constructor
      *
      * @param CategoryCollectionFactory $categoryCollectionFactory
@@ -92,7 +98,8 @@ class CategoryPuller extends AbstractPuller
         ResourceConnection $resource,
         QueryHelper $helperQuery,
         StoreManagerInterface $storeManager,
-        EventManager $eventManager
+        EventManager $eventManager,
+        FilterEmulate $widgetFilter
     ) {
         $this->categoryCollectionFactory = $categoryCollectionFactory;
         $this->eavConfig = $eavConfig;
@@ -101,6 +108,7 @@ class CategoryPuller extends AbstractPuller
         $this->helperQuery = $helperQuery;
         $this->storeManager = $storeManager;
         $this->eventManager = $eventManager;
+        $this->widgetFilter = $widgetFilter;
         $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
@@ -186,6 +194,10 @@ class CategoryPuller extends AbstractPuller
         \G4NReact\MsCatalog\Profiler::increaseTimer('addAttributes', (microtime(true) - $start));
 
         $start = microtime(true);
+        $this->parseDescription($category, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('parseDescription', (microtime(true) - $start));
+
+        $start = microtime(true);
         $this->addProductCount($category, $document);
         \G4NReact\MsCatalog\Profiler::increaseTimer('addProductCount', (microtime(true) - $start));
 
@@ -262,6 +274,18 @@ class CategoryPuller extends AbstractPuller
             $document->setField(
                 $this->helperQuery->getFieldByAttribute($attribute, $value)
             );
+        }
+    }
+
+    /**
+     * @param Category $category
+     * @param Document $document
+     */
+    protected function parseDescription(Category $category, Document $document): void
+    {
+        if ($descriptionField = $document->getField('description')) {
+            $description = $this->widgetFilter->filter($descriptionField->getValue());
+            $descriptionField->setValue($description);
         }
     }
 

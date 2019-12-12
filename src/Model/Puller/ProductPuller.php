@@ -31,6 +31,7 @@ use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
 use G4NReact\MsCatalogMagento2\Helper\ProductPuller as HelperProductPuller;
 use Magento\Catalog\Model\Product\Image\UrlBuilder as ImageUrlBuilder;
+use Magento\Widget\Model\Template\FilterEmulate;
 
 /**
  * Class ProductPuller
@@ -119,6 +120,11 @@ class ProductPuller extends AbstractPuller
     protected $imageUrlBuilder;
 
     /**
+     * @var FilterEmulate
+     */
+    protected $widgetFilter;
+
+    /**
      * ProductPuller constructor
      *
      * @param ProductCollectionFactory $productCollectionFactory
@@ -153,7 +159,8 @@ class ProductPuller extends AbstractPuller
         SearchCriteriaBuilder $searchCriteriaBuilder,
         SourceItemRepository $sourceItemRepository,
         SourceItemCollectionFactory $sourceItemCollectionFactory,
-        ImageUrlBuilder $imageUrlBuilder
+        ImageUrlBuilder $imageUrlBuilder,
+        FilterEmulate $widgetFilter
     ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
@@ -169,6 +176,7 @@ class ProductPuller extends AbstractPuller
         $this->sourceItemRepository = $sourceItemRepository;
         $this->sourceItemCollectionFactory = $sourceItemCollectionFactory;
         $this->imageUrlBuilder = $imageUrlBuilder;
+        $this->widgetFilter = $widgetFilter;
         $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
@@ -442,6 +450,10 @@ class ProductPuller extends AbstractPuller
         \G4NReact\MsCatalog\Profiler::increaseTimer('addAttributes', (microtime(true) - $start));
 
         $start = microtime(true);
+        $this->parseDescription($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('parseDescription', (microtime(true) - $start));
+
+        $start = microtime(true);
         $this->handleImages($product, $document);
         \G4NReact\MsCatalog\Profiler::increaseTimer('addMediaGallery', (microtime(true) - $start));
 
@@ -571,6 +583,18 @@ class ProductPuller extends AbstractPuller
         }
 
         return $document;
+    }
+
+    /**
+     * @param Product $product
+     * @param Document $document
+     */
+    protected function parseDescription(Product $product, Document $document): void
+    {
+        if ($descriptionField = $document->getField('description')) {
+            $description = $this->widgetFilter->filter($descriptionField->getValue());
+            $descriptionField->setValue($description);
+        }
     }
 
     /**
