@@ -111,7 +111,7 @@ class Facets extends AbstractHelper
         $categoryIds = is_array($needleCategoryId) ? $needleCategoryId : [$needleCategoryId];
         $categories = $this->getCategories($categoryIds);
         /** @var Category $category */
-        foreach ($categoryIds as $category) {
+        foreach ($categories as $category) {
             try {
                 $filters = json_decode($category->getData('react_storefront_filters'), true);
 
