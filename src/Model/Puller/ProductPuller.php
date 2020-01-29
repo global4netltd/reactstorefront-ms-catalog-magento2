@@ -6,23 +6,33 @@ use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
+use G4NReact\MsCatalogMagento2\Helper\ProductPuller as HelperProductPuller;
 use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use G4NReact\MsCatalogMagento2\Model\ResourceModel\ProductExtended;
+use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Image\UrlBuilder as ImageUrlBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
+use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
+use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\ResourceConnection;
-use Magento\Framework\Data\Collection as DataCollection;
+use Magento\Framework\DataObject;
 use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
+use Magento\Inventory\Model\ResourceModel\SourceItem\Collection as SourceItemCollection;
+use Magento\Inventory\Model\ResourceModel\SourceItem\CollectionFactory as SourceItemCollectionFactory;
+use Magento\Inventory\Model\SourceItemRepository;
+use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
+use Magento\Widget\Model\Template\FilterEmulate;
 
 /**
  * Class ProductPuller
@@ -44,34 +54,42 @@ class ProductPuller extends AbstractPuller
      * @var ProductCollectionFactory
      */
     protected $productCollectionFactory;
+
     /**
      * @var Attribute
      */
     protected $eavAttribute;
+
     /**
      * @var EavConfig
      */
     protected $eavConfig;
+
     /**
      * @var JsonSerializer
      */
     protected $jsonSerializer;
+
     /**
      * @var SearchTerms
      */
     protected $searchTerms;
+
     /**
      * @var QueryHelper
      */
     protected $queryHelper;
+
     /**
      * @var EventManager
      */
     protected $eventManager;
+
     /**
      * @var ProductExtended
      */
     protected $productExtended;
+
     /**
      * @var ResourceConnection
      */
@@ -83,7 +101,32 @@ class ProductPuller extends AbstractPuller
     protected $storeManager;
 
     /**
-     * ProductPuller constructor.
+     * @var SearchCriteriaBuilder
+     */
+    protected $searchCriteriaBuilder;
+
+    /**
+     * @var SourceItemCollectionFactory
+     */
+    protected $sourceItemCollectionFactory;
+
+    /**
+     * @var SourceItemRepository
+     */
+    protected $sourceItemRepository;
+
+    /**
+     * @var ImageUrlBuilder
+     */
+    protected $imageUrlBuilder;
+
+    /**
+     * @var FilterEmulate
+     */
+    protected $widgetFilter;
+
+    /**
+     * ProductPuller constructor
      *
      * @param ProductCollectionFactory $productCollectionFactory
      * @param EavConfig $eavConfig
@@ -96,6 +139,9 @@ class ProductPuller extends AbstractPuller
      * @param ProductExtended $productExtended
      * @param ResourceConnection $resource
      * @param StoreManagerInterface $storeManager
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param SourceItemRepository $sourceItemRepository
+     * @param ImageUrlBuilder $imageUrlBuilder
      *
      * @throws NoSuchEntityException
      */
@@ -110,8 +156,14 @@ class ProductPuller extends AbstractPuller
         EventManager $eventManager,
         ProductExtended $productExtended,
         ResourceConnection $resource,
-        StoreManagerInterface $storeManager
-    ) {
+        StoreManagerInterface $storeManager,
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        SourceItemRepository $sourceItemRepository,
+        SourceItemCollectionFactory $sourceItemCollectionFactory,
+        ImageUrlBuilder $imageUrlBuilder,
+        FilterEmulate $widgetFilter
+    )
+    {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -122,6 +174,11 @@ class ProductPuller extends AbstractPuller
         $this->productExtended = $productExtended;
         $this->resource = $resource;
         $this->storeManager = $storeManager;
+        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->sourceItemRepository = $sourceItemRepository;
+        $this->sourceItemCollectionFactory = $sourceItemCollectionFactory;
+        $this->imageUrlBuilder = $imageUrlBuilder;
+        $this->widgetFilter = $widgetFilter;
         $this->setType(self::OBJECT_TYPE);
 
         parent::__construct($magento2ConfigHelper);
@@ -140,6 +197,13 @@ class ProductPuller extends AbstractPuller
             $productCollection->addAttributeToFilter('entity_id', ['in' => $this->getIds()]);
         }
 
+        if ($this->magento2ConfigHelper->getShouldSkipDisabledProducts()) {
+            $productCollection->addAttributeToFilter(
+                'status',
+                \Magento\Catalog\Model\Product\Attribute\Source\Status::STATUS_ENABLED
+            );
+        }
+
         $productCollection->addAttributeToSelect('*')
             ->addUrlRewrite()
             ->addStoreFilter()
@@ -149,15 +213,198 @@ class ProductPuller extends AbstractPuller
             ->addCategoryIds()
             ->addMediaGalleryData();
 
-        $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
+        $start = microtime(true);
+        $productCollection = $this->prepareReviewsOnProduct($productCollection, $this->prepareReviewsData($productCollection));
+        \G4NReact\MsCatalog\Profiler::increaseTimer('prepareReviewsOnProduct', (microtime(true) - $start));
 
+        $start = microtime(true);
+        $productCollection = $this->assingStockToProductsCollection($productCollection);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('assingStockToProductsCollection', (microtime(true) - $start));
+
+        $start = microtime(true);
+        $productCollection = $this->assingStockToProductsCollectionLegacy($productCollection);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('assingStockToProductsCollectionLegacy', (microtime(true) - $start));
+
+        $start = microtime(true);
+        $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer(
+            'observer => ms_catalog_get_product_collection',
+            (microtime(true) - $start)
+        );
+
+        $start = microtime(true);
         $this->loadCategoryIds($productCollection);
+        \G4NReact\MsCatalog\Profiler::increaseTimer(
+            'getCollection > loadCategoryIds',
+            (microtime(true) - $start)
+        );
+
+        $start = microtime(true);
+        $this->eventManager->dispatch('ms_catalog_m2_product_puller_after_load', ['collection' => $productCollection]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => ms_catalog_m2_product_puller_after_load', (microtime(true) - $start));
 
         return $productCollection;
     }
 
     /**
      * @param ProductCollection $productCollection
+     * @param array $reviews
+     *
+     * @return ProductCollection
+     */
+    protected function prepareReviewsOnProduct(ProductCollection $productCollection, array $reviews): ProductCollection
+    {
+        foreach ($productCollection as $product) {
+            if (
+                isset($reviews[$product->getId()])
+                && isset($reviews[$product->getId()]['reviews_count'])
+                && isset($reviews[$product->getId()]['rating_summary'])
+            ) {
+                $review = $reviews[$product->getId()];
+                $product
+                    ->setReviewsCount((int)$review['reviews_count'])
+                    ->setReviewsAverageRating($this->prepareAverageRating($review['rating_summary']));
+            } else {
+                $product
+                    ->setReviewsCount(0)
+                    ->setReviewsAverageRating(0);
+            }
+        }
+
+        return $productCollection;
+    }
+
+    /**
+     * @param int $ratingSummary
+     *
+     * @return float
+     */
+    protected function prepareAverageRating(int $ratingSummary): float
+    {
+        return $ratingSummary / 20;
+    }
+
+    /**
+     * @param ProductCollection $productCollection
+     *
+     * @return array
+     * @throws NoSuchEntityException
+     */
+    protected function prepareReviewsData(ProductCollection $productCollection): array
+    {
+        $select = $productCollection->getSelect()->join(
+            ['rating' => $productCollection->getTable('review_entity_summary')],
+            'rating.entity_pk_value = e.entity_id AND rating.store_id = ' . (int)$this->storeManager->getStore()->getId(),
+            ['reviews_count', 'rating_summary']
+        );
+
+        $reviews = $productCollection->getConnection()->fetchAll($select);
+
+        $preparedReviews = [];
+        foreach ($reviews as $review) {
+            if (isset($review['entity_id'])) {
+                $preparedReviews[$review['entity_id']] = $review;
+            }
+        }
+
+        return $preparedReviews;
+    }
+
+    /**
+     * @param ProductCollection $productCollection
+     *
+     * @return ProductCollection
+     */
+    protected function assingStockToProductsCollection(ProductCollection $productCollection)
+    {
+        $skus = $productCollection->getColumnValues('sku');
+
+        if (!$skus) {
+            return $productCollection;
+        }
+
+        /** @var SourceItemCollection $sourceItemCollection */
+        $sourceItemCollection = $this->sourceItemCollectionFactory->create();
+        $sourceItemCollection
+            ->addFieldToSelect('sku')
+            ->addFieldToSelect('source_code')
+            ->addFieldToSelect('quantity')
+            ->addFieldToSelect('status')
+            ->addFieldToFilter('sku', ['in' => $skus]);
+
+        $sources = [];
+        /** @var SourceItemInterface $sourceItem */
+        foreach ($sourceItemCollection as $sourceItem) {
+            $sku = $sourceItem->getSku();
+            $sourceCode = $sourceItem->getSourceCode();
+            $quantity = (int)$sourceItem->getQuantity();
+            $status = (int)$sourceItem->getStatus();
+            $totalQty = isset($sources[$sku]['total_qty']) ? ($sources[$sku]['total_qty'] + $quantity) : $quantity;
+
+            $sources[$sku]['total_qty'] = $totalQty;
+            $sources[$sku]['sources'][] = [
+                'source_code' => $sourceCode,
+                'quantity' => $quantity,
+                'status' => $status
+            ];
+        }
+
+        if (!$sources) {
+            return $productCollection;
+        }
+
+        foreach ($productCollection as $product) {
+            $sku = $product->getSku();
+            $product->setData('inventory_sources', isset($sources[$sku]['sources']) ? json_encode($sources[$sku]['sources']) : '[]');
+            $product->setStockTotalQty($sources[$sku]['total_qty'] ?? 0);
+        }
+
+        return $productCollection;
+    }
+
+    /**
+     * @param ProductCollection $collection
+     *
+     * @return ProductCollection
+     */
+    protected function assingStockToProductsCollectionLegacy(ProductCollection $collection)
+    {
+        $skus = [];
+        foreach ($collection as $product) {
+            $skus[] = $product->getSku();
+        }
+        $searchCriteria = $this->searchCriteriaBuilder
+            ->addFilter(SourceItemInterface::SKU, $skus, 'in')
+            ->create();
+        $stocks = $this->sourceItemRepository->getList($searchCriteria)->getItems();
+        $stockData = [];
+        foreach ($stocks as $stock) {
+            if (isset($stock['sku']) && isset($stock['quantity']) && isset($stock['source_code'])) {
+                $stockTotalQty = isset($stockData[$stock['sku']]) ? $stockData[$stock['sku']]['total_qty'] + $stock['quantity'] : $stock['quantity'];
+                $stockData[$stock['sku']]['total_qty'] = $stockTotalQty;
+                $stockData[$stock['sku']][$stock['source_code']] = $stock['quantity'];
+            }
+        }
+        foreach ($collection as $product) {
+            if (isset($stockData[$product->getSku()])) {
+                foreach ($stockData[$product->getSku()] as $key => $productStock) {
+                    if ($key != 'total_qty') {
+                        $product->setData(HelperProductPuller::prepareFieldNameBySourceCode($key), $productStock);
+                    } else {
+                        $product->setStockTotalQty((int)$productStock);
+                    }
+                }
+            } else {
+                $product->setStockTotalQty(0);
+            }
+        }
+        return $collection;
+    }
+
+    /**
+     * @param ProductCollection $productCollection
+     *
+     *
      * @throws NoSuchEntityException
      */
     public function loadCategoryIds($productCollection)
@@ -183,7 +430,9 @@ class ProductPuller extends AbstractPuller
         $eventData->document = $document;
         $eventData->disable = false;
 
+        $start = microtime(true);
         $this->eventManager->dispatch('prepare_document_from_product_before', ['eventData' => $eventData]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => prepare_document_from_product_before', (microtime(true) - $start));
 
         if ($eventData->disable === true) {
             return $document;
@@ -193,24 +442,42 @@ class ProductPuller extends AbstractPuller
         $document->setObjectId($product->getId());
         $document->setObjectType(self::OBJECT_TYPE);
 
+        $start = microtime(true);
         $this->handleCategoryId($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('handleCategoryId', (microtime(true) - $start));
 
+        $start = microtime(true);
         $this->addAttributes($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addAttributes', (microtime(true) - $start));
 
-        $this->addMediaGallery($product, $document);
+        $start = microtime(true);
+        $this->parseDescription($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('parseDescription', (microtime(true) - $start));
 
+        $start = microtime(true);
+        $this->handleImages($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addMediaGallery', (microtime(true) - $start));
+
+        $start = microtime(true);
         $this->handleRequestPath($document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('handleRequestPath', (microtime(true) - $start));
 
+        $start = microtime(true);
         $this->addUrl($document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addUrl', (microtime(true) - $start));
 
+        $start = microtime(true);
         $this->addCategoryPosition($product, $document);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('addCategoryPosition', (microtime(true) - $start));
 
         $eventData = [
-            'product'  => $product,
+            'product' => $product,
             'document' => $document,
         ];
 
+        $start = microtime(true);
         $this->eventManager->dispatch('prepare_document_from_product_after', $eventData);
+        \G4NReact\MsCatalog\Profiler::increaseTimer('observer => prepare_document_from_product_after', (microtime(true) - $start));
 
         return $document;
     }
@@ -238,28 +505,41 @@ class ProductPuller extends AbstractPuller
     protected function addAttributes(Product $product, Document $document): void
     {
         foreach ($product->getData() as $field => $value) {
+            if (is_object($value)) {
+                continue;
+            }
+
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
 
+            $start = microtime(true);
             $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
             if ($searchTermField) {
+                $textValue = $value;
+                if ($attribute->getFrontend()) {
+                    $textValue = $attribute->getFrontend()->getValue($product);
+                }
                 if ($field = $document->getField($searchTermField)) {
-                    $field->setValue($field->getValue() . $value);
+                    $field->setValue($field->getValue() . ' ' . $textValue);
                 } else {
                     $document->createField(
                         $searchTermField,
-                        $value,
+                        $textValue,
                         Document\Field::FIELD_TYPE_TEXT_SEARCH,
                         true,
                         false
                     );
                 }
             }
+            \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add searchTermField', (microtime(true) - $start));
 
+            $start = microtime(true);
             $document->setField(
                 $this->queryHelper->getFieldByAttribute($attribute, $product->getData($attribute->getAttributeCode()))
             );
+            \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add all attributes', (microtime(true) - $start));
 
-            // force creating Fields that should be indexed but have not any value @ToDo: temprarily - and are not multivalued
+            $start = microtime(true);
+            // force creating Fields that should be indexed but have not any value @ToDo: temporarily - and are not multivalued
             foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
                 if (!$document->getField($attributeCode)) {
                     $field = $this->queryHelper->getFieldByAttributeCode($attributeCode, null);
@@ -268,6 +548,53 @@ class ProductPuller extends AbstractPuller
                     }
                 }
             }
+
+            $document = $this->setFieldIsVisibleOnFront($attribute, $document, $value);
+            \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add force indexing attributes', (microtime(true) - $start));
+        }
+    }
+
+    /**
+     * @param AbstractAttribute $attribute
+     * @param Document $document
+     * @param $value
+     *
+     * @return Document
+     */
+    protected function setFieldIsVisibleOnFront(AbstractAttribute $attribute, Document $document, $value)
+    {
+        if ($attribute->getIsVisibleOnFront() && $value) {
+            if (!$document->getField('attribute_codes_is_visible_on_front')) {
+                $document->setField(
+                    new Document\Field(
+                        'attribute_codes_is_visible_on_front',
+                        $this->jsonSerializer->serialize([$attribute->getAttributeCode() => $value]),
+                        Document\Field::FIELD_TYPE_TEXT,
+                        false,
+                        false
+                    )
+                );
+            } else {
+                $attributeCodesField = $document->getField('attribute_codes_is_visible_on_front');
+                $data = $this->jsonSerializer->unserialize($attributeCodesField->getValue());
+                $data[$attribute->getAttributeCode()] = $value;
+
+                $attributeCodesField->setValue($this->jsonSerializer->serialize($data));
+            }
+        }
+
+        return $document;
+    }
+
+    /**
+     * @param Product $product
+     * @param Document $document
+     */
+    protected function parseDescription(Product $product, Document $document): void
+    {
+        if ($descriptionField = $document->getField('description')) {
+            $description = $this->widgetFilter->filter($descriptionField->getValue());
+            $descriptionField->setValue($description);
         }
     }
 
@@ -276,29 +603,110 @@ class ProductPuller extends AbstractPuller
      * @param Document $document
      * @throws LocalizedException
      */
-    protected function addMediaGallery(Product $product, Document $document): void
+    protected function handleImages(Product $product, Document $document): void
     {
-        $mediaGalleryJson = $this->getMediaGalleryJson($product->getMediaGalleryImages());
+        $mediaGallery = $this->getGalleryImages($product);
+
+        $mediaGalleryObject = new DataObject($mediaGallery);
+
+        $this->eventManager->dispatch(
+            'product_puller_handle_images_media_gallery',
+            [
+                'product' => $product,
+                'document' => $document,
+                'media_gallery' => $mediaGalleryObject
+            ]
+        );
+
+        $mediaGallery = $mediaGalleryObject->getData() ?: $mediaGallery;
+
+        $mediaGalleryJson = $this->jsonSerializer->serialize($mediaGallery);
+
+        if ($document->getField('image') && isset($mediaGallery[0]['large_image_url'])) {
+            $document->setFieldValue('image', $mediaGallery[0]['large_image_url']);
+        }
+        if ($document->getField('medium_image') && isset($mediaGallery[0]['medium_image_url'])) {
+            $document->setFieldValue('medium_image', $mediaGallery[0]['medium_image_url']);
+        } elseif (isset($mediaGallery[0]['medium_image_url'])) {
+            $document->createField(
+                'medium_image',
+                $mediaGallery[0]['medium_image_url'],
+                Document\Field::FIELD_TYPE_STRING,
+                false,
+                false
+            );
+        }
+        if ($document->getField('small_image') && isset($mediaGallery[0]['small_image_url'])) {
+            $document->setFieldValue('small_image', $mediaGallery[0]['small_image_url']);
+        }
+        if ($document->getField('thumbnail') && isset($mediaGallery[0]['small_image_url'])) {
+            $document->setFieldValue('thumbnail', $mediaGallery[0]['small_image_url']);
+        }
+        if ($document->getField('swatch_image') && isset($mediaGallery[0]['swatch_image_url'])) {
+            $document->setFieldValue('swatch_image', $mediaGallery[0]['swatch_image_url']);
+        }
+
         $document->setField(
             $this->queryHelper
                 ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
         );
+
+        $this->eventManager->dispatch(
+            'product_puller_handle_images_document_after',
+            [
+                'product' => $product,
+                'document' => $document,
+                'media_gallery' => $mediaGallery
+            ]
+        );
     }
 
     /**
-     * @param DataCollection $mediaGalleryImages
-     *
-     * @return bool|false|string
+     * @param ProductInterface $product
+     * @return array
      */
-    protected function getMediaGalleryJson(DataCollection $mediaGalleryImages)
+    public function getGalleryImages(ProductInterface $product): array
     {
         $gallery = [];
+        $images = $product->getMediaGalleryImages();
+        if ($images instanceof \Magento\Framework\Data\Collection) {
+            /** @var $image \Magento\Framework\DataObject */
+            foreach ($images as $image) {
+                $swatchSmallImageUrl = $this->imageUrlBuilder
+                    ->getUrl($image->getFile(), 'product_swatch_image_small');
+                $smallImageUrl = $this->imageUrlBuilder
+                    ->getUrl($image->getFile(), 'product_page_image_small');
+                $mediumImageUrl = $this->imageUrlBuilder
+                    ->getUrl($image->getFile(), 'product_page_image_medium');
+                $largeImageUrl = $this->imageUrlBuilder
+                    ->getUrl($image->getFile(), 'product_page_image_large');
 
-        foreach ($mediaGalleryImages as $image) {
-            $gallery[] = ['full' => $image->getUrl()];
+                $galleryData = [
+                    'swatch_image_url' => $swatchSmallImageUrl,
+                    'small_image_url' => $smallImageUrl,
+                    'medium_image_url' => $mediumImageUrl,
+                    'large_image_url' => $largeImageUrl,
+                    'position' => $image->getPosition(),
+                    'label' => $image->getLabel() ?: $product->getName(),
+                    'media_type' => $image->getMediaType(),
+                    'disabled' => !!$image->getDisabled(),
+                ];
+
+                $galleryDataObject = new DataObject($galleryData);
+
+                $this->eventManager->dispatch(
+                    'product_puller_gallery_images_gallery_data_add_before',
+                    [
+                        'gallery_data' => $galleryDataObject,
+                        'gallery' => $gallery
+                    ]
+                );
+
+                $gallery[] = $galleryDataObject->getData() ?: $galleryData;
+            }
         }
 
-        return $this->jsonSerializer->serialize($gallery);
+        return $gallery;
     }
 
     /**
