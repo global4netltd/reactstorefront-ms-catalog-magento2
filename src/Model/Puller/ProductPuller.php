@@ -6,12 +6,14 @@ use G4NReact\MsCatalog\Document;
 use G4NReact\MsCatalog\QueryInterface;
 use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
+use G4NReact\MsCatalogMagento2\Helper\ProductPuller as HelperProductPuller;
 use G4NReact\MsCatalogMagento2\Helper\Query as QueryHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use G4NReact\MsCatalogMagento2\Model\ResourceModel\ProductExtended;
 use Magento\Catalog\Api\Data\ProductInterface;
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Model\Product\Image\UrlBuilder as ImageUrlBuilder;
 use Magento\Catalog\Model\ResourceModel\Product\Collection as ProductCollection;
 use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory as ProductCollectionFactory;
 use Magento\Eav\Model\Config as EavConfig;
@@ -19,18 +21,17 @@ use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
 use Magento\Framework\Api\SearchCriteriaBuilder;
 use Magento\Framework\App\ResourceConnection;
+use Magento\Framework\DataObject;
 use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\InputException;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
-use Magento\Inventory\Model\SourceItemRepository;
-use Magento\Inventory\Model\ResourceModel\SourceItem\CollectionFactory as SourceItemCollectionFactory;
 use Magento\Inventory\Model\ResourceModel\SourceItem\Collection as SourceItemCollection;
+use Magento\Inventory\Model\ResourceModel\SourceItem\CollectionFactory as SourceItemCollectionFactory;
+use Magento\Inventory\Model\SourceItemRepository;
 use Magento\InventoryApi\Api\Data\SourceItemInterface;
 use Magento\Store\Model\StoreManagerInterface;
-use G4NReact\MsCatalogMagento2\Helper\ProductPuller as HelperProductPuller;
-use Magento\Catalog\Model\Product\Image\UrlBuilder as ImageUrlBuilder;
 use Magento\Widget\Model\Template\FilterEmulate;
 
 /**
@@ -161,7 +162,8 @@ class ProductPuller extends AbstractPuller
         SourceItemCollectionFactory $sourceItemCollectionFactory,
         ImageUrlBuilder $imageUrlBuilder,
         FilterEmulate $widgetFilter
-    ) {
+    )
+    {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -272,6 +274,15 @@ class ProductPuller extends AbstractPuller
         return $productCollection;
     }
 
+    /**
+     * @param int $ratingSummary
+     *
+     * @return float
+     */
+    protected function prepareAverageRating(int $ratingSummary): float
+    {
+        return $ratingSummary / 20;
+    }
 
     /**
      * @param ProductCollection $productCollection
@@ -297,16 +308,6 @@ class ProductPuller extends AbstractPuller
         }
 
         return $preparedReviews;
-    }
-
-    /**
-     * @param int $ratingSummary
-     *
-     * @return float
-     */
-    protected function prepareAverageRating(int $ratingSummary): float
-    {
-        return $ratingSummary / 20;
     }
 
     /**
@@ -605,6 +606,20 @@ class ProductPuller extends AbstractPuller
     protected function handleImages(Product $product, Document $document): void
     {
         $mediaGallery = $this->getGalleryImages($product);
+
+        $mediaGalleryObject = new DataObject($mediaGallery);
+
+        $this->eventManager->dispatch(
+            'product_puller_handle_images_media_gallery',
+            [
+                'product' => $product,
+                'document' => $document,
+                'media_gallery' => $mediaGalleryObject
+            ]
+        );
+
+        $mediaGallery = $mediaGalleryObject->getData() ?: $mediaGallery;
+
         $mediaGalleryJson = $this->jsonSerializer->serialize($mediaGallery);
 
         if ($document->getField('image') && isset($mediaGallery[0]['large_image_url'])) {
@@ -635,6 +650,15 @@ class ProductPuller extends AbstractPuller
             $this->queryHelper
                 ->getFieldByAttributeCode('media_gallery', $mediaGalleryJson)
         );
+
+        $this->eventManager->dispatch(
+            'product_puller_handle_images_document_after',
+            [
+                'product' => $product,
+                'document' => $document,
+                'media_gallery' => $mediaGallery
+            ]
+        );
     }
 
     /**
@@ -657,7 +681,7 @@ class ProductPuller extends AbstractPuller
                 $largeImageUrl = $this->imageUrlBuilder
                     ->getUrl($image->getFile(), 'product_page_image_large');
 
-                $gallery[] = [
+                $galleryData = [
                     'swatch_image_url' => $swatchSmallImageUrl,
                     'small_image_url' => $smallImageUrl,
                     'medium_image_url' => $mediumImageUrl,
@@ -667,6 +691,18 @@ class ProductPuller extends AbstractPuller
                     'media_type' => $image->getMediaType(),
                     'disabled' => !!$image->getDisabled(),
                 ];
+
+                $galleryDataObject = new DataObject($galleryData);
+
+                $this->eventManager->dispatch(
+                    'product_puller_gallery_images_gallery_data_add_before',
+                    [
+                        'gallery_data' => $galleryDataObject,
+                        'gallery' => $gallery
+                    ]
+                );
+
+                $gallery[] = $galleryDataObject->getData() ?: $galleryData;
             }
         }
 
