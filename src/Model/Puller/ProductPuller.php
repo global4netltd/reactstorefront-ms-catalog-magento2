@@ -153,8 +153,9 @@ class ProductPuller extends AbstractPuller
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage)
             ->addFinalPrice()
-            ->addCategoryIds()
             ->addMediaGalleryData();
+
+        $productCollection->load()->addCategoryIds();
 
         $start = microtime(true);
         $this->eventManager->dispatch('ms_catalog_get_product_collection', ['collection' => $productCollection]);
