@@ -9,10 +9,9 @@ use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Helper\SearchTerms\SearchTermsField;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use Magento\Framework\Event\Manager;
-use Magento\Search\Model\Query;
-use Magento\Search\Model\ResourceModel\Query\CollectionFactory;
-use Magento\Search\Model\ResourceModel\Query\Collection;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Search\Model\ResourceModel\Query\Collection;
+use Magento\Search\Model\ResourceModel\Query\CollectionFactory;
 use Magento\Search\Model\ResourceModel\SynonymGroup\CollectionFactory as SynonymGroupCollFactory;
 
 class SearchTermsPuller extends AbstractPuller
@@ -43,6 +42,11 @@ class SearchTermsPuller extends AbstractPuller
     protected $synonymGroupCollFactory;
 
     /**
+     * @var
+     */
+    protected $synonymGroupCollection;
+
+    /**
      * SearchTermsPuller constructor.
      *
      * @param ConfigHelper $magento2ConfigHelper
@@ -58,7 +62,8 @@ class SearchTermsPuller extends AbstractPuller
         Manager $eventManager,
         SearchTermsField $searchTermsField,
         SynonymGroupCollFactory $synonymGroupCollFactory
-    ) {
+    )
+    {
         $this->searchQueryCollFactory = $searchQueryCollFactory;
         $this->eventManager = $eventManager;
         $this->searchTermsField = $searchTermsField;
@@ -83,11 +88,31 @@ class SearchTermsPuller extends AbstractPuller
             ->setPageSize($this->getPageSize())
             ->setCurPage($this->getCurPage());
 
-//        $this->addSynonymsToSearchTermsCollection($collection);
+        $this->addSynonymsToSearchTermsCollection($collection);
 
         $this->eventManager->dispatch('ms_catalog_get_search_terms_collection', ['collection' => $collection]);
 
         return $collection;
+    }
+
+    /**
+     * @param Collection $collection
+     *
+     * @throws NoSuchEntityException
+     */
+    protected function addSynonymsToSearchTermsCollection(Collection &$collection)
+    {
+        $synonymGroupCollection = $this->getSynonymGroupCollection();
+        foreach ($synonymGroupCollection as $synonyms) {
+            foreach ($collection as $queryText) {
+                $synonymsText = explode(',', $synonyms->getSynonyms());
+                $synonymKey = array_search(trim($queryText['query_text']), $synonymsText);
+                if ($synonymKey !== false) {
+                    unset($synonymsText[$synonymKey]);
+                    $queryText->setData('synonyms', $synonymsText);
+                }
+            }
+        }
     }
 
     /**
@@ -96,58 +121,12 @@ class SearchTermsPuller extends AbstractPuller
      */
     protected function getSynonymGroupCollection()
     {
-        return $this->synonymGroupCollFactory->create()
-            ->addFieldToFilter('store_id', $this->magento2ConfigHelper->getStore()->getId())
-            ->setCurPage($this->getCurPage())
-            ->setPageSize($this->getPageSize());
-    }
-
-    /**
-     * @param Collection $collection
-     *
-     * @throws NoSuchEntityException
-     */
-    protected function addSynonymsToSearchTermsCollection(Collection $collection)
-    {
-        $queryTextArr = [];
-        foreach ($collection as $item) {
-            $item
-                ->setData(SearchTermsField::REACT_STORE_FRONT_ID, SearchTermsField::REACT_STORE_FRONT_ID_SEARCH_TERM)
-                ->setData('is_synonym', false);
-            $queryTextArr[] =
-                [
-                    'query_text' => $item->getQueryText(),
-                    'item'       => $item
-                ];
+        if (!$this->synonymGroupCollection) {
+            $this->synonymGroupCollection = $this->synonymGroupCollFactory->create()
+                ->addFieldToFilter('store_id', ['eq' => $this->magento2ConfigHelper->getStore()->getId()]);
         }
 
-        $synonymGroupCollection = $this->getSynonymGroupCollection();
-        $searchTermIdMax = max($collection->getAllIds());
-
-        foreach ($synonymGroupCollection as $synonyms) {
-            $queryTextIterator = 0;
-            foreach ($queryTextArr as $queryText) {
-                $synonymsText = explode(',', $synonyms->getSynonyms());
-                $synonymKey = array_search(trim($queryText['query_text']), $synonymsText);
-                if ($synonymKey !== false) {
-                    unset($synonymsText[$synonymKey]);
-                    foreach ($synonymsText as $key => $synonymText) {
-                        $newSynonym = clone $queryText['item'];
-                        /** @var int $newSynonymId - set custom id to prevent from exception if synonym has the same id than search term */
-                        $newSynonymId = $searchTermIdMax + $synonyms->getId() + $key + $queryTextIterator;
-                        $newSynonym
-                            ->setData(SearchTermsField::REACT_STORE_FRONT_ID, SearchTermsField::REACT_STORE_FRONT_ID_SYNONYM)
-                            ->setData(SearchTermsField::IS_SYNONYM, true)
-                            ->setQueryText($synonymText)
-                            ->setData(SearchTermsField::ORIGINAL_SEARCH_TERM_VALUE, $queryText['query_text'])
-                            ->setId($newSynonymId);
-
-                        $collection->addItem($newSynonym);
-                    }
-                }
-                $queryTextIterator++;
-            }
-        }
+        return $this->synonymGroupCollection;
     }
 
     /**
@@ -163,11 +142,10 @@ class SearchTermsPuller extends AbstractPuller
 
         $eventData = [
             'search_term' => $searchTerm,
-            'document'    => $document,
+            'document' => $document,
         ];
         $this->eventManager->dispatch('prepare_document_from_search_term_before', ['eventData' => $eventData]);
 
-//        $document->setUniqueId($searchTerm->getId() . '_' . SearchTermsField::OBJECT_TYPE . '_' . $storeId . '_' . $searchTerm->getReactStoreFrontId());
         $document->setUniqueId($searchTerm->getId() . '_' . SearchTermsField::OBJECT_TYPE . '_' . $storeId);
         $document->setObjectId($searchTerm->getId());
         $document->setObjectType(SearchTermsField::OBJECT_TYPE);
@@ -184,7 +162,7 @@ class SearchTermsPuller extends AbstractPuller
 
         $eventData = [
             'search_term' => $searchTerm,
-            'document'    => $document,
+            'document' => $document,
         ];
         $this->eventManager->dispatch('prepare_document_from_search_term_after', $eventData);
 
