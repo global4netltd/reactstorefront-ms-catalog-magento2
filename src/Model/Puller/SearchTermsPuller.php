@@ -123,7 +123,7 @@ class SearchTermsPuller extends AbstractPuller
     {
         if (!$this->synonymGroupCollection) {
             $this->synonymGroupCollection = $this->synonymGroupCollFactory->create()
-                ->addFieldToFilter('store_id', ['eq' => $this->magento2ConfigHelper->getStore()->getId()]);
+                ->addFieldToFilter('store_id', ['in' => [0, $this->magento2ConfigHelper->getStore()->getId()]]);
         }
 
         return $this->synonymGroupCollection;
