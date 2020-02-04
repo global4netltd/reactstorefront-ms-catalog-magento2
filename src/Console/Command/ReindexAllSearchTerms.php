@@ -4,6 +4,7 @@ namespace G4NReact\MsCatalogMagento2\Console\Command;
 
 
 use G4NReact\MsCatalogMagento2\Model\Indexer\SearchTermsIndexer;
+use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Input\InputOption;
 use G4NReact\MsCatalogMagento2\Model\Indexer\AbstractIndexer;
 
@@ -21,15 +22,17 @@ class ReindexAllSearchTerms extends AbstractReindex
     /**
      * ReindexAllSearchTerms constructor.
      *
+     * @param StoreManagerInterface $storeManager
      * @param SearchTermsIndexer $searchTermsIndexer
      * @param string|null $name
      */
     public function __construct(
+        StoreManagerInterface $storeManager,
         SearchTermsIndexer $searchTermsIndexer,
         string $name = null
     ) {
         $this->searchTermsIndexer = $searchTermsIndexer;
-        parent::__construct($name);
+        parent::__construct($storeManager, $name);
     }
 
     /**
