@@ -111,6 +111,11 @@
                     <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
                     <comment>Remove ids that was pass to input/collection and are not present in documents that we push to engine during partial reindex.</comment>
                 </field>
+                <field id="remove_not_existing_in_magento" translate="label comment" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable old products cleaner</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Enable cron which removes old products that doesn't exist anymore in Magento. Warning! The script might require a lot of memory depending on the database size.</comment>
+                </field>
                 <field id="image_size_image" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
                     <label>Set image size</label>
                 </field>
