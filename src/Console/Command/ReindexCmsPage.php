@@ -4,6 +4,7 @@ namespace G4NReact\MsCatalogMagento2\Console\Command;
 
 use G4NReact\MsCatalogMagento2\Model\Indexer\AbstractIndexer;
 use G4NReact\MsCatalogMagento2\Model\Indexer\CmsPageIndexer;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class ReindexCmsPage
@@ -19,15 +20,17 @@ class ReindexCmsPage extends AbstractReindex
     /**
      * ReindexCmsPage constructor
      *
-     * @param CmsIndexer $cmsIndexer
+     * @param StoreManagerInterface $storeManager
+     * @param CmsPageIndexer $cmsIndexer
      * @param string|null $name
      */
     public function __construct(
+        StoreManagerInterface $storeManager,
         CmsPageIndexer $cmsIndexer,
         string $name = null
     ) {
         $this->cmsIndexer = $cmsIndexer;
-        parent::__construct($name);
+        parent::__construct($storeManager, $name);
     }
 
     /**
