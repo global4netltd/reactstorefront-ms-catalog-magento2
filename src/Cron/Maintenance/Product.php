@@ -150,13 +150,13 @@ class Product
         ]);
 
         $query->addFieldsToSelect([
-            $this->queryHelper->getFieldByAttributeCode('entity_id')
+            $this->queryHelper->getFieldByAttributeCode('id')
         ]);
 
         $entityIds = [];
         $documentCollection = $query->getResponse()->getDocumentsCollection();
         foreach ($documentCollection as $document) {
-            $id = $document->getFieldValue('entity_id');
+            $id = $document->getFieldValue('id');
             $entityIds[] = [
                 'entity_id' => $id,
                 'solr_id'   => $this->createUniqueId($id)
