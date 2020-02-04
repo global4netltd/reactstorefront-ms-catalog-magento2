@@ -113,7 +113,7 @@ class Product
 
             $toRemoveIds = [];
             foreach ($solrProducts as $product) {
-                if (!in_array($product['entity_id'], $magentoProducts)) {
+                if (!in_array($product['id'], $magentoProducts)) {
                     $toRemoveIds[] = $product['solr_id'];
                 }
             }
@@ -158,8 +158,8 @@ class Product
         foreach ($documentCollection as $document) {
             $id = $document->getFieldValue('id');
             $entityIds[] = [
-                'entity_id' => $id,
-                'solr_id'   => $this->createUniqueId($id)
+                'id'      => $id,
+                'solr_id' => $this->createUniqueId($id)
             ];
         }
         
