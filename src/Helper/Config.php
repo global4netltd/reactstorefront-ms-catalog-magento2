@@ -39,6 +39,9 @@ class Config extends AbstractHelper
     /** @var string show out of stock */
     const SHOW_OUT_OF_STOCK_XML = 'cataloginventory/options/show_out_of_stock';
 
+    /** @var string index max_sale_qty from cataloginventory */
+    const INDEX_MAX_SALE_QTY = 'ms_catalog_indexer/indexer_settings/add_max_sale_qty';
+
     /** @var string remove missing objects */
     const REMOVE_MISSING_OBJECTS = 'ms_catalog_indexer/indexer_settings/remove_missing_objects';
 

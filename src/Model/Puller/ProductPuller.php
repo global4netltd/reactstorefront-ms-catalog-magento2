@@ -147,6 +147,17 @@ class ProductPuller extends AbstractPuller
             $productCollection->addAttributeToFilter('entity_id', ['in' => $this->getIds()]);
         }
 
+        if ($this->magento2ConfigHelper->getConfigByPath(ConfigHelper::INDEX_MAX_SALE_QTY)) {
+            $productCollection->joinField(
+                'max_sale_qty',
+                'cataloginventory_stock_item',
+                'max_sale_qty',
+                'product_id=entity_id',
+                '{{table}}.stock_id=1',
+                'left'
+            );
+        }
+
         $productCollection->addAttributeToSelect('*')
             ->addUrlRewrite()
             ->addStoreFilter()
