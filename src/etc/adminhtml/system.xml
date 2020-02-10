@@ -145,6 +145,10 @@
                     <comment>Attributes from this list will be force indexing in search engine</comment>
                     <source_model>G4NReact\MsCatalogMagento2\Model\Config\Source\CategoryAttributes</source_model>
                 </field>
+                <field id="add_max_sale_qty" translate="label" type="select" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Index Max Sale Qty</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
             <group id="search_settings" translate="label" type="text" sortOrder="400" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Search Settings</label>
