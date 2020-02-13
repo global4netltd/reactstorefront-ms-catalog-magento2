@@ -100,10 +100,11 @@ class Product
      */
     public function removeProductNotExistInMagento(StoreInterface $store)
     {
+        // start store emulation
+        $this->emulation->startEnvironmentEmulation($store->getId(), Area::AREA_FRONTEND, true);
+
         $searchEngineConfig = $this->configHelper->getConfiguration();
         if ($searchEngineConfig->getRemoveNotExisting()) {
-            // start store emulation
-            $this->emulation->startEnvironmentEmulation($store->getId(), Area::AREA_FRONTEND, true);
             $solrProducts = $this->getEntityIdFromSolr();
             $magentoProducts = $this->getEntityIdFromMagento();
 
@@ -126,10 +127,10 @@ class Product
                     $this->logger->error('Problem with remove from solr', ['remove_ids' => $toRemoveIds, 'message' => $e->getMessage(), 'exception' => $e]);
                 }
             }
-
-            // end store emulation
-            $this->emulation->stopEnvironmentEmulation();
         }
+
+        // end store emulation
+        $this->emulation->stopEnvironmentEmulation();
     }
 
     /**
