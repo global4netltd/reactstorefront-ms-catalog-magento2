@@ -162,8 +162,7 @@ class ProductPuller extends AbstractPuller
         SourceItemCollectionFactory $sourceItemCollectionFactory,
         ImageUrlBuilder $imageUrlBuilder,
         FilterEmulate $widgetFilter
-    )
-    {
+    ) {
         $this->productCollectionFactory = $productCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
@@ -345,7 +344,7 @@ class ProductPuller extends AbstractPuller
             $sources[$sku]['sources'][] = [
                 'source_code' => $sourceCode,
                 'quantity' => $quantity,
-                'status' => $status
+                'status' => $status,
             ];
         }
 
@@ -614,37 +613,18 @@ class ProductPuller extends AbstractPuller
             [
                 'product' => $product,
                 'document' => $document,
-                'media_gallery' => $mediaGalleryObject
+                'media_gallery' => $mediaGalleryObject,
             ]
         );
 
         $mediaGallery = $mediaGalleryObject->getData() ?: $mediaGallery;
 
+        $baseImage = $this->getBaseImage($mediaGallery);
+
+        $document = $this->prepareBaseImageData($document, $baseImage);
+
         $mediaGalleryJson = $this->jsonSerializer->serialize($mediaGallery);
 
-        if ($document->getField('image') && isset($mediaGallery[0]['large_image_url'])) {
-            $document->setFieldValue('image', $mediaGallery[0]['large_image_url']);
-        }
-        if ($document->getField('medium_image') && isset($mediaGallery[0]['medium_image_url'])) {
-            $document->setFieldValue('medium_image', $mediaGallery[0]['medium_image_url']);
-        } elseif (isset($mediaGallery[0]['medium_image_url'])) {
-            $document->createField(
-                'medium_image',
-                $mediaGallery[0]['medium_image_url'],
-                Document\Field::FIELD_TYPE_STRING,
-                false,
-                false
-            );
-        }
-        if ($document->getField('small_image') && isset($mediaGallery[0]['small_image_url'])) {
-            $document->setFieldValue('small_image', $mediaGallery[0]['small_image_url']);
-        }
-        if ($document->getField('thumbnail') && isset($mediaGallery[0]['small_image_url'])) {
-            $document->setFieldValue('thumbnail', $mediaGallery[0]['small_image_url']);
-        }
-        if ($document->getField('swatch_image') && isset($mediaGallery[0]['swatch_image_url'])) {
-            $document->setFieldValue('swatch_image', $mediaGallery[0]['swatch_image_url']);
-        }
 
         $document->setField(
             $this->queryHelper
@@ -656,7 +636,7 @@ class ProductPuller extends AbstractPuller
             [
                 'product' => $product,
                 'document' => $document,
-                'media_gallery' => $mediaGallery
+                'media_gallery' => $mediaGallery,
             ]
         );
     }
@@ -668,45 +648,96 @@ class ProductPuller extends AbstractPuller
     public function getGalleryImages(ProductInterface $product): array
     {
         $gallery = [];
-        $images = $product->getMediaGalleryImages();
-        if ($images instanceof \Magento\Framework\Data\Collection) {
-            /** @var $image \Magento\Framework\DataObject */
-            foreach ($images as $image) {
-                $swatchSmallImageUrl = $this->imageUrlBuilder
-                    ->getUrl($image->getFile(), 'product_swatch_image_small');
-                $smallImageUrl = $this->imageUrlBuilder
-                    ->getUrl($image->getFile(), 'product_page_image_small');
-                $mediumImageUrl = $this->imageUrlBuilder
-                    ->getUrl($image->getFile(), 'product_page_image_medium');
-                $largeImageUrl = $this->imageUrlBuilder
-                    ->getUrl($image->getFile(), 'product_page_image_large');
-
-                $galleryData = [
-                    'swatch_image_url' => $swatchSmallImageUrl,
-                    'small_image_url' => $smallImageUrl,
-                    'medium_image_url' => $mediumImageUrl,
-                    'large_image_url' => $largeImageUrl,
-                    'position' => $image->getPosition(),
-                    'label' => $image->getLabel() ?: $product->getName(),
-                    'media_type' => $image->getMediaType(),
-                    'disabled' => !!$image->getDisabled(),
-                ];
-
-                $galleryDataObject = new DataObject($galleryData);
-
-                $this->eventManager->dispatch(
-                    'product_puller_gallery_images_gallery_data_add_before',
-                    [
-                        'gallery_data' => $galleryDataObject,
-                        'gallery' => $gallery
-                    ]
-                );
-
-                $gallery[] = $galleryDataObject->getData() ?: $galleryData;
+        $images = $product->getMediaGalleryEntries();
+        /** @var $image \Magento\Framework\DataObject */
+        foreach ($images as $image) {
+            if(!$image instanceof Product\Gallery\Entry){
+                continue;
             }
+            $swatchSmallImageUrl = $this->imageUrlBuilder
+                ->getUrl($image->getFile(), 'product_swatch_image_small');
+            $smallImageUrl = $this->imageUrlBuilder
+                ->getUrl($image->getFile(), 'product_page_image_small');
+            $mediumImageUrl = $this->imageUrlBuilder
+                ->getUrl($image->getFile(), 'product_page_image_medium');
+            $largeImageUrl = $this->imageUrlBuilder
+                ->getUrl($image->getFile(), 'product_page_image_large');
+
+            $galleryData = [
+                'swatch_image_url' => $swatchSmallImageUrl,
+                'small_image_url' => $smallImageUrl,
+                'medium_image_url' => $mediumImageUrl,
+                'large_image_url' => $largeImageUrl,
+                'position' => $image->getPosition(),
+                'label' => $image->getLabel() ?: $product->getName(),
+                'media_type' => $image->getMediaType(),
+                'disabled' => !!$image->getDisabled(),
+                'types' => $image->getTypes(),
+            ];
+
+            $galleryDataObject = new DataObject($galleryData);
+
+            $this->eventManager->dispatch(
+                'product_puller_gallery_images_gallery_data_add_before',
+                [
+                    'gallery_data' => $galleryDataObject,
+                    'gallery' => $gallery,
+                ]
+            );
+
+            $gallery[] = $galleryDataObject->getData() ?: $galleryData;
         }
 
         return $gallery;
+    }
+
+    /**
+     * @param array $images
+     * @return array|mixed
+     */
+    protected function getBaseImage(array $images)
+    {
+        foreach ($images as $image) {
+            if (isset($image['types']) && is_array($image['types']) && in_array('image', $image['types'], false)) {
+                return $image;
+            }
+        }
+
+        return $images[0] ?? [];
+    }
+
+    /**
+     * @param $document
+     * @param array $image
+     * @return mixed
+     */
+    protected function prepareBaseImageData($document, array $image)
+    {
+        if ($document->getField('image') && isset($image['large_image_url'])) {
+            $document->setFieldValue('image', $image['large_image_url']);
+        }
+        if ($document->getField('medium_image') && isset($image['medium_image_url'])) {
+            $document->setFieldValue('medium_image', $image['medium_image_url']);
+        } elseif (isset($image[0]['medium_image_url'])) {
+            $document->createField(
+                'medium_image',
+                $image[0]['medium_image_url'],
+                Document\Field::FIELD_TYPE_STRING,
+                false,
+                false
+            );
+        }
+        if ($document->getField('small_image') && isset($image['small_image_url'])) {
+            $document->setFieldValue('small_image', $image['small_image_url']);
+        }
+        if ($document->getField('thumbnail') && isset($image['small_image_url'])) {
+            $document->setFieldValue('thumbnail', $image['small_image_url']);
+        }
+        if ($document->getField('swatch_image') && isset($image['swatch_image_url'])) {
+            $document->setFieldValue('swatch_image', $image['swatch_image_url']);
+        }
+
+        return $document;
     }
 
     /**
