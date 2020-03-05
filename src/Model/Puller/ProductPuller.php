@@ -718,10 +718,10 @@ class ProductPuller extends AbstractPuller
         }
         if ($document->getField('medium_image') && isset($image['medium_image_url'])) {
             $document->setFieldValue('medium_image', $image['medium_image_url']);
-        } elseif (isset($image[0]['medium_image_url'])) {
+        } elseif (isset($image['medium_image_url'])) {
             $document->createField(
                 'medium_image',
-                $image[0]['medium_image_url'],
+                $image['medium_image_url'],
                 Document\Field::FIELD_TYPE_STRING,
                 false,
                 false
