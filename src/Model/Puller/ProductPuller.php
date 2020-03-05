@@ -619,7 +619,7 @@ class ProductPuller extends AbstractPuller
 
         $mediaGallery = $mediaGalleryObject->getData() ?: $mediaGallery;
 
-        $baseImage = $this->getBaseImage($mediaGallery);
+        $baseImage = self::getBaseImage($mediaGallery);
 
         $document = $this->prepareBaseImageData($document, $baseImage);
 
@@ -695,7 +695,7 @@ class ProductPuller extends AbstractPuller
      * @param array $images
      * @return array|mixed
      */
-    protected function getBaseImage(array $images)
+    public static function getBaseImage(array $images)
     {
         foreach ($images as $image) {
             if (isset($image['types']) && is_array($image['types']) && in_array('image', $image['types'], false)) {
