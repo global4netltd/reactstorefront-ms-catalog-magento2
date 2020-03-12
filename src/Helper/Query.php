@@ -12,6 +12,7 @@ use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Model\Attribute\SearchTerms;
 use Magento\Catalog\Api\Data\CategoryAttributeInterface;
 use Magento\Catalog\Api\Data\ProductAttributeInterface;
+use Magento\Catalog\Model\Product\Visibility;
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute as AttributeResource;
@@ -342,6 +343,7 @@ class Query extends AbstractHelper
         $value = null,
         $entityType = ProductAttributeInterface::ENTITY_TYPE_CODE
     ): Field {
+        $start = microtime(true);
         if ($field = $this->getCoreField($attributeCode, $value)) {
             return $field;
         }
@@ -380,6 +382,7 @@ class Query extends AbstractHelper
         if ($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT)) {
             $field->setIndexable(true);
         }
+        \G4NReact\MsCatalog\Profiler::increaseTimer(' ========> getFieldByAttributeCode', (microtime(true) - $start));
 
         return $field;
     }
@@ -409,6 +412,9 @@ class Query extends AbstractHelper
     {
         $attributeCode = $attribute->getAttributeCode();
         $entityType = $attribute->getEntityType()->getEntityTypeCode();
+        if($attribute->getFrontendInput() === 'multiselect'){
+            $value = explode(',', $value);
+        }
 
         return $this->getFieldByAttributeCode($attributeCode, $value, $entityType);
     }
@@ -497,6 +503,10 @@ class Query extends AbstractHelper
             [$this->getFieldByAttributeCode(
                 'object_type',
                 'product'
+            )],
+            [$this->getFieldByAttributeCode(
+                'visibility',
+                Visibility::VISIBILITY_BOTH
             )],
         ]);
 

@@ -4,6 +4,7 @@ namespace G4NReact\MsCatalogMagento2\Console\Command;
 
 use G4NReact\MsCatalogMagento2\Model\Indexer\AbstractIndexer;
 use G4NReact\MsCatalogMagento2\Model\Indexer\CategoryIndexer;
+use Magento\Store\Model\StoreManagerInterface;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
@@ -20,14 +21,16 @@ class ReindexAllCategory extends AbstractReindex
     /**
      * ReindexAllCategory constructor
      *
+     * @param StoreManagerInterface $storeManager
      * @param CategoryIndexer $categoryIndexer
      * @param string|null $name
      */
     public function __construct(
+        StoreManagerInterface $storeManager,
         CategoryIndexer $categoryIndexer,
         string $name = null
     ) {
-        parent::__construct($name);
+        parent::__construct($storeManager, $name);
         $this->categoryIndexer = $categoryIndexer;
     }
 
@@ -67,6 +70,13 @@ class ReindexAllCategory extends AbstractReindex
                 self::REQUIRED_OPTION_INFO,
                 true
             ),
+            new InputOption(
+                self::INPUT_OPTION_STORE_ID,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                self::REQUIRED_OPTION_INFO,
+                false
+            )
         ];
     }
 

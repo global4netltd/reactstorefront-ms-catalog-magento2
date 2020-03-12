@@ -19,7 +19,9 @@ abstract class AbstractPuller implements Iterator, PullerInterface
      */
     const PAGE_SIZE_DEFAULT = 100;
 
-    /** @var int default current page */
+    /**
+     * @var int default current page
+     */
     const CUR_PAGE_DEFAULT = 0;
 
     /**
@@ -58,9 +60,19 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     public $ids;
 
     /**
+     * @var array
+     */
+    public $toDeleteIds;
+
+    /**
      * @var string
      */
     public $type;
+
+    /**
+     * @var int
+     */
+    public $storeId;
 
     /**
      * @var ConfigHelper
@@ -76,10 +88,20 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         ConfigHelper $magento2ConfigHelper
     ) {
         $this->magento2ConfigHelper = $magento2ConfigHelper;
+        $this->init();
+    }
+
+    /**
+     * Init puller
+     */
+    public function init()
+    {
+        $this->totalSize = null;
+        $this->totalPosition = 0;
+
         $this->position = 0;
         $this->curPage = self::CUR_PAGE_DEFAULT;
-
-        $this->pageSize = $magento2ConfigHelper->getConfiguration()->getPullerPageSize() ?: self::PAGE_SIZE_DEFAULT;
+        $this->pageSize = $this->magento2ConfigHelper->getConfiguration()->getPullerPageSize() ?: self::PAGE_SIZE_DEFAULT;
     }
 
     /**
@@ -141,6 +163,25 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     public function setIds(array $ids): PullerInterface
     {
         $this->ids = $ids;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getToDeleteIds(): array
+    {
+        return is_array($this->toDeleteIds) ? $this->toDeleteIds : [];
+    }
+
+    /**
+     * @param array $toDeleteIds
+     * @return PullerInterface
+     */
+    public function setToDeleteIds(array $toDeleteIds): PullerInterface
+    {
+        $this->toDeleteIds = $toDeleteIds;
 
         return $this;
     }
@@ -208,6 +249,7 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         if (is_null($this->totalSize)) {
             $collection = $this->getCollection();
             $this->totalSize = $collection->getSize();
+            \G4NReact\MsCatalog\Profiler::addDebugInfoEntry('collection_total_size', $this->totalSize);
         }
 
         if ($this->totalPosition == $this->totalSize) {
@@ -228,5 +270,33 @@ abstract class AbstractPuller implements Iterator, PullerInterface
             }
         }
         return isset($this->pageArray[$this->position]);
+    }
+
+    /**
+     * @return int
+     */
+    public function getStoreId(): int
+    {
+        return $this->storeId;
+    }
+
+    /**
+     * @param int $storeId
+     * @return PullerInterface
+     */
+    public function setStoreId(int $storeId): PullerInterface
+    {
+        $this->storeId = $storeId;
+
+        return $this;
+    }
+
+    /**
+     * @param $id
+     * @return string
+     */
+    public function createUniqueId($id)
+    {
+        return $id . '_' . $this->getType() . '_' . $this->getStoreId();
     }
 }

@@ -39,6 +39,15 @@ class Config extends AbstractHelper
     /** @var string show out of stock */
     const SHOW_OUT_OF_STOCK_XML = 'cataloginventory/options/show_out_of_stock';
 
+    /** @var string index max_sale_qty from cataloginventory */
+    const INDEX_MAX_SALE_QTY = 'ms_catalog_indexer/indexer_settings/add_max_sale_qty';
+
+    /** @var string remove missing objects */
+    const REMOVE_MISSING_OBJECTS = 'ms_catalog_indexer/indexer_settings/remove_missing_objects';
+
+    /** @var string remove missing objects */
+    const REMOVE_NOT_EXISTING = 'ms_catalog_indexer/indexer_settings/remove_not_existing_in_magento';
+
     /**
      * @var MsCatalogConfig[]
      */
@@ -105,6 +114,8 @@ class Config extends AbstractHelper
             $pullerTimeout = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/puller_timeout');
             $pusherTimeout = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_timeout');
             $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_delete_index');
+            $removeMissingObjects = !!$this->getConfigByPath(self::REMOVE_MISSING_OBJECTS);
+            $removeNotExisting = !!$this->getConfigByPath(self::REMOVE_NOT_EXISTING);
 
             $engineConnectionParams = [];
             if (!isset(ConfigHelper::$engines[$engine])) {
@@ -124,6 +135,8 @@ class Config extends AbstractHelper
             $configParams['puller_timeout'] = $pullerTimeout;
             $configParams['pusher_timeout'] = $pusherTimeout;
             $configParams['pusher_delete_index'] = $deleteIndexBeforeReindex;
+            $configParams['pusher_remove_missing_objects'] = $removeMissingObjects;
+            $configParams['remove_not_existing_in_magento'] = $removeNotExisting;
             $configParams['debug_enabled'] = $isDebugEnabled;
 
             $this->config[$this->getStore()->getId()] = new MsCatalogConfig($configParams);
@@ -225,5 +238,14 @@ class Config extends AbstractHelper
             ScopeInterface::SCOPE_STORE,
             $this->getStore()->getId()
         );
+    }
+
+    /**
+     * @return bool
+     * @throws NoSuchEntityException
+     */
+    public function getShouldRemoveMissingObjects()
+    {
+        return (bool)$this->getConfigByPath(self::REMOVE_MISSING_OBJECTS);
     }
 }

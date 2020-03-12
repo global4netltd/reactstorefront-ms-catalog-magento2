@@ -18,7 +18,9 @@ use Magento\Framework\Exception\NoSuchEntityException;
  */
 class CmsBlockPuller extends AbstractPuller
 {
-    /** @var string Type of object */
+    /**
+     * @var string Type of object
+     */
     const OBJECT_TYPE = 'cms_block';
 
     /**
@@ -56,8 +58,7 @@ class CmsBlockPuller extends AbstractPuller
         Manager $eventManager,
         CollectionFactory $cmsBlockCollFactory,
         CmsBlockField $cmsBlockField
-    )
-    {
+    ) {
         $this->type = self::OBJECT_TYPE;
         $this->eventManager = $eventManager;
         $this->cmsBlockCollFactory = $cmsBlockCollFactory;

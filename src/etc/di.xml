@@ -26,5 +26,7 @@
     </type>
     <preference for="Magento\Framework\Indexer\Config\SchemaLocator" type="G4NReact\MsCatalogMagento2\Config\Framework\Indexer\SchemaLocator" />
     <preference for="Magento\Framework\Mview\Config\SchemaLocator" type="G4NReact\MsCatalogMagento2\Config\Mview\SchemaLocator" />
+
+    <preference for="Magento\Search\Model\ResourceModel\Query" type="G4NReact\MsCatalogMagento2\Model\ResourceModel\Search\Query" />
 </config>
 

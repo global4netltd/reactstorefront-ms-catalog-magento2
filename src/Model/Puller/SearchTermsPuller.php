@@ -8,6 +8,7 @@ use G4NReact\MsCatalog\ResponseInterface;
 use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Helper\SearchTerms\SearchTermsField;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
+use G4NReact\MsCatalogMagento2GraphQl\Helper\Parser;
 use Magento\Framework\Event\Manager;
 use Magento\Search\Model\Query;
 use Magento\Search\Model\ResourceModel\Query\CollectionFactory;
@@ -17,6 +18,10 @@ use Magento\Search\Model\ResourceModel\SynonymGroup\CollectionFactory as Synonym
 
 class SearchTermsPuller extends AbstractPuller
 {
+    /**
+     * @var string Type of object
+     */
+    const OBJECT_TYPE = SearchTermsField::OBJECT_TYPE;
 
     /**
      * @var CollectionFactory
@@ -68,7 +73,13 @@ class SearchTermsPuller extends AbstractPuller
      */
     public function getCollection()
     {
-        $collection = $this->searchQueryCollFactory->create()
+        $collection = $this->searchQueryCollFactory->create();
+
+        if ($this->getIds()) {
+            $collection->addFieldToFilter('main_table.query_id', ['in' => $this->getIds()]);
+        }
+
+        $collection
             ->addStoreFilter($this->magento2ConfigHelper->getStore()->getId())
             ->setPageSize($this->getPageSize())
             ->setCurPage($this->getCurPage());
@@ -148,6 +159,10 @@ class SearchTermsPuller extends AbstractPuller
     {
         $searchTerm = $this->pageArray[$this->position];
         $storeId = $this->magento2ConfigHelper->getStore()->getId();
+
+        if ($queryText = $searchTerm->getQueryText()){
+            $searchTerm->setQueryText(Parser::convertPolishLetters($queryText));
+        }
 
         $document = new Document();
 

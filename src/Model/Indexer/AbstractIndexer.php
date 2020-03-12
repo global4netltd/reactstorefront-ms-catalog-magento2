@@ -89,6 +89,7 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
             foreach ($stores as $store) {
                 $this->appState->emulateAreaCode('frontend', function () use ($store, $ids) {
                     $this->reindex($store, $ids);
+                    $this->afterReindex();
                 });
             }
 
@@ -96,6 +97,14 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
         } catch (Exception $exception) {
             return "Caught exception: " . $exception->getMessage();
         }
+    }
+
+    /**
+     * Do it after run indexer
+     * @return void
+     */
+    public function afterReindex()
+    {
     }
 
     /**
@@ -110,6 +119,8 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
         $this->emulation->startEnvironmentEmulation($store->getId(), 'frontend', true);
         if ($this->configHelper->isIndexerEnabled()) {
             $puller = $this->getPuller();
+            $puller->init();
+            $puller->setStoreId($store->getId());
             $config = $this->configHelper->getConfiguration();
 
             if ($ids) {
@@ -140,12 +151,15 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
     abstract public function getPuller();
 
     /**
-     * @param array $ids
-     * @return void
+     * @param array|string $ids
+     * @return array
      */
     public function prepareIds($ids): array
     {
-        $ids = is_array($ids) ? $ids : explode(',', $ids);
+        if (isset($ids[0]) && strpos($ids[0], ',') !== false) {
+            $ids = explode(',', (string)$ids[0]);
+        }
+        $ids = is_array($ids) ? $ids : explode(',', (string)$ids);
 
         return array_map('intval', $ids);
     }

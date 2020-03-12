@@ -74,9 +74,17 @@ abstract class AbstractEditTabDocumentStorefront extends Template
     /**
      * @return int
      */
-    public function getId() : int
+    public function getId(): int
     {
         return (int) $this->_request->getParam('id');
+    }
+
+    /**
+     * @return int
+     */
+    public function getStoreId(): int
+    {
+        return (int)$this->_request->getParam('store');
     }
 
     /**

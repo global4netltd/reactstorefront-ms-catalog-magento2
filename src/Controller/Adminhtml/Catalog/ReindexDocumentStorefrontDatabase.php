@@ -58,15 +58,16 @@ class ReindexDocumentStorefrontDatabase extends Action
     {
         $objectType = $this->_request->getParam('object_type');
         $id = $this->_request->getParam('id');
+        $storeId = $this->_request->getParam('store_id');
 
         if ($id && $objectType) {
             try {
                 switch ($objectType) {
                     case 'product' :
-                        $this->productIndexer->run([$id], $this->storeManager->getStore());
+                        $this->productIndexer->run([$id], $this->storeManager->getStore($storeId));
                         break;
                     case 'category' :
-                        $this->categoryIndexer->run([$id], $this->storeManager->getStore());
+                        $this->categoryIndexer->run([$id], $this->storeManager->getStore($storeId));
                         break;
                 }
 

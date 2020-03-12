@@ -4,6 +4,7 @@ namespace G4NReact\MsCatalogMagento2\Console\Command;
 
 use G4NReact\MsCatalogMagento2\Model\Indexer\AbstractIndexer;
 use G4NReact\MsCatalogMagento2\Model\Indexer\ProductIndexer;
+use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Class ReindexProduct
@@ -19,15 +20,17 @@ class ReindexProduct extends AbstractReindex
     /**
      * ReindexAllProduct constructor
      *
+     * @param StoreManagerInterface $storeManager
      * @param ProductIndexer $productIndexer
      * @param string|null $name
      */
     public function __construct(
+        StoreManagerInterface $storeManager,
         ProductIndexer $productIndexer,
         string $name = null
     ) {
         $this->productIndexer = $productIndexer;
-        parent::__construct($name);
+        parent::__construct($storeManager, $name);
     }
 
     /**
