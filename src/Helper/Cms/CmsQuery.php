@@ -47,7 +47,7 @@ class CmsQuery implements QueryHelperInterface
             $columnName,
             $value,
             $type,
-            false,
+            HelperCmsField::getIsIndexable($columnName),
             HelperCmsField::getIsMultiValued($columnName, $value)
         );
     }
