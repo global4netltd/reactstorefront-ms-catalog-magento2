@@ -88,7 +88,7 @@ class CmsPagePuller extends AbstractPuller
         $cmsPageCollection = $this->cmsPageCollectionFactory->create();
 
         if ($this->ids !== null) {
-            $cmsPageCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
+            $cmsPageCollection->addFieldToFilter('page_id', array('in' => $this->ids));
         }
 
         /** @var CmsPageCollection $cmsPageCollection */
