@@ -45,7 +45,7 @@ class Field extends AbstractFieldHelper
      * @var array
      */
     protected static $fieldMultivaluedMap = [
-        'store_id',
+
     ];
 
     /**
