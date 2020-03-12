@@ -114,6 +114,14 @@ class CmsBlockPuller extends AbstractPuller
             );
         }
 
+        if ($storeIdField = $document->getField('store_id')) {
+            if (is_array($storeIdField->getValue())) {
+                $storeIdField->setValue($storeId);
+                $storeIdField->setType(Document\Field::FIELD_TYPE_INT);
+                $storeIdField->setMultiValued(false);
+            }
+        }
+
         $eventData = [
             'cms_block' => $cmsBlock,
             'document' => $document,
