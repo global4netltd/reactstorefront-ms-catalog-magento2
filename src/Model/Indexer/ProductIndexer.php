@@ -7,6 +7,7 @@ use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Model\Puller\ProductPuller;
 use Magento\Catalog\Model\Indexer\Product\Price as PriceIndexer;
 use Magento\Framework\App\State as AppState;
+use Magento\Store\Api\Data\StoreInterface;
 use Magento\Store\Model\App\Emulation;
 use Magento\Store\Model\StoreManagerInterface;
 
