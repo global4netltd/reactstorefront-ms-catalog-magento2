@@ -88,7 +88,9 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
             $stores = $store ? [$store] : $this->storeManager->getStores();
             foreach ($stores as $store) {
                 $this->appState->emulateAreaCode('frontend', function () use ($store, $ids) {
+                    $this->beforeReindex($store, $ids);
                     $this->reindex($store, $ids);
+                    $this->afterReindex($store, $ids);
                 });
             }
 
@@ -96,6 +98,16 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
         } catch (Exception $exception) {
             return "Caught exception: " . $exception->getMessage();
         }
+    }
+
+    /**
+     * Here you can add operations that should be done before reindex.
+     *
+     * @param StoreInterface $store
+     * @param array $ids
+     */
+    public function beforeReindex(StoreInterface $store, array $ids = [])
+    {
     }
 
     /**
@@ -134,6 +146,16 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
 
         // end store emulation
         $this->emulation->stopEnvironmentEmulation();
+    }
+
+    /**
+     * Here you can add operations that should be done after reindex.
+     *
+     * @param StoreInterface $store
+     * @param array $ids
+     */
+    public function afterReindex(StoreInterface $store, array $ids = [])
+    {
     }
 
     /**
