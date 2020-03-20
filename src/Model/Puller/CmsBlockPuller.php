@@ -10,6 +10,7 @@ use G4NReact\MsCatalogMagento2\Helper\Config as ConfigHelper;
 use G4NReact\MsCatalogMagento2\Model\AbstractPuller;
 use Magento\Cms\Model\ResourceModel\Block\CollectionFactory;
 use Magento\Framework\Event\Manager;
+use Magento\Widget\Model\Template\FilterEmulate;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -37,7 +38,10 @@ class CmsBlockPuller extends AbstractPuller
      * @var CollectionFactory
      */
     protected $cmsBlockCollFactory;
-
+    /**
+     * @var FilterEmulate
+     */
+    protected $filterEmulate;
     /**
      * @var CmsBlockField
      */
@@ -49,19 +53,20 @@ class CmsBlockPuller extends AbstractPuller
      * @param ConfigHelper $magento2ConfigHelper
      * @param Manager $eventManager
      * @param CollectionFactory $cmsBlockCollFactory
+     * @param FilterEmulate $filterEmulate
      * @param CmsBlockField $cmsBlockField
-     *
-     * @throws NoSuchEntityException
      */
     public function __construct(
         ConfigHelper $magento2ConfigHelper,
         Manager $eventManager,
         CollectionFactory $cmsBlockCollFactory,
+        FilterEmulate $filterEmulate,
         CmsBlockField $cmsBlockField
     ) {
         $this->type = self::OBJECT_TYPE;
         $this->eventManager = $eventManager;
         $this->cmsBlockCollFactory = $cmsBlockCollFactory;
+        $this->filterEmulate = $filterEmulate;
         $this->cmsBlockField = $cmsBlockField;
         $this->setType(self::OBJECT_TYPE);
 
@@ -108,7 +113,7 @@ class CmsBlockPuller extends AbstractPuller
         foreach ($cmsBlock->getData() as $field => $value) {
             $document->createField(
                 $field,
-                $cmsBlock->getData($field),
+                $this->prepareData($field, $cmsBlock->getData($field)),
                 $this->cmsBlockField->getFieldTypeByColumnName($field),
                 CmsBlockField::getIsIndexable($field),
                 CmsBlockField::getIsMultiValued($field, $value)
@@ -116,7 +121,6 @@ class CmsBlockPuller extends AbstractPuller
         }
 
         if ($storeIdField = $document->getField('store_id')) {
-
             if (is_array($storeIdField->getValue())) {
                 $storeIdField->setValue($storeId);
                 $storeIdField->setType(Document\Field::FIELD_TYPE_INT);
@@ -132,7 +136,19 @@ class CmsBlockPuller extends AbstractPuller
 
         return $document;
     }
-
+    /**
+     * @param $field
+     * @param $value
+     * @return string
+     */
+    protected function prepareData($field, $value)
+    {
+        if($field === 'content'){
+            return $this->filterEmulate->filter($value);
+        } else{
+            return $value;
+        }
+    }
     /**
      * @return string
      */
