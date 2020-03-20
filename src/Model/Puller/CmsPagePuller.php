@@ -13,6 +13,7 @@ use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionF
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\Event\Manager as EventManager;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
+use Magento\Widget\Model\Template\FilterEmulate;
 use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
@@ -52,13 +53,19 @@ class CmsPagePuller extends AbstractPuller
     protected $helperCmsField;
 
     /**
-     * CmsPuller constructor
+     * @var FilterEmulate
+     */
+    protected $filterEmulate;
+
+    /**
+     * CmsPagePuller constructor.
      *
      * @param CmsPageCollectionFactory $cmsPageCollectionFactory
      * @param EavConfig $eavConfig
      * @param Attribute $eavAttribute
      * @param ConfigHelper $magento2ConfigHelper
      * @param EventManager $eventManager
+     * @param FilterEmulate $filterEmulate
      * @param Field $helperCmsField
      */
     public function __construct(
@@ -67,12 +74,14 @@ class CmsPagePuller extends AbstractPuller
         Attribute $eavAttribute,
         ConfigHelper $magento2ConfigHelper,
         EventManager $eventManager,
+        FilterEmulate $filterEmulate,
         Field $helperCmsField
     ) {
         $this->cmsPageCollectionFactory = $cmsPageCollectionFactory;
         $this->eavConfig = $eavConfig;
         $this->eavAttribute = $eavAttribute;
         $this->eventManager = $eventManager;
+        $this->filterEmulate = $filterEmulate;
         $this->helperCmsField = $helperCmsField;
         $this->setType(self::OBJECT_TYPE);
 
@@ -88,7 +97,7 @@ class CmsPagePuller extends AbstractPuller
         $cmsPageCollection = $this->cmsPageCollectionFactory->create();
 
         if ($this->ids !== null) {
-            $cmsPageCollection->addAttributeToFilter('entity_id', array('in' => $this->ids));
+            $cmsPageCollection->addFieldToFilter('page_id', array('in' => $this->ids));
         }
 
         /** @var CmsPageCollection $cmsPageCollection */
@@ -138,13 +147,19 @@ class CmsPagePuller extends AbstractPuller
         foreach ($page->getData() as $field => $value) {
             $document->createField(
                 $field,
-                $page->getData($field),
+                $this->prepareData($field, $page->getData($field)),
                 $this->helperCmsField->getFieldTypeByColumnName($field) ?? Document\Field::FIELD_TYPE_STRING,
-                false,
+                Field::getIsIndexable($field),
                 Field::getIsMultiValued($field, $value)
             );
         }
-
+        if ($storeIdField = $document->getField('store_id')) {
+            if (is_array($storeIdField->getValue())) {
+                $storeIdField->setValue($storeId);
+                $storeIdField->setType(Document\Field::FIELD_TYPE_INT);
+                $storeIdField->setMultiValued(false);
+            }
+        }
         $eventData = [
             'cms_page' => $page,
             'document' => $document,
@@ -153,7 +168,19 @@ class CmsPagePuller extends AbstractPuller
 
         return $document;
     }
-
+    /**
+     * @param $field
+     * @param $value
+     * @return string
+     */
+    protected function prepareData($field, $value)
+    {
+        if($field === 'content'){
+            return $this->filterEmulate->filter($value);
+        } else{
+            return $value;
+        }
+    }
     /**
      * @param QueryInterface|null $query
      * @return ResponseInterface
