@@ -14,8 +14,8 @@ use Magento\Cms\Model\ResourceModel\Page\CollectionFactory as CmsPageCollectionF
 use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\Event\Manager as EventManager;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute;
-use Magento\Framework\Exception\NoSuchEntityException;
 use Magento\Widget\Model\Template\FilterEmulate;
+use Magento\Framework\Exception\NoSuchEntityException;
 
 /**
  * Class CmsPagePuller
