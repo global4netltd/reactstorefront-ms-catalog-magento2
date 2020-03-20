@@ -153,6 +153,7 @@ class CmsPagePuller extends AbstractPuller
                 Field::getIsMultiValued($field, $value)
             );
         }
+
         if ($storeIdField = $document->getField('store_id')) {
             if (is_array($storeIdField->getValue())) {
                 $storeIdField->setValue($storeId);
@@ -160,6 +161,7 @@ class CmsPagePuller extends AbstractPuller
                 $storeIdField->setMultiValued(false);
             }
         }
+
         $eventData = [
             'cms_page' => $page,
             'document' => $document,
