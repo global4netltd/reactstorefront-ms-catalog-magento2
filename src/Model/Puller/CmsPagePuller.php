@@ -200,3 +200,4 @@ class CmsPagePuller extends AbstractPuller
         return self::OBJECT_TYPE;
     }
 }
+
