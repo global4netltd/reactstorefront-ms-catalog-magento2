@@ -166,7 +166,10 @@ class CategoryPuller extends AbstractPuller
         \G4NReact\MsCatalog\Profiler::increaseTimer('observer => prepare_document_from_category_before', (microtime(true) - $start));
 
         if ($eventData->skip) {
-            return $document; // returning document without uniqueId results in skipping pushing data to engine
+            $document->setObjectId($category->getId());
+            $document->setObjectType(self::OBJECT_TYPE);
+
+            return $document; // returning document without uniqueId results in removing data from search engine
         }
 
         $document->setUniqueId($category->getId() . '_' . self::OBJECT_TYPE . '_' . $category->getStoreId());
