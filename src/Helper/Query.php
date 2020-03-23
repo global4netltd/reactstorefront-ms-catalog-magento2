@@ -425,11 +425,12 @@ class Query extends AbstractHelper
             if ($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT)) {
                 $field->setIndexable(true);
             }
-            \G4NReact\MsCatalog\Profiler::increaseTimer(' ========> getFieldByAttributeCode', (microtime(true) - $start));
         }
 
         $this->eventManager->dispatch('prepare_field_by_attribute_code_after', [
             'field' => $field, 'attribute_code' => $attributeCode, 'value' => $value, 'entity_type' => $entityType]);
+
+        \G4NReact\MsCatalog\Profiler::increaseTimer(' ========> getFieldByAttributeCode', (microtime(true) - $start));
 
         return $field;
     }
