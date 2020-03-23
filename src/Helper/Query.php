@@ -18,6 +18,7 @@ use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Eav\Model\ResourceModel\Entity\Attribute as AttributeResource;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Event\Manager as EventManager;
 use Magento\Framework\Exception\LocalizedException;
 use Magento\Framework\Exception\NoSuchEntityException;
 
@@ -175,9 +176,9 @@ class Query extends AbstractHelper
                 'multivalued' => false,
             ],
             'url' =>[
-              'type' => Field::FIELD_TYPE_STRING,
-              'indexable' => true,
-              'multivalued' => false
+                'type' => Field::FIELD_TYPE_STRING,
+                'indexable' => true,
+                'multivalued' => false
             ],
             'product_count'   => [
                 'type'        => Field::FIELD_TYPE_INT,
@@ -219,6 +220,11 @@ class Query extends AbstractHelper
     protected $helperCmsBlockQuery;
 
     /**
+     * @var EventManager
+     */
+    protected $eventManager;
+
+    /**
      * Query constructor.
      *
      * @param EavConfig $eavConfig
@@ -227,6 +233,7 @@ class Query extends AbstractHelper
      * @param AttributeResource $attributeResource
      * @param Config $configHelper
      * @param CmsBlockQuery $helperCmsBlockQuery
+     * @param EventManager $eventManager
      */
     public function __construct(
         EavConfig $eavConfig,
@@ -234,7 +241,8 @@ class Query extends AbstractHelper
         CmsQuery $cmsQuery,
         AttributeResource $attributeResource,
         ConfigHelper $configHelper,
-        CmsBlockQuery $helperCmsBlockQuery
+        CmsBlockQuery $helperCmsBlockQuery,
+        EventManager $eventManager
     ) {
         $this->configHelper = $configHelper;
         $this->eavConfig = $eavConfig;
@@ -242,6 +250,7 @@ class Query extends AbstractHelper
         $this->attributeResource = $attributeResource;
         $this->configHelper = $configHelper;
         $this->helperCmsBlockQuery = $helperCmsBlockQuery;
+        $this->eventManager = $eventManager;
 
         parent::__construct($context);
     }
@@ -344,45 +353,54 @@ class Query extends AbstractHelper
         $entityType = ProductAttributeInterface::ENTITY_TYPE_CODE
     ): Field {
         $start = microtime(true);
-        if ($field = $this->getCoreField($attributeCode, $value)) {
-            return $field;
+        $field = null;
+
+        if ($coreField = $this->getCoreField($attributeCode, $value)) {
+            $field = $coreField;
         }
 
-        $attributeCodeToFieldTypeMap = $this->getAttributeCodeToFieldTypeMap($entityType);
-        if (in_array($attributeCode, array_keys($attributeCodeToFieldTypeMap))) {
-            $field = new Field(
-                $attributeCodeToFieldTypeMap[$attributeCode]['real_code'] ?? $attributeCode,
-                FieldHelper::shouldHandleValue($value, $attributeCodeToFieldTypeMap[$attributeCode]['type'])
-                    ? FieldHelper::handleValue($value)
-                    : $value,
-                $attributeCodeToFieldTypeMap[$attributeCode]['type'],
-                $attributeCodeToFieldTypeMap[$attributeCode]['indexable'],
-                $attributeCodeToFieldTypeMap[$attributeCode]['multivalued']
-            );
+        if (!$field) {
+            $attributeCodeToFieldTypeMap = $this->getAttributeCodeToFieldTypeMap($entityType);
+            if (in_array($attributeCode, array_keys($attributeCodeToFieldTypeMap))) {
+                $newField = new Field(
+                    $attributeCodeToFieldTypeMap[$attributeCode]['real_code'] ?? $attributeCode,
+                    FieldHelper::shouldHandleValue($value, $attributeCodeToFieldTypeMap[$attributeCode]['type'])
+                        ? FieldHelper::handleValue($value)
+                        : $value,
+                    $attributeCodeToFieldTypeMap[$attributeCode]['type'],
+                    $attributeCodeToFieldTypeMap[$attributeCode]['indexable'],
+                    $attributeCodeToFieldTypeMap[$attributeCode]['multivalued']
+                );
 
-            return $field;
+                $field = $newField;
+            }
         }
 
-        if (isset(self::$attributes[$entityType][$attributeCode])) {
-            /** @var AbstractAttribute $attribute */
-            $attribute = self::$attributes[$entityType][$attributeCode];
-        } else {
-            /** @var AbstractAttribute $attribute */
-            $attribute = $this->eavConfig->getAttribute($entityType, $attributeCode);
-            self::$attributes[$entityType][$attributeCode] = $attribute;
+        if (!$field) {
+            if (isset(self::$attributes[$entityType][$attributeCode])) {
+                /** @var AbstractAttribute $attribute */
+                $attribute = self::$attributes[$entityType][$attributeCode];
+            } else {
+                /** @var AbstractAttribute $attribute */
+                $attribute = $this->eavConfig->getAttribute($entityType, $attributeCode);
+                self::$attributes[$entityType][$attributeCode] = $attribute;
+            }
+
+            $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
+            $fieldType = $isMultiValued ? Field::FIELD_TYPE_INT : $this->getAttributeFieldType($attribute);
+            $isFieldIndexable = $attribute->getIsFilterable() || $attribute->getUsedForSortBy();
+
+            $value = FieldHelper::shouldHandleValue($value, $fieldType) ? FieldHelper::handleValue($value) : $value;
+
+            $field = new Field($attributeCode, $value, $fieldType, $isFieldIndexable, $isMultiValued);
+            if ($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT)) {
+                $field->setIndexable(true);
+            }
+            \G4NReact\MsCatalog\Profiler::increaseTimer(' ========> getFieldByAttributeCode', (microtime(true) - $start));
         }
 
-        $isMultiValued = in_array($attribute->getFrontendInput(), self::$multiValuedAttributeFrontendInput);
-        $fieldType = $isMultiValued ? Field::FIELD_TYPE_INT : $this->getAttributeFieldType($attribute);
-        $isFieldIndexable = $attribute->getIsFilterable() || $attribute->getUsedForSortBy();
-
-        $value = FieldHelper::shouldHandleValue($value, $fieldType) ? FieldHelper::handleValue($value) : $value;
-
-        $field = new Field($attributeCode, $value, $fieldType, $isFieldIndexable, $isMultiValued);
-        if ($attribute->getData(SearchTerms::FORCE_INDEXING_IN_REACT_STORE_FRONT)) {
-            $field->setIndexable(true);
-        }
-        \G4NReact\MsCatalog\Profiler::increaseTimer(' ========> getFieldByAttributeCode', (microtime(true) - $start));
+        $this->eventManager->dispatch('prepare_field_by_attribute_code_after', [
+            'field' => $field, 'attribute_code' => $attributeCode, 'value' => $value, 'entity_type' => $entityType]);
 
         return $field;
     }
