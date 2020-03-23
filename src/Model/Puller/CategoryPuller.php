@@ -169,7 +169,7 @@ class CategoryPuller extends AbstractPuller
             $document->setObjectId($category->getId());
             $document->setObjectType(self::OBJECT_TYPE);
 
-            return $document; // returning document without uniqueId results in skipping pushing data to engine
+            return $document; // returning document without uniqueId results in removing data from search engine
         }
 
         $document->setUniqueId($category->getId() . '_' . self::OBJECT_TYPE . '_' . $category->getStoreId());
