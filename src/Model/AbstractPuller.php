@@ -74,6 +74,8 @@ abstract class AbstractPuller implements Iterator, PullerInterface
      */
     public $storeId;
 
+    public $startForLog;
+
     /**
      * @var ConfigHelper
      */
@@ -98,6 +100,8 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     {
         $this->totalSize = null;
         $this->totalPosition = 0;
+
+        $this->startForLog = microtime(true);
 
         $this->position = 0;
         $this->curPage = self::CUR_PAGE_DEFAULT;
@@ -262,6 +266,17 @@ abstract class AbstractPuller implements Iterator, PullerInterface
 
         if ($this->position == 0) {
             $this->curPage++;
+
+            $this->addLog('Puller valid', [
+                'cur_page' => $this->curPage,
+                'total_size' => $this->totalSize,
+                'object_type' => $this->getType(),
+                'store_id' => $this->getStoreId(),
+                'time' => round(microtime(true) - $this->startForLog, 4),
+                'proc_pid' =>  getmypid()]);
+
+            $this->startForLog = microtime(true);
+
             $collection = is_null($collection) ? $this->getCollection() : $collection;
 
             $this->pageArray = [];
@@ -271,6 +286,20 @@ abstract class AbstractPuller implements Iterator, PullerInterface
         }
         return isset($this->pageArray[$this->position]);
     }
+
+    /**
+     * @param $message
+     * @param array $data
+     */
+    public function addLog($message, $data = [])
+    {
+        //@TODO temporary
+        $writer = new \Zend\Log\Writer\Stream(BP . '/var/log/solr_indexer.log');
+        $logger = new \Zend\Log\Logger();
+        $logger->addWriter($writer);
+        $logger->info('Log details: ' . $message, $data);
+    }
+
 
     /**
      * @return int
