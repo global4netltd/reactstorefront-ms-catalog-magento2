@@ -114,7 +114,16 @@ class DataProviderPlugin
     protected function prepareAttributesFields(DataProvider $subject)
     {
         $res = [];
-        foreach ($this->reactStoreFrontFilters->getProductAttributes() as $attribute) {
+
+        $attributesList = new \stdClass();
+        $attributesList->items = $this->reactStoreFrontFilters->getProductAttributes();
+
+        $this->eventManager->dispatch(
+            'mscatalog_magento2_adminhtml_plugin_category_attributes_prepare_attributes',
+            ['attributes_list' => $attributesList, 'subject' => $subject]
+        );
+
+        foreach ($attributesList->items as $attribute) {
             $object = new \stdClass();
             $object->data = [
                 'arguments' => [
