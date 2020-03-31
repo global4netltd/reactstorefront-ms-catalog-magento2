@@ -48,6 +48,9 @@ class Config extends AbstractHelper
     /** @var string remove missing objects */
     const REMOVE_NOT_EXISTING = 'ms_catalog_indexer/indexer_settings/remove_not_existing_in_magento';
 
+    /** @var string remove missing objects */
+    const REMOVE_NOT_ACTIVE = 'ms_catalog_indexer/indexer_settings/remove_not_active_in_magento';
+
     /**
      * @var MsCatalogConfig[]
      */
@@ -116,6 +119,7 @@ class Config extends AbstractHelper
             $deleteIndexBeforeReindex = !!$this->getConfigByPath('ms_catalog_indexer/indexer_settings/pusher_delete_index');
             $removeMissingObjects = !!$this->getConfigByPath(self::REMOVE_MISSING_OBJECTS);
             $removeNotExisting = !!$this->getConfigByPath(self::REMOVE_NOT_EXISTING);
+            $removeNotActive = !!$this->getConfigByPath(self::REMOVE_NOT_ACTIVE);
 
             $engineConnectionParams = [];
             if (!isset(ConfigHelper::$engines[$engine])) {
@@ -137,6 +141,7 @@ class Config extends AbstractHelper
             $configParams['pusher_delete_index'] = $deleteIndexBeforeReindex;
             $configParams['pusher_remove_missing_objects'] = $removeMissingObjects;
             $configParams['remove_not_existing_in_magento'] = $removeNotExisting;
+            $configParams['remove_not_active_in_magento'] = $removeNotActive;
             $configParams['debug_enabled'] = $isDebugEnabled;
 
             $this->config[$this->getStore()->getId()] = new MsCatalogConfig($configParams);
