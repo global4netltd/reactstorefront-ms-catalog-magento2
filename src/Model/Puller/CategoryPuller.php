@@ -385,12 +385,11 @@ class CategoryPuller extends AbstractPuller
      */
     public function getProductCount($categoryId)
     {
-        if ($this->productsCount === null) {
-            $this->productsCount = $this->helperQuery->getCategoriesProductsCount($this->storeManager->getStore()->getId());
+        $storeId = $this->storeManager->getStore()->getId();
+        if (!isset($this->productsCount[$storeId])) {
+            $this->productsCount[$storeId] = $this->helperQuery->getCategoriesProductsCount($storeId);
         }
-
-
-        return $this->productsCount[$categoryId] ?? 0;
+        return $this->productsCount[$storeId][$categoryId] ?? 0;
     }
 
     /**
