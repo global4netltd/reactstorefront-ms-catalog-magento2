@@ -9,5 +9,8 @@
         <job name="g4nreact_maintenance_product" instance="G4NReact\MsCatalogMagento2\Cron\Maintenance\Product" method="execute">
             <schedule>53 */1 * * *</schedule>
         </job>
+        <job name="g4nreact_maintenance_category" instance="G4NReact\MsCatalogMagento2\Cron\Maintenance\Category" method="execute">
+            <schedule>27 */1 * * *</schedule>
+        </job>
     </group>
 </config>
