@@ -124,12 +124,12 @@ class Product
             }
 
             if (!empty($toRemoveIds)) {
-                for ($try = 0; $try < self::MAX_RETRY; $try++) {
+                for ($try = 1; $try <= self::MAX_RETRY; $try++) {
                     try {
                         $searchEngineClient = ClientFactory::create($searchEngineConfig);
                         $searchEngineClient->deleteByIds($toRemoveIds);
                     } catch (\Exception $e) {
-                        if ($try != self::MAX_RETRY) {
+                        if ($try < self::MAX_RETRY) {
                             continue;
                         }
                         $this->logger->error('Problem with remove from solr', ['remove_ids' => $toRemoveIds, 'message' => $e->getMessage(), 'exception' => $e]);
