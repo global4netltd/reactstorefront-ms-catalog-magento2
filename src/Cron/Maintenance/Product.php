@@ -20,6 +20,10 @@ use Psr\Log\LoggerInterface;
 class Product
 {
     /**
+     * @var int
+     */
+    const MAX_RETRY = 3;
+    /**
      * @var AppState
      */
     protected $appState;
@@ -120,12 +124,20 @@ class Product
             }
 
             if (!empty($toRemoveIds)) {
-                try {
-                    $searchEngineClient = ClientFactory::create($searchEngineConfig);
-                    $searchEngineClient->deleteByIds($toRemoveIds);
-                } catch (\Exception $e) {
-                    $this->logger->error('Problem with remove from solr', ['remove_ids' => $toRemoveIds, 'message' => $e->getMessage(), 'exception' => $e]);
+                for ($try = 1; $try <= self::MAX_RETRY; $try++) {
+                    try {
+                        $searchEngineClient = ClientFactory::create($searchEngineConfig);
+                        $searchEngineClient->deleteByIds($toRemoveIds);
+                    } catch (\Exception $e) {
+                        if ($try < self::MAX_RETRY) {
+                            continue;
+                        }
+                        $this->logger->error('Problem with remove from solr', ['remove_ids' => $toRemoveIds, 'message' => $e->getMessage(), 'exception' => $e]);
+                    }
+
+                    break;
                 }
+
             }
         }
 
