@@ -141,9 +141,15 @@ class CmsPagePuller extends AbstractPuller
                 $field,
                 $fieldValue,
                 $this->helperCmsField->getFieldTypeByColumnName($field) ?? Document\Field::FIELD_TYPE_STRING,
-                false,
+                Field::getIsIndexable($field),
                 Field::getIsMultiValued($field, $value)
             );
+        }
+
+        if (($storeIdField = $document->getField('store_id')) && is_array($storeIdField->getValue())) {
+            $storeIdField->setValue($storeId);
+            $storeIdField->setType(Document\Field::FIELD_TYPE_INT);
+            $storeIdField->setMultiValued(false);
         }
 
         $eventData = [
