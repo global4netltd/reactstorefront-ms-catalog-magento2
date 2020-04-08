@@ -210,6 +210,11 @@ class Query extends AbstractHelper
                 'indexable'   => true,
                 'multivalued' => false,
             ],
+            'path_ids'   => [
+                'type'        => Field::FIELD_TYPE_INT,
+                'indexable'   => true,
+                'multivalued' => true,
+            ],
         ]
     ];
 

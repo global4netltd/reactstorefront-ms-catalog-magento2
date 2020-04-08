@@ -127,9 +127,12 @@ class CategoryPuller extends AbstractPuller
             $categoryCollection->addAttributeToFilter('entity_id', ['in' => $this->ids]);
         }
 
+        $storeId = $this->storeManager->getStore()->getId();
+
         $categoryCollection->addAttributeToSelect('*')
             ->addAttributeToFilter('entity_id', ['gt' => 2])
-            ->setStoreId($this->storeManager->getStore()->getId())
+            ->setStoreId($storeId)
+            ->setStore($this->storeManager->getStore())
             ->addIsActiveFilter()
             ->addUrlRewriteToResult()
             ->setPageSize($this->pageSize)
@@ -161,6 +164,14 @@ class CategoryPuller extends AbstractPuller
         $category = $this->pageArray[$this->position];
 
         $document = new Document();
+
+        $rootCategoryId = $this->storeManager->getStore()->getRootCategoryId();
+        if (!in_array($rootCategoryId, $category->getAnchorsAbove(), false)) {
+            $document->setObjectId($category->getId());
+            $document->setObjectType(self::OBJECT_TYPE);
+
+            return $document; // returning document without uniqueId results in removing data from search engine
+        }
 
         $productsCount = $this->getProductCount($category->getId());
 
