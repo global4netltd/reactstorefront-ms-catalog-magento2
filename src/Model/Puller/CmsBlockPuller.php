@@ -85,7 +85,7 @@ class CmsBlockPuller extends AbstractPuller
             ->setCurPage($this->getCurPage());
 
         if ($ids = $this->getIds()) {
-            $collection->addFieldToFilter('block_id', ['id', $ids]);
+            $collection->addFieldToFilter('block_id', ['in', $ids]);
         }
 
         $this->eventManager->dispatch('ms_catalog_get_cms_block_collection', ['collection' => $collection]);
