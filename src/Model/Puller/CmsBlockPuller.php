@@ -84,6 +84,10 @@ class CmsBlockPuller extends AbstractPuller
             ->setPageSize($this->getPageSize())
             ->setCurPage($this->getCurPage());
 
+        if ($ids = $this->getIds()) {
+            $collection->addFieldToFilter('block_id', ['in', $ids]);
+        }
+
         $this->eventManager->dispatch('ms_catalog_get_cms_block_collection', ['collection' => $collection]);
 
         return $collection;
@@ -136,6 +140,7 @@ class CmsBlockPuller extends AbstractPuller
 
         return $document;
     }
+
     /**
      * @param $field
      * @param $value
@@ -143,12 +148,13 @@ class CmsBlockPuller extends AbstractPuller
      */
     protected function prepareData($field, $value)
     {
-        if($field === 'content'){
+        if ($field === 'content') {
             return $this->filterEmulate->filter($value);
-        } else{
+        } else {
             return $value;
         }
     }
+
     /**
      * @return string
      */
