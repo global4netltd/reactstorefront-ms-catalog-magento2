@@ -51,6 +51,12 @@ class Config extends AbstractHelper
     /** @var string remove missing objects */
     const REMOVE_NOT_ACTIVE = 'ms_catalog_indexer/indexer_settings/remove_not_active_in_magento';
 
+    /** @var string */
+    const SPELL_CHECKING_ENABLED = 'ms_catalog_indexer/search_settings/spell_checking_enable';
+
+    /** @var string */
+    const SEARCH_QUERY_BOOST = 'ms_catalog_indexer/search_settings/search_query_boost';
+
     /**
      * @var MsCatalogConfig[]
      */

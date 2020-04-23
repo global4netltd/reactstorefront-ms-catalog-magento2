@@ -5,6 +5,9 @@
             <indexer_settings>
                 <base_stats>price</base_stats>
             </indexer_settings>
+            <search_settings>
+                <spell_checking_enable>0</spell_checking_enable>
+            </search_settings>
         </ms_catalog_indexer>
     </default>
 </config>
