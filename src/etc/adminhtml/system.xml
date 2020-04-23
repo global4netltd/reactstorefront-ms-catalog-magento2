@@ -160,6 +160,10 @@
                     <label>Search Query Prepend</label>
                     <comment><![CDATA[Prepends solr query, usualy used for query boost.]]></comment>
                 </field>
+                <field id="spell_checking_enable" translate="label" type="select" sortOrder="150" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Spell checking</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
             </group>
         </section>
     </system>
