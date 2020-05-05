@@ -44,6 +44,11 @@ class SearchTermsPuller extends AbstractPuller
     protected $synonymGroupCollFactory;
 
     /**
+     * @var \Magento\Framework\Data\CollectionFactory
+     */
+    protected $collectionFactory;
+
+    /**
      * SearchTermsPuller constructor.
      *
      * @param ConfigHelper $magento2ConfigHelper
@@ -58,12 +63,14 @@ class SearchTermsPuller extends AbstractPuller
         CollectionFactory $searchQueryCollFactory,
         Manager $eventManager,
         SearchTermsField $searchTermsField,
-        SynonymGroupCollFactory $synonymGroupCollFactory
+        SynonymGroupCollFactory $synonymGroupCollFactory,
+        \Magento\Framework\Data\CollectionFactory $collectionFactory
     ) {
         $this->searchQueryCollFactory = $searchQueryCollFactory;
         $this->eventManager = $eventManager;
         $this->searchTermsField = $searchTermsField;
         $this->synonymGroupCollFactory = $synonymGroupCollFactory;
+        $this->collectionFactory = $collectionFactory;
         parent::__construct($magento2ConfigHelper);
     }
 
@@ -87,8 +94,15 @@ class SearchTermsPuller extends AbstractPuller
 //        $this->addSynonymsToSearchTermsCollection($collection);
 
         $this->eventManager->dispatch('ms_catalog_get_search_terms_collection', ['collection' => $collection]);
+        $newCollection = $this->collectionFactory->create();
 
-        return $collection;
+        foreach($collection->getItems() as $key => $item) {
+            if($item->getRedirect() || $item->getCategoryFilters() || $item->getNeonetProductIdOrder() || $item->getQuerySynonyms()) {
+                $newCollection->addItem($item);
+            }
+        }
+
+        return $newCollection;
     }
 
     /**
