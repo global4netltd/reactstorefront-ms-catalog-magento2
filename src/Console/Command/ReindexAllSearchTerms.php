@@ -71,6 +71,13 @@ class ReindexAllSearchTerms extends AbstractReindex
                 self::REQUIRED_OPTION_INFO,
                 true
             ),
+            new InputOption(
+                self::INPUT_OPTION_STORE_ID,
+                null,
+                InputOption::VALUE_OPTIONAL,
+                self::REQUIRED_OPTION_INFO,
+                false
+            )
         ];
     }
 
