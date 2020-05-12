@@ -62,6 +62,6 @@ class ProductIndexer extends AbstractIndexer
      */
     public function afterReindex()
     {
-        $this->eventManager->dispatch('product_indexer_reindex_after', ['ids' => $this->getPuller()->getToDeleteIds()]);
+        $this->eventManager->dispatch('product_indexer_reindex_after', ['to_delete_ids' => $this->getPuller()->getToDeleteIds(), 'to_clean_cache_ids' => $this->getPuller()->getToCleanCacheIds()]);
     }
 }

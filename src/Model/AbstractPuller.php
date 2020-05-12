@@ -65,6 +65,11 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     public $toDeleteIds;
 
     /**
+     * @var array
+     */
+    public $toCleanCacheIds;
+
+    /**
      * @var string
      */
     public $type;
@@ -186,6 +191,25 @@ abstract class AbstractPuller implements Iterator, PullerInterface
     public function setToDeleteIds(array $toDeleteIds): PullerInterface
     {
         $this->toDeleteIds = $toDeleteIds;
+
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getToCleanCacheIds(): array
+    {
+        return is_array($this->toCleanCacheIds) ? $this->toCleanCacheIds : [];
+    }
+
+    /**
+     * @param array $toCleanCacheIds
+     * @return PullerInterface
+     */
+    public function setToCleanCacheIds(array $toCleanCacheIds): PullerInterface
+    {
+        $this->toCleanCacheIds = $toCleanCacheIds;
 
         return $this;
     }

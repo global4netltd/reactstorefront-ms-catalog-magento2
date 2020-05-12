@@ -216,7 +216,12 @@ class ProductPuller extends AbstractPuller
         $this->eventManager->dispatch('prepare_document_from_product_before', ['eventData' => $eventData]);
         \G4NReact\MsCatalog\Profiler::increaseTimer('observer => prepare_document_from_product_before', (microtime(true) - $start));
 
+        $document->setIdToCleanCache($product->getSku());
+
         if ($eventData->disable === true) {
+            $document->setObjectId($product->getId());
+            $document->setObjectType(self::OBJECT_TYPE);
+
             return $document;
         }
 
