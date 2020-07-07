@@ -115,7 +115,7 @@ class Config extends AbstractHelper
     public function getConfiguration(): ?MsCatalogConfig
     {
         if (!isset($this->config[$this->getStore()->getId()])) {
-            $engine = (int)$this->getConfigByPath('ms_catalog_indexer/engine_settings/engine');
+            $engine = (int)$this->getConfigByPath('ms_catalog_indexer/engine_settings/engine') ?: 1;
 
             $isDebugEnabled = (bool)$this->getConfigByPath('ms_catalog_indexer/general_settings/logging');
             $pullerPageSize = (int)$this->getConfigByPath('ms_catalog_indexer/indexer_settings/puller_pagesize');
