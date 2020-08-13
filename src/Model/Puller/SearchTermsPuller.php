@@ -161,7 +161,7 @@ class SearchTermsPuller extends AbstractPuller
         $storeId = $this->magento2ConfigHelper->getStore()->getId();
 
         if ($queryText = $searchTerm->getQueryText()){
-            $searchTerm->setQueryText(Parser::convertPolishLetters($queryText));
+            $searchTerm->setQueryText(Parser::parseSearchText($queryText));
         }
 
         $document = new Document();
