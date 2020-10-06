@@ -399,7 +399,13 @@ class Query extends AbstractHelper
         }
 
         $this->eventManager->dispatch('prepare_field_by_attribute_code_after', [
-            'field' => $field, 'attribute_code' => $attributeCode, 'value' => $value, 'entity_type' => $entityType]);
+                'field'          => $field,
+                'attribute_code' => $attributeCode,
+                'value'          => $value,
+                'entity_type'    => $entityType,
+                'attribute'      => $attribute ?? null
+            ]
+        );
 
         \G4NReact\MsCatalog\Profiler::increaseTimer(' ========> getFieldByAttributeCode', (microtime(true) - $start));
 
