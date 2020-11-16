@@ -276,7 +276,6 @@ class ProductPuller extends AbstractPuller
             $this->queryHelper
                 ->getFieldByAttributeCode('category_id', $product->getCategoryIds())
         );
-        $product->unsetData('category_ids');
     }
 
     /**
@@ -289,6 +288,10 @@ class ProductPuller extends AbstractPuller
     {
         foreach ($product->getData() as $field => $value) {
             if (is_object($value)) {
+                continue;
+            }
+            
+            if (in_array($field, $this->getExcludedAttributes())) {
                 continue;
             }
 
@@ -435,5 +438,13 @@ class ProductPuller extends AbstractPuller
     public function getType(): string
     {
         return self::OBJECT_TYPE;
+    }
+    
+    /**
+     * @return string[]
+     */
+    protected function getExcludedAttributes()
+    {
+        return ['category_ids'];
     }
 }
