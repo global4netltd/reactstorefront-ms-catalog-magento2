@@ -443,7 +443,7 @@ class ProductPuller extends AbstractPuller
     /**
      * @return string[]
      */
-    protected function getExcludedAttributes()
+    public function getExcludedAttributes()
     {
         return ['category_ids'];
     }
