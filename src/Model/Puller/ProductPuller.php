@@ -537,20 +537,20 @@ class ProductPuller extends AbstractPuller
             );
             \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add all attributes', (microtime(true) - $start));
 
-            $start = microtime(true);
-            // force creating Fields that should be indexed but have not any value @ToDo: temporarily - and are not multivalued
-            foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
-                if (!$document->getField($attributeCode)) {
-                    $field = $this->queryHelper->getFieldByAttributeCode($attributeCode, null);
-                    if (!$field->getMultiValued()) {
-                        $document->setField($field);
-                    }
+            $this->setFieldIsVisibleOnFront($attribute, $document, $value);
+        }
+
+        $start = microtime(true);
+        // force creating Fields that should be indexed but have not any value @ToDo: temporarily - and are not multivalued
+        foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
+            if (!$document->getField($attributeCode)) {
+                $field = $this->queryHelper->getFieldByAttributeCode($attributeCode, null);
+                if (!$field->getMultiValued()) {
+                    $document->setField($field);
                 }
             }
-
-            $document = $this->setFieldIsVisibleOnFront($attribute, $document, $value);
-            \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add force indexing attributes', (microtime(true) - $start));
         }
+        \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add force indexing attributes', (microtime(true) - $start));
     }
 
     /**
