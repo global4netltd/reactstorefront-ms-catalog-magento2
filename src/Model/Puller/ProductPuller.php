@@ -543,7 +543,7 @@ class ProductPuller extends AbstractPuller
         $start = microtime(true);
         // force creating Fields that should be indexed but have not any value @ToDo: temporarily - and are not multivalued
         foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
-            if (!$document->getField($attributeCode)) {
+            if (!$this->attributeExistsInDocument($document, $attributeCode)) {
                 $field = $this->queryHelper->getFieldByAttributeCode($attributeCode, null);
                 if (!$field->getMultiValued()) {
                     $document->setField($field);
@@ -551,6 +551,16 @@ class ProductPuller extends AbstractPuller
             }
         }
         \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add force indexing attributes', (microtime(true) - $start));
+    }
+
+    /**
+     * @param Document $document
+     * @param string $attributeCode
+     * @return bool
+     */
+    public function attributeExistsInDocument(Document $document, string $attributeCode): bool
+    {
+        return (bool) $document->getField($attributeCode);
     }
 
     /**
