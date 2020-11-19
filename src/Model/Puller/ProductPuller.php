@@ -36,6 +36,11 @@ class ProductPuller extends AbstractPuller
     const OBJECT_TYPE = 'product';
 
     /**
+     * @var array
+     */
+    static $alreadyCheckedProductAttribute = [];
+
+    /**
      * @var int
      */
     const MAX_CATEGORY_PRODUCT_POSITION = 10000;
@@ -290,13 +295,12 @@ class ProductPuller extends AbstractPuller
             if (is_object($value)) {
                 continue;
             }
-            
+
             if (in_array($field, $this->getExcludedAttributes())) {
                 continue;
             }
 
             $attribute = $this->eavConfig->getAttribute('catalog_product', $field);
-
             $start = microtime(true);
             $searchTermField = $this->searchTerms->prepareSearchTermField($attribute->getAttributeCode());
             if ($searchTermField) {
@@ -319,19 +323,30 @@ class ProductPuller extends AbstractPuller
                 $this->queryHelper->getFieldByAttribute($attribute, $product->getData($attribute->getAttributeCode()))
             );
             \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add all attributes', (microtime(true) - $start));
+        }
 
-            $start = microtime(true);
-            // force creating Fields that should be indexed but have not any value @ToDo: temporarily - and are not multivalued
-            foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
-                if (!$document->getField($attributeCode)) {
-                    $field = $this->queryHelper->getFieldByAttributeCode($attributeCode, null);
-                    if (!$field->getMultiValued()) {
-                        $document->setField($field);
-                    }
+        $start = microtime(true);
+        // force creating Fields that should be indexed but have not any value @ToDo: temporarily - and are not multivalued
+        foreach ($this->searchTerms->getForceIndexingAttributes() as $attributeCode) {
+            if (!$this->attributeExistsInDocument($document, $attributeCode)) {
+                $field = $this->queryHelper->getFieldByAttributeCode($attributeCode, null);
+                if (!$field->getMultiValued()) {
+                    $document->setField($field);
                 }
             }
-            \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add force indexing attributes', (microtime(true) - $start));
         }
+        
+        \G4NReact\MsCatalog\Profiler::increaseTimer(' ====> addAttributes > add force indexing attributes', (microtime(true) - $start));
+    }
+
+    /**
+     * @param Document $document
+     * @param string $attributeCode
+     * @return bool
+     */
+    public function attributeExistsInDocument(Document $document, string $attributeCode): bool
+    {
+        return !!$document->getField($attributeCode);
     }
 
     /**
@@ -439,7 +454,7 @@ class ProductPuller extends AbstractPuller
     {
         return self::OBJECT_TYPE;
     }
-    
+
     /**
      * @return string[]
      */
