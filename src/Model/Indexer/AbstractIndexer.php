@@ -88,6 +88,7 @@ abstract class AbstractIndexer implements ActionInterface, \Magento\Framework\Mv
             $stores = $store ? [$store] : $this->storeManager->getStores();
             foreach ($stores as $store) {
                 $this->appState->emulateAreaCode('frontend', function () use ($store, $ids) {
+                    $this->storeManager->setCurrentStore($store);
                     $this->reindex($store, $ids);
                     $this->afterReindex();
                 });
