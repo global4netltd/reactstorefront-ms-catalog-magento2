@@ -166,6 +166,13 @@ class ProductPuller extends AbstractPuller
             ->addFinalPrice()
             ->addMediaGalleryData();
 
+        $start = microtime(true);
+        $this->eventManager->dispatch('ms_catalog_get_product_collection_before', ['collection' => $productCollection]);
+        \G4NReact\MsCatalog\Profiler::increaseTimer(
+            'observer => ms_catalog_get_product_collection_before',
+            (microtime(true) - $start)
+        );
+
         $productCollection->load()->addCategoryIds();
 
         $start = microtime(true);
