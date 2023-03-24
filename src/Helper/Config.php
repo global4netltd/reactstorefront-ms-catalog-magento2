@@ -57,6 +57,9 @@ class Config extends AbstractHelper
     /** @var string */
     const SEARCH_QUERY_BOOST = 'ms_catalog_indexer/search_settings/search_query_boost';
 
+    /** @var string */
+    const INDEX_NO_PRODUCT_CATEGORY = 'ms_catalog_indexer/indexer_settings/index_no_product_category';
+
     /**
      * @var MsCatalogConfig[]
      */

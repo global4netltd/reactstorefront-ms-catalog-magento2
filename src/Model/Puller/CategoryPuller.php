@@ -159,7 +159,8 @@ class CategoryPuller extends AbstractPuller
         $eventData = new \stdClass();
         $eventData->category = $category;
         $eventData->document = $document;
-        $eventData->skip = !$productsCount;
+        $indexCategoryWithoutProducts = $this->magento2ConfigHelper->getConfigByPath(ConfigHelper::INDEX_NO_PRODUCT_CATEGORY);
+        $eventData->skip = !$productsCount && !$indexCategoryWithoutProducts;
 
         $start = microtime(true);
         $this->eventManager->dispatch('prepare_document_from_category_before', ['eventData' => $eventData]);
