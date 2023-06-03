@@ -77,6 +77,24 @@
                         <field id="engine">1</field>
                     </depends>
                 </field>
+                <field id="solr_username" translate="label comment" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Username</label>
+                    <comment><![CDATA[
+                        Username for Solr Authentication - use only if authentication is used
+                    ]]></comment>
+                    <depends>
+                        <field id="engine">1</field>
+                    </depends>
+                </field>
+                <field id="solr_password" translate="label comment" type="text" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Password</label>
+                    <comment><![CDATA[
+                        Password for Solr Authentication - use only if authentication is used
+                    ]]></comment>
+                    <depends>
+                        <field id="engine">1</field>
+                    </depends>
+                </field>
             </group>
             <group id="indexer_settings" translate="label" type="text" sortOrder="300" showInDefault="1" showInWebsite="1" showInStore="1">
                 <label>Indexer Settings</label>
