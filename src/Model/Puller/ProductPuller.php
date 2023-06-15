@@ -163,8 +163,11 @@ class ProductPuller extends AbstractPuller
             ->addStoreFilter()
             ->setPageSize($this->pageSize)
             ->setCurPage($this->curPage)
-            ->addFinalPrice()
-            ->addMediaGalleryData();
+            ->addFinalPrice();
+
+        if (!$this->magento2ConfigHelper->getConfigByPath(ConfigHelper::REMOVE_MEDIA_GALLERY_DATA)) {
+            $productCollection->addMediaGalleryData();
+        }
 
         $productCollection->load()->addCategoryIds();
 
