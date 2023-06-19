@@ -60,6 +60,9 @@ class Config extends AbstractHelper
     /** @var string */
     const INDEX_NO_PRODUCT_CATEGORY = 'ms_catalog_indexer/indexer_settings/index_no_product_category';
 
+    /** @var string */
+    const REMOVE_MEDIA_GALLERY_DATA = 'ms_catalog_indexer/indexer_settings/remove_media_gallery_data';
+
     /**
      * @var MsCatalogConfig[]
      */
